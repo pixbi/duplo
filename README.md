@@ -36,18 +36,35 @@ Four commands:
 * `make minor` builds the project and bump the minor version
 * `make major` builds the project and bump the major version
 
-Note that building the project performs these steps:
+Compiling the project performs these steps:
 
-1. Stash changes to git to avoid data loss (you should of course make sure
-   there is no uncommitted code as well)
-2. Checkout the `develop` branch
-3. Scan through the `app/` directory and write all relevant file references to
-   `components.json`
-4. Bump the respective version
-5. Commit to git
-6. Checkout the `master` branch and merge `develop` into `master`
-7. Apply the new version as a new git tag
-8. Checkout the `develop` branch again
+1. Copy files in `app/assets/` to `public/`
+2. Copy files in `dev/` to `public/`
+3. `public/index.html` is created if it doesn't already exist
+4. Compile all Stylus files (order specified [below](#css-order)) under `app/`
+   and concatenate into one CSS file as `public/style.css`
+5. Concatenate all JavaScript under `app/` into one JS file as
+   `public/script.js`
+6. Compile all Jade files under `app/` into one HTML file and inject into the
+   end of `body` in `public/index.html`
+7. Write into `public/index.html` tags to include `style.css` and `script.js`
+
+Building the project performs these steps:
+
+1.  Stash changes to git to avoid data loss (you should of course make sure
+    there is no uncommitted code as well)
+2.  Checkout the `develop` branch
+3.  Compile the project
+4.  Apply Closure Compiler with advanced optimizations on the built JavaScript.
+    Any error would stop the process here and fixes should be applied before
+    retrying.
+5.  Scan through the `app/` directory and write all relevant file references to
+    `components.json`
+6.  Bump the respective version
+7.  Commit to git
+8.  Checkout the `master` branch and merge `develop` into `master`
+9.  Apply the new version as a new git tag
+10. Checkout the `develop` branch again
 
 
 ## Technologies
