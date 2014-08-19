@@ -10,6 +10,7 @@ below.
 Run the following commands.
 
 ```
+$ npm install -g grunt-cli
 $ npm install --save-dev https://github.com/pixbi/grunt/tarball/master
 $ cp node_modules/pixbi-grunt/Makefile .
 $ cp node_modules/pixbi-grunt/gitignore ./.gitignore
@@ -17,12 +18,13 @@ $ cp node_modules/pixbi-grunt/gitignore ./.gitignore
 
 Basically:
 
-1. Install via npm
-2. Copy the `Makefile` from this repo
-3. Copy over the `.gitignore` file as well
+1. Install Grunt.js
+2. Install via npm
+3. Copy the `Makefile` from this repo
+4. Copy over the `.gitignore` file as well
 
-The reason behind using Makefile to run a Gruntfile is
-for abstraction and versioning.
+The reason behind using Makefile to run a Gruntfile is for abstraction and
+centralized management of the build tool (e.g. versioning).
 
 
 ## Usage
@@ -36,13 +38,15 @@ Four commands:
 
 Note that building the project performs these steps:
 
-1. Checkout the `develop` branch
-2. Build the project to the `build/` directory
-3. Bump the respective version
-4. Commit to git
-5. Checkout the `master` branch and merge `develop` into `master`
-6. Apply the new version as a new git tag
-7. Checkout the `develop` branch again
+1. Stash changes to git to avoid data loss (you should of course make sure
+   there is no uncommitted code as well)
+2. Checkout the `develop` branch
+3. Build the project to the `build/` directory
+4. Bump the respective version
+5. Commit to git
+6. Checkout the `master` branch and merge `develop` into `master`
+7. Apply the new version as a new git tag
+8. Checkout the `develop` branch again
 
 
 ## File Structure
