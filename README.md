@@ -1,6 +1,6 @@
-# Pixbi Gruntfile
+# Pixbi Build Tool
 
-This repo basically contains the Gruntfile that is used across all frontend
+This repo basically contains the build tool that is used across all frontend
 projects. The project using this repo must follow a set of conventions outlined
 below.
 
