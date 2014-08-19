@@ -11,6 +11,7 @@ Run the following commands.
 
 ```
 $ npm install -g grunt-cli
+$ npm install -g component
 $ npm install --save-dev https://github.com/pixbi/build/tarball/master
 $ cp node_modules/pixbi-build/Makefile .
 $ cp node_modules/pixbi-build/gitignore ./.gitignore
@@ -19,9 +20,10 @@ $ cp node_modules/pixbi-build/gitignore ./.gitignore
 Basically:
 
 1. Install Grunt.js
-2. Install via npm
-3. Copy the `Makefile` from this repo
-4. Copy over the `.gitignore` file as well
+2. Install Component.IO
+3. Install via npm
+4. Copy the `Makefile` from this repo
+5. Copy over the `.gitignore` file as well
 
 The reason behind using Makefile to run a Gruntfile is for abstraction and
 centralized management of the build tool (e.g. for versioning).
@@ -108,7 +110,6 @@ be concatenated in this order:
     app/styl/main.styl        --> Application CSS that goes before any module
                                   CSS
     app/modules/**/index.styl --> CSS relevant to specific modules
-    app/styl/mobile.styl      --> Mobile-specific CSS
 
 
 ## Jade Include System
