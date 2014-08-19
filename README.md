@@ -52,8 +52,7 @@ Compiling the project performs these steps:
    end of `body` in `public/index.html`
 7. Write into `public/index.html` tags to include `style.css` and `script.js`
 
-Note that while compiling the builder creates a temporary `staging/`
-directory.
+Note that while compiling the builder creates a temporary `staging/` directory.
 
 Building the project performs these steps:
 

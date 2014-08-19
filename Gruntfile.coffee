@@ -10,6 +10,7 @@ module.exports = (grunt) ->
     'compile:js'
     'compile:stylus'
     'compile:jade'
+    'inject:version'
 
     'concat:js'
     'concat:stylus'
@@ -111,6 +112,21 @@ module.exports = (grunt) ->
         createTag: false
         push: false
 
+    shell:
+      tag:
+        command: (version) ->
+          "git tag #{version}"
+
+      writeVersion:
+        command: (appName, version) ->
+          content = "module.#{appName}.version = '#{version}';"
+          "echo '#{content}' > staging/version.js"
+
+      make:
+        command: (task, path = '.') ->
+          "BASE=#{path} make #{task}"
+
+
     # Style-specific
 
     stylus:
@@ -180,14 +196,45 @@ module.exports = (grunt) ->
 
   # Custom tasks
 
-  grunt.registerTask 'compile', ->
+  grunt.registerTask 'default', ->
+
+  grunt.registerTask 'compile', (type) ->
     'app/**/*.js'
     '!app/**/*.spec.js'
 
-  grunt.registerTask 'link', ->
+  grunt.registerTask 'link', (type) ->
 
   grunt.registerTask 'check', ->
 
-  grunt.registerTask 'watch', ->
+  grunt.registerTask 'dev', ->
 
   grunt.registerTask 'tag', ->
+    grunt.task.run("shell:tag:#{manifest.version}")
+
+  grunt.registerTask 'inject', (type) ->
+    switch type
+      when 'version'
+        appName = manifest.name
+        version = manifest.version
+        task = "shell:writeVersion:#{appName}:#{version}"
+        grunt.task.run(task)
+
+
+  # Auxiliary constants and functions
+
+  # All the manifest files of this repo and its dependencies
+  manifests = do ->
+    manifest = grunt.file.readJSON('./component.json')
+    deps = Object.keys(manifest.dependencies or {})
+
+    # Put self first and add its dependencies' manifests afterward
+    [manifest].concat deps.map (dep) ->
+      dep = dep.replace('/', '-')
+      _manifest = grunt.file.readJSON("./components/#{dep}/component.json")
+      _manifest.path = "./components/#{dep}/"
+
+  # Run a task over this repo as well as its dependencies
+  runOnAll = (task) ->
+    for manifest in manifests
+      path = manifest.path or '.'
+      grunt.task.run("shell:make:#{task}:#{path}")
