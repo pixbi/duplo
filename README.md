@@ -98,7 +98,8 @@ and has an extension of `.spec.js`.
 
 ## CSS Order
 
-Where you place your CSS files within `app/` is significant. Stylus files will be concatenated in this order:
+Where you place your CSS files within `app/` is significant. Stylus files will
+be concatenated in this order:
 
     app/styl/keyframes.styl   --> Keyframes
     app/styl/fonts.styl       --> Font declarations
