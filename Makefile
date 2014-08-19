@@ -1,4 +1,5 @@
-run=grunt --base . --gruntfile node_modules/pixbi-grunt/Gruntfile.coffee
+BASE=.
+run=grunt --base $(BASE) --gruntfile node_modules/pixbi-grunt/Gruntfile.coffee
 
 dev:
 	$(run) watch

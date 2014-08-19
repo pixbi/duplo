@@ -70,6 +70,11 @@ Building the project performs these steps:
 10. Apply the new version as a new git tag
 11. Checkout the `develop` branch again
 
+### Grunt
+
+The Makefile basically dispatches commands to `git` or `grunt`. You may set the
+`BASE` environment variable to configure where the grunt task should be loaded.
+
 
 ## Technologies
 
