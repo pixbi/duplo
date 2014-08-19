@@ -85,7 +85,7 @@ There are some required directories:
     app/modules/  --> Module within the application that are ordered AFTER code
                       in the top-level `app/` directory when building
     components/   --> Other repos imported via Component.IO
-    dev/          --> Any code necessary to run the applcation in dev mode
+    dev/          --> Any code necessary to run the application in dev mode
     node_modules/ --> Contains this repo
     public/       --> Built files when developing. This is NOT committed to
                       source
@@ -96,7 +96,7 @@ and has an extension of `.spec.js`.
 
 ## CSS Order
 
-Where you place your CSS files within `app/` is significant, in this order:
+Where you place your CSS files within `app/` is significant. Stylus files will be concatenated in this order:
 
     app/styl/keyframes.styl   --> Keyframes
     app/styl/fonts.styl       --> Font declarations
