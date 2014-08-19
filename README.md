@@ -24,7 +24,7 @@ Basically:
 4. Copy over the `.gitignore` file as well
 
 The reason behind using Makefile to run a Gruntfile is for abstraction and
-centralized management of the build tool (e.g. versioning).
+centralized management of the build tool (e.g. for versioning).
 
 
 ## Usage
@@ -41,12 +41,20 @@ Note that building the project performs these steps:
 1. Stash changes to git to avoid data loss (you should of course make sure
    there is no uncommitted code as well)
 2. Checkout the `develop` branch
-3. Build the project to the `build/` directory
+3. Scan through the `app/` directory and write all relevant file references to
+   `components.json`
 4. Bump the respective version
 5. Commit to git
 6. Checkout the `master` branch and merge `develop` into `master`
 7. Apply the new version as a new git tag
 8. Checkout the `develop` branch again
+
+
+## Technologies
+
+* [Jade](http://jade-lang.com/) over HTML
+* [Stylus](http://learnboost.github.io/stylus/) over CSS
+* JavaScript
 
 
 ## File Structure
@@ -56,17 +64,17 @@ There are some required directories:
     app/          --> Application code
     app/assets/   --> Asset files are copied as-is to build's top-level
                       directory
+    app/styl/     --> Any application top-level style (see below for details)
     app/modules/  --> Module within the application that are ordered AFTER code
                       in the top-level `app/` directory when building
-    build/        --> When bumping version, a new build is placed here
     components/   --> Other repos imported via Component.IO
     dev/          --> Any code necessary to run the applcation in dev mode
     node_modules/ --> Contains this repo
     public/       --> Built files when developing. This is NOT committed to
                       source
 
-Note that test files reside alongside with the application code in question and
-has an extension of `.spec.js`.
+Note that test files reside alongside with the corresponding application code
+and has an extension of `.spec.js`.
 
 
 ## CSS Order
