@@ -40,5 +40,9 @@ commit:
 	git merge develop
 	# Apply tag
 	$(run) tag
+	# Sync with Github
+	git push origin develop:develop
+	git push origin master
+	git push origin --tags
 	# Go back to develop
 	git checkout develop
