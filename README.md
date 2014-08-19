@@ -7,17 +7,22 @@ below.
 
 ## Installation
 
-1. Install via npm:
+Run the following commands.
 
-   `$ npm install --save-dev https://github.com/pixbi/grunt/tarball/master`
+```
+$ npm install --save-dev https://github.com/pixbi/grunt/tarball/master
+$ cp node_modules/pixbi-grunt/Makefile .
+$ cp node_modules/pixbi-grunt/gitignore ./.gitignore
+```
 
-2. Make sure you copy the `Makefile` from this repo:
+Basically:
 
-   `$ cp node_modules/pixbi-grunt/Makefile .`
+1. Install via npm
+2. Copy the `Makefile` from this repo
+3. Copy over the `.gitignore` file as well
 
-3. Copy over the `.gitignore` file as well:
-
-   `$ cp node_modules/pixbi-grunt/gitignore ./.gitignore`
+The reason behind using Makefile to run a Gruntfile is
+for abstraction and versioning.
 
 
 ## Usage
