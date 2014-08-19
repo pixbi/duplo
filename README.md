@@ -67,3 +67,17 @@ There are some required directories:
 
 Note that test files reside alongside with the application code in question and
 has an extension of `.spec.js`.
+
+
+## CSS Order
+
+Where you place your CSS files within `app/` is significant, in this order:
+
+    app/styl/keyframes.styl   --> Keyframes
+    app/styl/fonts.styl       --> Font declarations
+    app/styl/reset.styl       --> Resetting existing CSS in the target
+                                  environment
+    app/styl/main.styl        --> Application CSS that goes before any module
+                                  CSS
+    app/modules/**/index.styl --> CSS relevant to specific modules
+    app/styl/mobile.styl      --> Mobile-specific CSS
