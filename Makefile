@@ -1,26 +1,30 @@
-grunt = grunt --base . --gruntfile node_modules/pixbi-grunt/Gruntfile.coffee
+run=grunt --base . --gruntfile node_modules/pixbi-grunt/Gruntfile.coffee
 
 dev:
-	$(grunt) watch
+	$(run) watch
+
+
+check:
+	$(run) check
 
 
 patch: prebuild build
-	$(grunt) bump:patch
+	$(run) bump:patch
 	make commit
 
 
 minor: prebuild build
-	$(grunt) bump:minor
+	$(run) bump:minor
 	make commit
 
 
 major: prebuild build
-	$(grunt) bump:major
+	$(run) bump:major
 	make commit
 
 
 build:
-	$(grunt) build
+	$(run) build
 
 
 prebuild:
@@ -35,6 +39,6 @@ commit:
 	git checkout master
 	git merge develop
 	# Apply tag
-	$(grunt) tag
+	$(run) tag
 	# Go back to develop
 	git checkout develop
