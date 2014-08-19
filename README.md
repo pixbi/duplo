@@ -11,9 +11,9 @@ Run the following commands.
 
 ```
 $ npm install -g grunt-cli
-$ npm install --save-dev https://github.com/pixbi/grunt/tarball/master
-$ cp node_modules/pixbi-grunt/Makefile .
-$ cp node_modules/pixbi-grunt/gitignore ./.gitignore
+$ npm install --save-dev https://github.com/pixbi/build/tarball/master
+$ cp node_modules/pixbi-build/Makefile .
+$ cp node_modules/pixbi-build/gitignore ./.gitignore
 ```
 
 Basically:
