@@ -32,6 +32,7 @@ centralized management of the build tool (e.g. for versioning).
 Four commands:
 
 * `make dev` starts a local server and re-compiles on file change
+* `make check` runs the Closure Compiler by itself for error checking
 * `make patch` builds the project and bump the patch version
 * `make minor` builds the project and bump the minor version
 * `make major` builds the project and bump the major version
@@ -58,13 +59,14 @@ Building the project performs these steps:
 4.  Apply Closure Compiler with advanced optimizations on the built JavaScript.
     Any error would stop the process here and fixes should be applied before
     retrying.
-5.  Scan through the `app/` directory and write all relevant file references to
+5.  Apply any transformation for further uglification
+6.  Scan through the `app/` directory and write all relevant file references to
     `components.json`
-6.  Bump the respective version
-7.  Commit to git
-8.  Checkout the `master` branch and merge `develop` into `master`
-9.  Apply the new version as a new git tag
-10. Checkout the `develop` branch again
+7.  Bump the respective version
+8.  Commit to git
+9.  Checkout the `master` branch and merge `develop` into `master`
+10. Apply the new version as a new git tag
+11. Checkout the `develop` branch again
 
 
 ## Technologies
