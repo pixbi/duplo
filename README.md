@@ -96,7 +96,7 @@ Note that test files reside alongside with the corresponding application code
 and has an extension of `.spec.js`.
 
 
-## CSS Order
+## CSS/Stylus Order
 
 Where you place your CSS files within `app/` is significant. Stylus files will
 be concatenated in this order:
@@ -109,3 +109,10 @@ be concatenated in this order:
                                   CSS
     app/modules/**/index.styl --> CSS relevant to specific modules
     app/styl/mobile.styl      --> Mobile-specific CSS
+
+
+## Jade Include System
+
+Assume the Jade's includes to look for files relative to the project's `app/`
+directory. The build tool first compiles the Jade and Stylus for each project
+before concatenating the compiled files into one for final output.
