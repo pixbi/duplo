@@ -45,12 +45,15 @@ Compiling the project performs these steps:
 2. Copy files in `dev/` to `public/`
 3. `public/index.html` is created if it doesn't already exist
 4. Compile all Stylus files (order specified [below](#css-order)) under `app/`
-   and concatenate into one CSS file as `public/style.css`
+   and concatenate into one CSS file as `public/index.css`
 5. Concatenate all JavaScript under `app/` into one JS file as
-   `public/script.js`
+   `public/index.js`
 6. Compile all Jade files under `app/` into one HTML file and inject into the
    end of `body` in `public/index.html`
 7. Write into `public/index.html` tags to include `style.css` and `script.js`
+
+Note that while compiling the builder creates a temporary `staging/`
+directory.
 
 Building the project performs these steps:
 

@@ -9,25 +9,24 @@ check:
 	$(run) check
 
 
-patch: prebuild build
+patch: build
 	$(run) bump:patch
 	make commit
 
-
-minor: prebuild build
+minor: build
 	$(run) bump:minor
 	make commit
 
-
-major: prebuild build
+major: build
 	$(run) bump:major
 	make commit
 
 
-build:
+build: prebuild
 	$(run) build
 
 
+# Separated from `build` for flexibility
 prebuild:
 	git stash
 	git checkout develop
