@@ -2,7 +2,7 @@ BASE=.
 run=grunt --base $(BASE) --gruntfile node_modules/pixbi-grunt/Gruntfile.coffee
 
 dev:
-	$(run) dev
+	NODE_ENV=dev $(run) dev
 
 
 check:

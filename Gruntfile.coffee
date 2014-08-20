@@ -89,14 +89,14 @@ module.exports = (grunt) ->
         dest: 'public/index.js'
       css:
         src: [
-          'staging/**/*.css'
-          'components/**/staging/*.css'
+          'staging/index.css'
+          'components/**/staging/index.css'
         ]
         dest: 'public/index.css'
       html:
         src: [
-          'staging/**/*.html'
-          'components/**/staging/*.html'
+          'staging/index.html'
+          'components/**/staging/index.html'
         ]
         dest: 'staging/index.html'
 
@@ -153,30 +153,25 @@ module.exports = (grunt) ->
           paths: 'app/styl/variables.styl'
           import: 'variables'
         files:
-          'public/embed.css': [
+          'staging/index.css': [
             'app/styl/keyframes.styl'
             'app/styl/fonts.styl'
-            'app/styl/normalize.styl'
+            'app/styl/reset.styl'
             'app/styl/main.styl'
-            'app/views/**/index.styl'
             'app/modules/**/index.styl'
-            'app/components/**/*.styl'
-            'app/styl/mobile.styl'
-            'app/views/**/mobile.styl'
-            'app/modules/**/mobile.styl'
           ]
 
     autoprefixer:
       default:
-        src: 'public/embed.css'
-        dest: 'public/embed.css'
-        options: 
+        src: 'public/index.css'
+        dest: 'public/index.css'
+        options:
           browsers: ['last 2 Chrome versions', 'last 2 iOS versions', 'ie 10']
 
     cssshrink:
       default:
         files:
-          'public/embed.css': ['public/embed.css']
+          'public/index.css': 'public/index.css'
 
     ## Template-specific
 
@@ -185,31 +180,25 @@ module.exports = (grunt) ->
         basedir: 'app/'
       default:
         files:
-          'build/embed.html': 'app/app.jade'
-          'public/index.html': 'dev/dev.jade'
+          'staging/index.html': 'app/**/*.jade'
 
     ## Script-specific
 
     uglify:
       default:
         files:
-          'public/embed.js': 'public/embed.js'
+          'public/index.js': 'public/index.js'
 
-    closureCompiler:
-      options:
-        compilerFile: 'compiler.jar'
-        compilerOpts:
-          compilation_level: 'ADVANCED_OPTIMIZATIONS'
-          # externs: ['path/to/file.js', '/source/**/*.js']
-          # define: ["'goog.DEBUG=false'"]
-          warning_level: 'verbose'
-          # jscomp_off: ['checkTypes', 'fileoverviewTags']
-          # jscomp_warning: 'reportUnknownTypes'
-          summary_detail_level: 3
-        # d32: true
+    'closure-compiler':
       default:
-        src: 'public/embed.js'
-        dest: 'public/embed.min.js'
+        closurePath: "#{__dirname}/compiler.jar"
+        js: 'public/index.js'
+        jsOutputFile: 'public/index.js'
+        options:
+          compilation_level: 'ADVANCED_OPTIMIZATIONS'
+          language_in: 'ECMASCRIPT5_STRICT'
+          warning_level: 'verbose'
+          summary_detail_level: 3
 
 
   ## Custom tasks
@@ -218,7 +207,8 @@ module.exports = (grunt) ->
     # First compile this repo
     switch type
       when 'js'
-        grunt.task.run('scriptTasks')
+        if NODE_ENV isnt 'dev'
+          grunt.task.run('scriptTasks')
       when 'stylus'
         grunt.task.run('styleTasks')
       when 'jade'
