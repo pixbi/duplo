@@ -1,11 +1,83 @@
 NODE_ENV = process.env.NODE_ENV or 'prod'
 
 module.exports = (grunt) ->
+  ## Auxiliary constants and functions
+
+  # Callback is called if the provided file path points to a file that exists
+  whenExists = (path, done) ->
+    done(path) if grunt.file.exists(path)
+
+  # All the manifest files of this repo and its dependencies
+  manifests = do ->
+    whenExists './component.json', (path) ->
+      manifest = grunt.file.readJSON(path)
+      deps = Object.keys(manifest.dependencies or {})
+      output = []
+
+      # Find this repo's dependency manifests
+      for dep in deps
+        dep = dep.replace('/', '-')
+        whenExists "./components/#{dep}/component.json", (path) ->
+          m = grunt.file.readJSON(path)
+          m.path = "./components/#{dep}/"
+          output.push(m)
+
+      output
+
+  # Run a task over the repo's dependencies
+  runOnDeps = (task) ->
+    for manifest in manifests
+      path = manifest.path or '.'
+
+      whenExists path, (path) ->
+        grunt.task.run("shell:make:#{task}:#{path}")
+
+  # Find root
+  findRoot = (pathArray) ->
+    pathArray ?= process.cwd().split('/')
+
+    if pathArray.length <= 0
+      ['/']
+    else
+      target = pathArray.join('/') + '/node_modules/pixbi-build'
+
+      if grunt.file.exists(target)
+        target.split('/')
+      else
+        pathArray.pop()
+        findRoot pathArray
+
+  rootPathArray = do findRoot
+  rootPath = rootPathArray.join('/')
+
+  # Load Grunt plugins from `pixbi-build`
+  loadPlugins = (plugins) ->
+    # Special handling with current directory for Grunt
+    cwd = process.cwd()
+    path = rootPathArray.join('/')
+
+    whenExists path, (path) ->
+      process.chdir(path)
+      for plugin in plugins
+        grunt.task.loadNpmTasks plugin
+      process.chdir(cwd)
+
+  # Grunt plugins need to be loaded manually because of the weird setup that we
+  # have (i.e. grunt plugins not being local to the repo)
+  do ->
+    whenExists "#{__dirname}/package.json", (path) ->
+      manifest = grunt.file.readJSON(path)
+      deps = manifest.dependencies
+      delete deps.grunt
+      loadPlugins Object.keys(deps)
+
+
   # Always call explicitly with parameter to allow easy extension in the future
   compileTasks = [
     'clean:public'
 
-    'copy:index'
+    'copy:defaultTemplate'
+    'copy:defaultStyle'
     'copy:assets'
     'copy:dev'
 
@@ -62,12 +134,12 @@ module.exports = (grunt) ->
         src: 'staging'
 
     copy:
-      index:
-        expand: true
-        src: 'node_modules/grunt-build/index.html'
-        dest: 'public/'
-        filter: (filepath) ->
-          grunt.file.exists(filepath)
+      defaultTemplate:
+        src: "#{rootPath}/assets/index.html"
+        dest: 'public/index.html'
+      defaultStyle:
+        src: "#{rootPath}/assets/index.css"
+        dest: 'staging/index.css'
 
       assets:
         expand: true
@@ -160,11 +232,12 @@ module.exports = (grunt) ->
             'app/styl/reset.styl'
             'app/styl/main.styl'
             'app/modules/**/index.styl'
+            'app/modules/**/*.styl'
           ]
 
     autoprefixer:
       default:
-        src: 'public/index.css'
+        src: 'staging/index.css'
         dest: 'public/index.css'
         options:
           browsers: ['last 2 Chrome versions', 'last 2 iOS versions', 'ie 10']
@@ -234,70 +307,3 @@ module.exports = (grunt) ->
         version = manifest.version
         task = "shell:writeVersion:#{appName}:#{version}"
         grunt.task.run(task)
-
-
-  ## Auxiliary constants and functions
-
-  # Callback is called if the provided file path points to a file that exists
-  whenExists = (path, done) ->
-    done(path) if grunt.file.exists(path)
-
-  # All the manifest files of this repo and its dependencies
-  manifests = do ->
-    whenExists './component.json', (path) ->
-      manifest = grunt.file.readJSON(path)
-      deps = Object.keys(manifest.dependencies or {})
-      output = []
-
-      # Find this repo's dependency manifests
-      for dep in deps
-        dep = dep.replace('/', '-')
-        whenExists "./components/#{dep}/component.json", (path) ->
-          m = grunt.file.readJSON(path)
-          m.path = "./components/#{dep}/"
-          output.push(m)
-
-      output
-
-  # Run a task over the repo's dependencies
-  runOnDeps = (task) ->
-    for manifest in manifests
-      path = manifest.path or '.'
-
-      whenExists path, (path) ->
-        grunt.task.run("shell:make:#{task}:#{path}")
-
-  # Find root
-  findRoot = (pathArray) ->
-    if pathArray.length <= 0
-      ['/']
-    else
-      target = pathArray.join('/') + '/node_modules/pixbi-build'
-
-      if grunt.file.exists(target)
-        target.split('/')
-      else
-        pathArray.pop()
-        findRoot pathArray
-
-  # Load Grunt plugins from `pixbi-build`
-  loadPlugins = (plugins) ->
-    # Special handling with current directory for Grunt
-    cwd = process.cwd()
-    pathArray = findRoot(cwd.split('/'))
-    path = pathArray.join('/')
-
-    whenExists path, (path) ->
-      process.chdir(path)
-      for plugin in plugins
-        grunt.task.loadNpmTasks plugin
-      process.chdir(cwd)
-
-  # Grunt plugins need to be loaded manually because of the weird setup that we
-  # have (i.e. grunt plugins not being local to the repo)
-  do ->
-    whenExists "#{__dirname}/package.json", (path) ->
-      manifest = grunt.file.readJSON(path)
-      deps = manifest.dependencies
-      delete deps.grunt
-      loadPlugins Object.keys(deps)
