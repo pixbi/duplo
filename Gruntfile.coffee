@@ -15,10 +15,7 @@ module.exports = (grunt) ->
     'concat:js'
     'concat:stylus'
     'concat:jade'
-
-    'link:js'
-    'link:css'
-    'link:html'
+    'dom_munger:link'
 
     'clean:staging'
   ]
@@ -48,13 +45,12 @@ module.exports = (grunt) ->
   grunt.initConfig
     pkg: grunt.file.readJSON('package.json')
 
-
-    # General
+    ## General
 
     watch:
       default:
         files: ['app/**/*', 'components/**/*', 'dev/**/*']
-        tasks: compileTasks
+        tasks: 'build'
         options:
           livereload: true
 
@@ -102,7 +98,13 @@ module.exports = (grunt) ->
           'staging/**/*.html'
           'components/**/staging/*.html'
         ]
-        dest: 'public/index.html'
+        dest: 'staging/index.html'
+
+    connect:
+      server:
+        options:
+          port: 8000
+          hostname: '*'
 
     bump:
       options:
@@ -126,8 +128,24 @@ module.exports = (grunt) ->
         command: (task, path = '.') ->
           "BASE=#{path} make #{task}"
 
+    dom_munger:
+      link:
+        src: 'public/index.html'
+        dest: 'public/index.html'
+        options:
+          append: [
+            selector: 'head'
+            html: '<link rel="stylesheet" type="text/css" href="index.css"/>'
+          ,
+            selector: 'body'
+            html: '<script type="text/javascript" src="index.js"></script>'
+          ]
+          callback: ($) ->
+            template = grunt.file.read('staging/index.html')
+            $('body').html(template)
 
-    # Style-specific
+
+    ## Style-specific
 
     stylus:
       default:
@@ -160,7 +178,7 @@ module.exports = (grunt) ->
         files:
           'public/embed.css': ['public/embed.css']
 
-    # Template-specific
+    ## Template-specific
 
     jade:
       options:
@@ -170,7 +188,7 @@ module.exports = (grunt) ->
           'build/embed.html': 'app/app.jade'
           'public/index.html': 'dev/dev.jade'
 
-    # Script-specific
+    ## Script-specific
 
     uglify:
       default:
@@ -194,19 +212,26 @@ module.exports = (grunt) ->
         dest: 'public/embed.min.js'
 
 
-  # Custom tasks
-
-  grunt.registerTask 'default', ->
+  ## Custom tasks
 
   grunt.registerTask 'compile', (type) ->
-    'app/**/*.js'
-    '!app/**/*.spec.js'
+    # First compile this repo
+    switch type
+      when 'js'
+        grunt.task.run('scriptTasks')
+      when 'stylus'
+        grunt.task.run('styleTasks')
+      when 'jade'
+        grunt.task.run('templateTasks')
 
-  grunt.registerTask 'link', (type) ->
+    # Then compile its dependencies
+    runOnDeps('build')
 
-  grunt.registerTask 'check', ->
+  grunt.registerTask 'check', ['closureCompiler']
 
-  grunt.registerTask 'dev', ->
+  grunt.registerTask 'dev', ['connect', 'watch']
+
+  grunt.registerTask 'build', compileTasks
 
   grunt.registerTask 'tag', ->
     grunt.task.run("shell:tag:#{manifest.version}")
@@ -220,21 +245,22 @@ module.exports = (grunt) ->
         grunt.task.run(task)
 
 
-  # Auxiliary constants and functions
+  ## Auxiliary constants and functions
 
   # All the manifest files of this repo and its dependencies
   manifests = do ->
     manifest = grunt.file.readJSON('./component.json')
     deps = Object.keys(manifest.dependencies or {})
 
-    # Put self first and add its dependencies' manifests afterward
-    [manifest].concat deps.map (dep) ->
+    # Find this repo's dependency manifests
+    deps.map (dep) ->
       dep = dep.replace('/', '-')
-      _manifest = grunt.file.readJSON("./components/#{dep}/component.json")
+      _manifestPath = "./components/#{dep}/component.json"
+      _manifest = grunt.file.readJSON(_manifestPath)
       _manifest.path = "./components/#{dep}/"
 
-  # Run a task over this repo as well as its dependencies
-  runOnAll = (task) ->
+  # Run a task over the repo's dependencies
+  runOnDeps = (task) ->
     for manifest in manifests
       path = manifest.path or '.'
       grunt.task.run("shell:make:#{task}:#{path}")
