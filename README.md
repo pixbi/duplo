@@ -100,9 +100,8 @@ There are some required directories:
     node_modules/ --> Contains this repo
     public/       --> Built files when developing. This is NOT committed to
                       source
-
-Note that test files reside alongside with the corresponding application code
-and has an extension of `.spec.js`.
+    test/         --> Test files go here and should have an extension of
+                      `.spec.js`
 
 
 ## CSS/Stylus Order

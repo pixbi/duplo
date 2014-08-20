@@ -17,6 +17,7 @@
     "grunt-contrib-stylus": "^0.18.0",
     "grunt-contrib-uglify": "^0.5.1",
     "grunt-contrib-watch": "^0.6.1",
+    "grunt-cssshrink": "0.0.7",
     "grunt-dom-munger": "^3.4.0",
     "grunt-shell": "^1.0.0"
   }
