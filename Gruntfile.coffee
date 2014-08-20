@@ -1,14 +1,16 @@
 NODE_ENV = process.env.NODE_ENV or 'prod'
 
 module.exports = (grunt) ->
+  ####
   ## Auxiliary constants and functions
+  ####
 
   # Callback is called if the provided file path points to a file that exists
   whenExists = (path, done) ->
     done(path) if grunt.file.exists(path)
 
   # All the manifest files of this repo and its dependencies
-  manifest = {}
+  manifest = null
   manifests = do ->
     whenExists './component.json', (path) ->
       manifest = grunt.file.readJSON(path)
@@ -73,6 +75,10 @@ module.exports = (grunt) ->
       loadPlugins Object.keys(deps)
 
 
+  ####
+  ## Tasks
+  ####
+
   # Always call explicitly with parameter to allow easy extension in the future
   compileTasks = [
     'clean:public'
@@ -88,8 +94,8 @@ module.exports = (grunt) ->
     'inject:version'
 
     'concat:js'
-    'concat:stylus'
-    'concat:jade'
+    'concat:css'
+    'concat:html'
     'dom_munger:link'
 
     'clean:staging'
@@ -278,7 +284,9 @@ module.exports = (grunt) ->
           summary_detail_level: 3
 
 
+  ####
   ## Custom tasks
+  ####
 
   grunt.registerTask 'compile', (type) ->
     # First compile this repo
