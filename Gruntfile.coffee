@@ -181,7 +181,7 @@ module.exports = (grunt) ->
         basedir: 'app/'
       default:
         files:
-          'staging/index.html': 'app/**/*.jade'
+          'staging/index.html': 'app/index.jade'
 
     ## Script-specific
 
