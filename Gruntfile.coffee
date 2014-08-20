@@ -8,6 +8,7 @@ module.exports = (grunt) ->
     done(path) if grunt.file.exists(path)
 
   # All the manifest files of this repo and its dependencies
+  manifest = {}
   manifests = do ->
     whenExists './component.json', (path) ->
       manifest = grunt.file.readJSON(path)
@@ -195,6 +196,8 @@ module.exports = (grunt) ->
       writeVersion:
         command: (appName, version) ->
           content = "module.#{appName}.version = '#{version}';"
+          content = content.replace(/[0-9a-zA-Z]+-/, '')
+          content = content.replace(/'/g, "''")
           "echo '#{content}' > staging/version.js"
 
       make:
