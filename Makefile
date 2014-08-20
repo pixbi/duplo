@@ -1,36 +1,34 @@
-BASE=.
-run=grunt --base $(BASE) --gruntfile node_modules/pixbi-grunt/Gruntfile.coffee
+ifndef BASE
+	BASE=.
+endif
+
+run=grunt --base $(BASE) --gruntfile node_modules/pixbi-build/Gruntfile.coffee
 
 dev:
-	NODE_ENV=dev $(run) dev
-
+	NODE_ENV=dev $(run) --verbose dev
 
 check:
 	$(run) check
 
-
-patch: build
+patch: prebuild build
 	$(run) bump:patch
 	make commit
 
-minor: build
+minor: prebuild build
 	$(run) bump:minor
 	make commit
 
-major: build
+major: prebuild build
 	$(run) bump:major
 	make commit
 
-
-build: prebuild
+build:
 	$(run) build
-
 
 # Separated from `build` for flexibility
 prebuild:
 	git stash
 	git checkout develop
-
 
 commit:
 	# Commit

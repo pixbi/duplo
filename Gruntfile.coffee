@@ -1,3 +1,5 @@
+NODE_ENV = process.env.NODE_ENV or 'prod'
+
 module.exports = (grunt) ->
   # Always call explicitly with parameter to allow easy extension in the future
   compileTasks = [
@@ -34,22 +36,21 @@ module.exports = (grunt) ->
 
   # Script-related
   scriptTasks = [
-    'closureCompiler'
+    'closure-compiler'
     'uglify'
   ]
 
-  # Load Grunt Plugins.
-  require('load-grunt-tasks')(grunt)
-
 
   grunt.initConfig
-    pkg: grunt.file.readJSON('package.json')
-
     ## General
 
     watch:
       default:
-        files: ['app/**/*', 'components/**/*', 'dev/**/*']
+        files: [
+          'app/**/*'
+          'components/**/*'
+          'dev/**/*'
+        ]
         tasks: 'build'
         options:
           livereload: true
@@ -208,18 +209,18 @@ module.exports = (grunt) ->
     switch type
       when 'js'
         if NODE_ENV isnt 'dev'
-          grunt.task.run('scriptTasks')
+          grunt.task.run(scriptTasks)
       when 'stylus'
-        grunt.task.run('styleTasks')
+        grunt.task.run(styleTasks)
       when 'jade'
-        grunt.task.run('templateTasks')
+        grunt.task.run(templateTasks)
 
     # Then compile its dependencies
     runOnDeps('build')
 
-  grunt.registerTask 'check', ['closureCompiler']
+  grunt.registerTask 'check', ['closure-compiler']
 
-  grunt.registerTask 'dev', ['connect', 'watch']
+  grunt.registerTask 'dev', ['build', 'connect', 'watch']
 
   grunt.registerTask 'build', compileTasks
 
@@ -237,20 +238,66 @@ module.exports = (grunt) ->
 
   ## Auxiliary constants and functions
 
+  # Callback is called if the provided file path points to a file that exists
+  whenExists = (path, done) ->
+    done(path) if grunt.file.exists(path)
+
   # All the manifest files of this repo and its dependencies
   manifests = do ->
-    manifest = grunt.file.readJSON('./component.json')
-    deps = Object.keys(manifest.dependencies or {})
+    whenExists './component.json', (path) ->
+      manifest = grunt.file.readJSON(path)
+      deps = Object.keys(manifest.dependencies or {})
+      output = []
 
-    # Find this repo's dependency manifests
-    deps.map (dep) ->
-      dep = dep.replace('/', '-')
-      _manifestPath = "./components/#{dep}/component.json"
-      _manifest = grunt.file.readJSON(_manifestPath)
-      _manifest.path = "./components/#{dep}/"
+      # Find this repo's dependency manifests
+      for dep in deps
+        dep = dep.replace('/', '-')
+        whenExists "./components/#{dep}/component.json", (path) ->
+          m = grunt.file.readJSON(path)
+          m.path = "./components/#{dep}/"
+          output.push(m)
+
+      output
 
   # Run a task over the repo's dependencies
   runOnDeps = (task) ->
     for manifest in manifests
       path = manifest.path or '.'
-      grunt.task.run("shell:make:#{task}:#{path}")
+
+      whenExists path, (path) ->
+        grunt.task.run("shell:make:#{task}:#{path}")
+
+  # Find root
+  findRoot = (pathArray) ->
+    if pathArray.length <= 0
+      ['/']
+    else
+      target = pathArray.join('/') + '/node_modules/pixbi-build'
+
+      if grunt.file.exists(target)
+        target.split('/')
+      else
+        pathArray.pop()
+        findRoot pathArray
+
+  # Load Grunt plugins from `pixbi-build`
+  loadPlugins = (plugins) ->
+    # Special handling with current directory for Grunt
+    cwd = process.cwd()
+    pathArray = findRoot(cwd.split('/'))
+    path = pathArray.join('/')
+
+    whenExists path, (path) ->
+      process.chdir(path)
+      for plugin in plugins
+        grunt.task.loadNpmTasks plugin
+      process.chdir(cwd)
+
+  # Grunt plugins need to be loaded manually because of the weird setup that we
+  # have (i.e. grunt plugins not being local to the repo)
+  do ->
+    whenExists "#{__dirname}/package.json", (path) ->
+      manifest = grunt.file.readJSON(path)
+      deps = manifest.dependencies
+      delete deps.grunt
+      loadPlugins Object.keys(deps)
