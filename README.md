@@ -20,6 +20,9 @@ Then install the npm module and run the install script:
     $ npm install --save-dev pixbi-build
     $ node_modules/pixbi-build/install
 
+The install script would ask you whether it should overwrite the `.gitignore`
+in yourself directory. It is highly recommended that you do for the first time.
+
 
 ## Usage
 
