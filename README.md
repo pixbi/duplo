@@ -4,8 +4,8 @@ This repo basically contains the build tool that is used across all frontend
 projects at Pixbi. The project using this repo must follow a set of conventions
 outlined below.
 
-This build tool assumes that you're using [Pixbi's
-bootloader](https://github.com/pixbi/bootloader/)
+This build tool assumes that you're using Pixbi's [frontend
+bootloader](https://github.com/pixbi/bootloader/).
 
 
 ## Installation
