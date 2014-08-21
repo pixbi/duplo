@@ -112,17 +112,14 @@ module.exports = (grunt) ->
     'cssshrink'
   ]
 
-  styleOrder = [
+  # Stylus files follow an order
+  styleFiles = [
     'app/styl/keyframes.styl'
     'app/styl/fonts.styl'
     'app/styl/reset.styl'
     'app/styl/main.styl'
     'app/modules/**/index.styl'
     'app/modules/**/*.styl'
-  ]
-
-  # Stylus files follow an order
-  styleFiles = [
   ]
 
   # Script-related
@@ -252,11 +249,11 @@ module.exports = (grunt) ->
           paths: styleVariableFile
           import: 'variables'
         files:
-          'tmp/index.css': styleOrder
+          'tmp/index.css': styleFiles
 
       noVariables:
         files:
-          'tmp/index.css': styleOrder
+          'tmp/index.css': styleFiles
 
     autoprefixer:
       default:
