@@ -20,18 +20,16 @@ Then install the npm module and run its Makefile:
     $ npm install --save-dev pixbi-build
     $ make install -f node_modules/pixbi-build/Makefile
 
-The reason behind using Makefile to run a Gruntfile is for abstraction and
-centralized management of the build tool (e.g. for versioning).
-
 
 ## Usage
 
-* `make` starts a local server and re-compiles on file change
-* `make install` installs references to the project using this builder
-* `make build` runs a build
-* `make patch` builds the project and bump the patch version
-* `make minor` builds the project and bump the minor version
-* `make major` builds the project and bump the major version
+* `make install` installs a specific Grunt to the repo using this builder
+* `grunt dev` starts a local server and re-compiles on file change
+* `grunt build` runs a build. This could be used for checking the code against
+  Closure Compiler. Alias: `grunt`
+* `grunt release:patch` builds the project and bump the patch version
+* `grunt release:minor` builds the project and bump the minor version
+* `grunt release:major` builds the project and bump the major version
 
 ### Compiling
 
@@ -69,11 +67,6 @@ Building the project performs these steps:
 9.  Checkout the `master` branch and merge `develop` into `master`
 10. Apply the new version as a new git tag
 11. Checkout the `develop` branch again
-
-### Grunt
-
-The Makefile basically dispatches commands to `git` or `grunt`. You may set the
-`BASE` environment variable to configure where the grunt task should be loaded.
 
 
 ## Technologies
