@@ -111,6 +111,23 @@ There are some required directories:
                        `.spec.js`
 
 
+## Development
+
+During development, everything in the `dev/` directory is copied over as-is *at
+the end* of the build process. This means that files in the directory would
+replace whatever is built at their respective locations. An `index.html` in
+`dev/` would need to reference the script and the tag manually, e.g.
+
+    <html>
+      <head>
+        <link rel="stylesheet" href="style.css"/>
+      </head>
+      <body>
+        <script src="script.js"></script>
+      </body>
+    </html>
+
+
 ## CSS/Stylus Order
 
 Where you place your CSS files within `app/` is significant. Stylus files will

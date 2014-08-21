@@ -87,7 +87,6 @@ module.exports = (grunt) ->
     'clean:tmp'
 
     'copy:assets'
-    'copy:dev'
 
     'compile:js'
     'compile:stylus'
@@ -101,6 +100,10 @@ module.exports = (grunt) ->
     'dom_munger:link'
 
     'clean:tmp'
+  ]
+
+  devTasks = compileTasks.concat [
+    'copy:dev'
   ]
 
   # Template-related
@@ -136,7 +139,7 @@ module.exports = (grunt) ->
           'components/**/*'
           'dev/**/*'
         ]
-        tasks: 'build'
+        tasks: devTasks
         options:
           livereload: true
 
@@ -301,7 +304,7 @@ module.exports = (grunt) ->
 
   grunt.registerTask 'check', ['closure-compiler']
 
-  grunt.registerTask 'dev', ['build', 'connect', 'watch']
+  grunt.registerTask 'dev', devTasks.concat ['connect', 'watch']
 
   grunt.registerTask 'build', compileTasks
 
@@ -332,7 +335,8 @@ module.exports = (grunt) ->
         else
           grunt.task.run('stylus:noVariables')
 
-        grunt.task.run('autoprefixer')
+        if grunt.task.exists('tmp/index.css')
+          grunt.task.run('autoprefixer')
 
         # Optimize only when we're in production and if there are stylesheets
         if NODE_ENV isnt 'dev' and
