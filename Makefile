@@ -5,7 +5,7 @@ endif
 run=grunt --base $(BASE) --gruntfile node_modules/pixbi-build/Gruntfile.coffee
 
 dev:
-	NODE_ENV=dev $(run) --verbose dev
+	NODE_ENV=dev $(run) dev
 
 check:
 	$(run) check

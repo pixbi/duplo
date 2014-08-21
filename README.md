@@ -117,6 +117,9 @@ be concatenated in this order:
                                   CSS
     app/modules/**/index.styl --> CSS relevant to specific modules
 
+Because not all frontend components need styling (e.g. the SDK), Stylus is run
+only when the file `app/styl/variables.styl` exists.
+
 
 ## Jade Include System
 

@@ -5,16 +5,18 @@ module.exports = (grunt) ->
   ## Auxiliary constants and functions
   ####
 
+  styleVariableFile = 'app/styl/variables.styl'
+
   # Callback is called if the provided file path points to a file that exists
   whenExists = (path, done) ->
     done(path) if grunt.file.exists(path)
 
   # All the manifest files of this repo and its dependencies
-  manifest = null
+  thisManifest = null
   manifests = do ->
     whenExists './component.json', (path) ->
-      manifest = grunt.file.readJSON(path)
-      deps = Object.keys(manifest.dependencies or {})
+      thisManifest = grunt.file.readJSON(path)
+      deps = Object.keys(thisManifest.dependencies or {})
       output = []
 
       # Find this repo's dependency manifests
@@ -82,23 +84,21 @@ module.exports = (grunt) ->
   # Always call explicitly with parameter to allow easy extension in the future
   compileTasks = [
     'clean:public'
+    'clean:staging'
 
-    'copy:defaultTemplate'
-    'copy:defaultStyle'
     'copy:assets'
     'copy:dev'
 
     'compile:js'
     'compile:stylus'
     'compile:jade'
+    'compile:deps'
     'inject:version'
 
     'concat:js'
     'concat:css'
     'concat:html'
     'dom_munger:link'
-
-    'clean:staging'
   ]
 
   # Template-related
@@ -108,9 +108,21 @@ module.exports = (grunt) ->
 
   # Style-related
   styleTasks = [
-    'stylus'
     'autoprefixer'
     'cssshrink'
+  ]
+
+  styleOrder = [
+    'app/styl/keyframes.styl'
+    'app/styl/fonts.styl'
+    'app/styl/reset.styl'
+    'app/styl/main.styl'
+    'app/modules/**/index.styl'
+    'app/modules/**/*.styl'
+  ]
+
+  # Stylus files follow an order
+  styleFiles = [
   ]
 
   # Script-related
@@ -121,6 +133,7 @@ module.exports = (grunt) ->
 
 
   grunt.initConfig
+
     ## General
 
     watch:
@@ -141,13 +154,6 @@ module.exports = (grunt) ->
         src: 'staging'
 
     copy:
-      defaultTemplate:
-        src: "#{rootPath}/assets/index.html"
-        dest: 'public/index.html'
-      defaultStyle:
-        src: "#{rootPath}/assets/index.css"
-        dest: 'staging/index.css'
-
       assets:
         expand: true
         cwd: 'app/assets/'
@@ -159,6 +165,12 @@ module.exports = (grunt) ->
         cwd: 'dev/'
         src: '**/*'
         dest: 'public/'
+
+      js:
+        expand: true
+        cwd: 'app/'
+        src: '**/*.js'
+        dest: 'staging/'
 
     concat:
       js:
@@ -204,7 +216,7 @@ module.exports = (grunt) ->
           content = "module.#{appName}.version = '#{version}';"
           content = content.replace(/[0-9a-zA-Z]+-/, '')
           content = content.replace(/'/g, "''")
-          "echo '#{content}' > staging/version.js"
+          "mkdir -p staging; echo '#{content}' >> staging/version.js"
 
       make:
         command: (task, path = '.') ->
@@ -230,19 +242,16 @@ module.exports = (grunt) ->
     ## Style-specific
 
     stylus:
-      default:
+      withVariables:
         options:
-          paths: 'app/styl/variables.styl'
+          paths: styleVariableFile
           import: 'variables'
         files:
-          'staging/index.css': [
-            'app/styl/keyframes.styl'
-            'app/styl/fonts.styl'
-            'app/styl/reset.styl'
-            'app/styl/main.styl'
-            'app/modules/**/index.styl'
-            'app/modules/**/*.styl'
-          ]
+          'staging/index.css': styleOrder
+
+      noVariables:
+        files:
+          'staging/index.css': styleOrder
 
     autoprefixer:
       default:
@@ -289,32 +298,45 @@ module.exports = (grunt) ->
   ####
 
   grunt.registerTask 'compile', (type) ->
-    # First compile this repo
     switch type
       when 'js'
+        grunt.task.run('copy:js')
+
+        # Optimize
         if NODE_ENV isnt 'dev'
           grunt.task.run(scriptTasks)
+
       when 'stylus'
-        grunt.task.run(styleTasks)
+        # Compile with or without variable injection
+        if grunt.task.exists(styleVariableFile)
+          grunt.task.run('stylus:withVariables')
+        else
+          grunt.task.run('stylus:noVariables')
+
+        # Optimize only when there are stylesheets
+        if grunt.file.expand('app/**/*.styl').length > 0
+          grunt.task.run(styleTasks)
+
       when 'jade'
         grunt.task.run(templateTasks)
 
-    # Then compile its dependencies
-    runOnDeps('build')
+      # Compile dependencies
+      when 'deps'
+        runOnDeps('build')
 
   grunt.registerTask 'check', ['closure-compiler']
 
-  grunt.registerTask 'dev', ['build', 'connect', 'watch']
+  grunt.registerTask 'dev', ['build']
 
   grunt.registerTask 'build', compileTasks
 
   grunt.registerTask 'tag', ->
-    grunt.task.run("shell:tag:#{manifest.version}")
+    grunt.task.run("shell:tag:#{thisManifest.version}")
 
   grunt.registerTask 'inject', (type) ->
     switch type
       when 'version'
-        appName = manifest.name
-        version = manifest.version
+        appName = thisManifest.name
+        version = thisManifest.version
         task = "shell:writeVersion:#{appName}:#{version}"
         grunt.task.run(task)
