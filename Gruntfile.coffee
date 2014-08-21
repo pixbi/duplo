@@ -97,7 +97,9 @@ module.exports = (grunt) ->
     'concat:js'
     'concat:css'
     'concat:html'
-    'dom_munger:link'
+
+    'optimize'
+    'link'
 
     'clean:tmp'
   ]
@@ -180,13 +182,13 @@ module.exports = (grunt) ->
       css:
         src: [
           'components/**/public/style.css'
-          'tmp/index.css'
+          'tmp/style.css'
         ]
         dest: 'public/style.css'
       html:
         src: [
-          'components/**/public/index.html'
-          'tmp/index.html'
+          'components/**/public/template.html'
+          'tmp/template.html'
         ]
         dest: 'public/template.html'
 
@@ -249,23 +251,23 @@ module.exports = (grunt) ->
           paths: styleVariableFile
           import: 'variables'
         files:
-          'tmp/index.css': styleFiles
+          'tmp/style.css': styleFiles
 
       noVariables:
         files:
-          'tmp/index.css': styleFiles
+          'tmp/style.css': styleFiles
 
     autoprefixer:
       default:
-        src: 'tmp/index.css'
-        dest: 'public/index.css'
+        src: 'tmp/style.css'
+        dest: 'public/style.css'
         options:
           browsers: ['last 2 Chrome versions', 'last 2 iOS versions', 'ie 10']
 
     cssshrink:
       default:
         files:
-          'public/index.css': 'public/index.css'
+          'public/style.css': 'public/style.css'
 
     ## Template-specific
 
@@ -277,20 +279,20 @@ module.exports = (grunt) ->
       default:
         files:
           # Use the Jade include system, so only include `index.jade` here
-          'tmp/index.html': 'app/jade/index.jade'
+          'tmp/template.html': 'app/jade/index.jade'
 
     ## Script-specific
 
     uglify:
       default:
         files:
-          'public/index.js': 'public/index.js'
+          'public/script.js': 'public/script.js'
 
     'closure-compiler':
       default:
-        closurePath: "#{__dirname}/compiler.jar"
-        js: 'public/index.js'
-        jsOutputFile: 'public/index.js'
+        closurePath: "#{__dirname}/.."
+        js: 'public/script.js'
+        jsOutputFile: 'public/script.js'
         options:
           compilation_level: 'ADVANCED_OPTIMIZATIONS'
           language_in: 'ECMASCRIPT5_STRICT'
@@ -302,11 +304,17 @@ module.exports = (grunt) ->
   ## Custom tasks
   ####
 
-  grunt.registerTask 'check', ['closure-compiler']
+  grunt.registerTask 'check', compileTasks.concat ['closure-compiler']
 
   grunt.registerTask 'dev', devTasks.concat ['connect', 'watch']
 
   grunt.registerTask 'build', compileTasks
+
+  grunt.registerTask 'link', 'dom_munger'
+
+  grunt.registerTask 'optimize', ->
+    if NODE_ENV isnt 'dev'
+      grunt.task.run(scriptTasks)
 
   grunt.registerTask 'updateComponent', ->
     manifest = grunt.file.readJSON('component.json')
@@ -333,10 +341,6 @@ module.exports = (grunt) ->
       when 'js'
         grunt.task.run('copy:js')
 
-        # Optimize
-        if NODE_ENV isnt 'dev'
-          grunt.task.run(scriptTasks)
-
       when 'stylus'
         # Compile with or without variable injection
         if grunt.task.exists(styleVariableFile)
@@ -344,12 +348,12 @@ module.exports = (grunt) ->
         else
           grunt.task.run('stylus:noVariables')
 
-        if grunt.task.exists('tmp/index.css')
+        if grunt.task.exists('tmp/style.css')
           grunt.task.run('autoprefixer')
 
         # Optimize only when we're in production and if there are stylesheets
         if NODE_ENV isnt 'dev' and
-           grunt.file.expand('app/**/*.styl').length > 0
+           grunt.task.exists('public/style.css')
           grunt.task.run('cssshrink')
 
       when 'jade'

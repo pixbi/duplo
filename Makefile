@@ -37,18 +37,19 @@ prebuild:
 	git checkout develop
 
 commit:
+	# Update `component.js`
+	$(run) updateComponent
 	# Commit
+	git add component.json
 	git commit -m 'Bump version'
 	# Merge into master
 	git checkout master
 	git merge develop
-	# Update `component.js`
-	$(run) updateComponent
 	# Apply tag
 	$(run) tag
 	# Sync with Github
 	git push origin develop:develop
-	git push origin master
+	git push origin master:master
 	git push origin --tags
 	# Go back to develop
 	git checkout develop
