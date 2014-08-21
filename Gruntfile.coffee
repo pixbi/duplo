@@ -96,6 +96,7 @@ module.exports = (grunt) ->
     'clean:public'
     'clean:tmp'
 
+    'copyComponentAssets'
     'copy:assets'
     'copy:params'
 
