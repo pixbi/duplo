@@ -1,8 +1,8 @@
 # Pixbi Build Tool
 
 This repo basically contains the build tool that is used across all frontend
-projects. The project using this repo must follow a set of conventions outlined
-below.
+projects at Pixbi. The project using this repo must follow a set of conventions
+outlined below.
 
 
 ## Installation
@@ -14,7 +14,7 @@ If you haven't installed Grunt.js and Component.IO already:
 
 Then install the npm module and run its Makefile:
 
-    $ npm install --save-dev https://github.com/pixbi/build/tarball/master
+    $ npm install --save-dev pixbi-build
     $ make install -f node_modules/pixbi-build/Makefile
 
 The reason behind using Makefile to run a Gruntfile is for abstraction and

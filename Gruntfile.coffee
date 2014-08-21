@@ -87,6 +87,7 @@ module.exports = (grunt) ->
     'clean:tmp'
 
     'copy:assets'
+    'copyComponentAssets'
     'copy:params'
 
     'compile:js'
@@ -398,3 +399,20 @@ module.exports = (grunt) ->
       # Compile dependencies
       when 'deps'
         runOnDeps('build')
+
+  # We need to manually handle components as the `cwd` path is dynamic
+  # depending on the assets
+  grunt.registerTask 'copyComponentAssets', ->
+    console.log 'ddd'
+    assets = grunt.file.expand 'components/**/assets/*',
+      filter: 'isFile'
+    console.log 'eee'
+    pattern = /^components\/[^/]+\/app\/assets\//
+
+    console.log 'aaa'
+    for asset in assets
+      asset = asset.replace(pattern, '')
+      console.log 'bbb: ' + asset
+
+      grunt.file.copy asset, "public/#{asset}"
+      console.log 'ccc'
