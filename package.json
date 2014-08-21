@@ -1,6 +1,7 @@
 {
   "name": "pixbi-build",
   "version": "0.1.0",
+  "homepage": "https://github.com/pixbi/build",
   "devDependencies": {
     "grunt": "^0.4.5"
   },
