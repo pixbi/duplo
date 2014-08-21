@@ -197,6 +197,7 @@ module.exports = (grunt) ->
         options:
           port: 8000
           hostname: '*'
+          base: 'public'
 
     bump:
       options:
@@ -331,7 +332,7 @@ module.exports = (grunt) ->
 
   grunt.registerTask 'check', ['closure-compiler']
 
-  grunt.registerTask 'dev', ['build']
+  grunt.registerTask 'dev', ['build', 'connect', 'watch']
 
   grunt.registerTask 'build', compileTasks
 
