@@ -97,6 +97,7 @@ module.exports = (grunt) ->
     'concat:js'
     'concat:css'
     'concat:html'
+    'inject:dev'
 
     'optimize'
     'link'
@@ -227,6 +228,10 @@ module.exports = (grunt) ->
           content = "module.#{appName}.version = \"#{version}\";"
           "mkdir -p tmp; echo '#{content}' >> tmp/version.js"
 
+      writeMode:
+        command: (mode) ->
+          "echo 'module.mode = \"#{mode}\";' >> public/script.js"
+
       make:
         command: (task, path = '.') ->
           "BASE=#{path} make #{task}"
@@ -338,6 +343,9 @@ module.exports = (grunt) ->
         version = thisManifest.version
         task = "shell:writeVersion:#{appName}:#{version}"
         grunt.task.run(task)
+
+      when 'dev'
+        grunt.task.run("shell:writeMode:#{NODE_ENV}")
 
   grunt.registerTask 'compile', (type) ->
     switch type
