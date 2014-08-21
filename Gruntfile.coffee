@@ -234,7 +234,7 @@ module.exports = (grunt) ->
           ]
           callback: ($) ->
             template = grunt.file.read('tmp/index.html')
-            $('body').html(template)
+            $('body').prepend(template)
 
 
     ## Style-specific
