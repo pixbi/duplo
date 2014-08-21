@@ -182,7 +182,7 @@ module.exports = (grunt) ->
       css:
         src: [
           'staging/index.css'
-          'components/**/staging/index.css'
+          'components/**/staging/*.css'
         ]
         dest: 'public/index.css'
       html:
@@ -242,6 +242,10 @@ module.exports = (grunt) ->
     ## Style-specific
 
     stylus:
+      options:
+        # Let CSSShrink do the compression when building for production
+        compress: false
+
       withVariables:
         options:
           paths: styleVariableFile
@@ -313,8 +317,9 @@ module.exports = (grunt) ->
         else
           grunt.task.run('stylus:noVariables')
 
-        # Optimize only when there are stylesheets
-        if grunt.file.expand('app/**/*.styl').length > 0
+        # Optimize only when we're in production and if there are stylesheets
+        if NODE_ENV isnt 'dev' and
+           grunt.file.expand('app/**/*.styl').length > 0
           grunt.task.run(styleTasks)
 
       when 'jade'
