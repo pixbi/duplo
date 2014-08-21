@@ -84,7 +84,7 @@ module.exports = (grunt) ->
   # Always call explicitly with parameter to allow easy extension in the future
   compileTasks = [
     'clean:public'
-    'clean:staging'
+    'clean:tmp'
 
     'copy:assets'
     'copy:dev'
@@ -150,8 +150,8 @@ module.exports = (grunt) ->
     clean:
       public:
         src: 'public'
-      staging:
-        src: 'staging'
+      tmp:
+        src: 'tmp'
 
     copy:
       assets:
@@ -170,27 +170,27 @@ module.exports = (grunt) ->
         expand: true
         cwd: 'app/'
         src: '**/*.js'
-        dest: 'staging/'
+        dest: 'tmp/'
 
     concat:
       js:
         src: [
-          'staging/**/*.js'
-          'components/**/staging/*.js'
+          'tmp/**/*.js'
+          'components/**/tmp/*.js'
         ]
         dest: 'public/index.js'
       css:
         src: [
-          'staging/index.css'
-          'components/**/staging/*.css'
+          'tmp/index.css'
+          'components/**/tmp/*.css'
         ]
         dest: 'public/index.css'
       html:
         src: [
-          'staging/index.html'
-          'components/**/staging/index.html'
+          'tmp/index.html'
+          'components/**/tmp/index.html'
         ]
-        dest: 'staging/index.html'
+        dest: 'tmp/index.html'
 
     connect:
       server:
@@ -217,7 +217,7 @@ module.exports = (grunt) ->
           content = "module.#{appName}.version = '#{version}';"
           content = content.replace(/[0-9a-zA-Z]+-/, '')
           content = content.replace(/'/g, "''")
-          "mkdir -p staging; echo '#{content}' >> staging/version.js"
+          "mkdir -p tmp; echo '#{content}' >> tmp/version.js"
 
       make:
         command: (task, path = '.') ->
@@ -236,7 +236,7 @@ module.exports = (grunt) ->
             html: '<script type="text/javascript" src="index.js"></script>'
           ]
           callback: ($) ->
-            template = grunt.file.read('staging/index.html')
+            template = grunt.file.read('tmp/index.html')
             $('body').html(template)
 
 
@@ -252,15 +252,15 @@ module.exports = (grunt) ->
           paths: styleVariableFile
           import: 'variables'
         files:
-          'staging/index.css': styleOrder
+          'tmp/index.css': styleOrder
 
       noVariables:
         files:
-          'staging/index.css': styleOrder
+          'tmp/index.css': styleOrder
 
     autoprefixer:
       default:
-        src: 'staging/index.css'
+        src: 'tmp/index.css'
         dest: 'public/index.css'
         options:
           browsers: ['last 2 Chrome versions', 'last 2 iOS versions', 'ie 10']
@@ -280,7 +280,7 @@ module.exports = (grunt) ->
       default:
         files:
           # Use the Jade include system, so only include `index.jade` here
-          'staging/index.html': 'app/jade/index.jade'
+          'tmp/index.html': 'app/jade/index.jade'
 
     ## Script-specific
 
