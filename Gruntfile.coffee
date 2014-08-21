@@ -123,10 +123,11 @@ module.exports = (grunt) ->
     'app/modules/**/*.styl'
   ]
 
-  # Script-related
-  scriptTasks = [
+  # Script optimization tasks
+  optimizeScriptTasks = [
     'closure-compiler'
-    'uglify'
+    'copy:jsmin'
+    'clean:jsmin'
   ]
 
 
@@ -148,8 +149,12 @@ module.exports = (grunt) ->
     clean:
       public:
         src: 'public'
+
       tmp:
         src: 'tmp'
+
+      jsmin:
+        src: 'public/script.min.js'
 
     copy:
       assets:
@@ -169,6 +174,10 @@ module.exports = (grunt) ->
         cwd: 'app/'
         src: '**/*.js'
         dest: 'tmp/'
+
+      jsmin:
+        src: 'public/script.min.js'
+        dest: 'public/script.js'
 
     concat:
       js:
@@ -283,16 +292,11 @@ module.exports = (grunt) ->
 
     ## Script-specific
 
-    uglify:
-      default:
-        files:
-          'public/script.js': 'public/script.js'
-
     'closure-compiler':
       default:
         closurePath: "#{__dirname}/.."
         js: 'public/script.js'
-        jsOutputFile: 'public/script.js'
+        jsOutputFile: 'public/script.min.js'
         options:
           compilation_level: 'ADVANCED_OPTIMIZATIONS'
           language_in: 'ECMASCRIPT5_STRICT'
@@ -304,8 +308,6 @@ module.exports = (grunt) ->
   ## Custom tasks
   ####
 
-  grunt.registerTask 'check', compileTasks.concat ['closure-compiler']
-
   grunt.registerTask 'dev', devTasks.concat ['connect', 'watch']
 
   grunt.registerTask 'build', compileTasks
@@ -314,7 +316,7 @@ module.exports = (grunt) ->
 
   grunt.registerTask 'optimize', ->
     if NODE_ENV isnt 'dev'
-      grunt.task.run(scriptTasks)
+      grunt.task.run(optimizeScriptTasks)
 
   grunt.registerTask 'updateComponent', ->
     manifest = grunt.file.readJSON('component.json')

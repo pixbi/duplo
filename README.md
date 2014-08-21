@@ -31,7 +31,7 @@ centralized management of the build tool (e.g. for versioning).
 
 * `make` starts a local server and re-compiles on file change
 * `make install` installs references to the project using this builder
-* `make check` runs the Closure Compiler by itself for error checking
+* `make build` runs a build
 * `make patch` builds the project and bump the patch version
 * `make minor` builds the project and bump the minor version
 * `make major` builds the project and bump the major version

@@ -13,9 +13,6 @@ install:
 	cp -f node_modules/pixbi-build/gitignore .gitignore
 	ln -s node_modules/pixbi-build/Makefile Makefile
 
-check:
-	$(run) check
-
 patch: prebuild build
 	$(run) bump:patch
 	make commit
