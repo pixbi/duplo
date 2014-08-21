@@ -87,7 +87,6 @@ module.exports = (grunt) ->
     'clean:tmp'
 
     'copy:assets'
-    'copyComponentAssets'
     'copy:params'
 
     'compile:js'
@@ -404,15 +403,15 @@ module.exports = (grunt) ->
   # depending on the assets
   grunt.registerTask 'copyComponentAssets', ->
     console.log 'ddd'
-    assets = grunt.file.expand 'components/**/assets/*',
-      filter: 'isFile'
+    assets = grunt.file.expand 'components/*/app/assets/**/*'
     console.log 'eee'
-    pattern = /^components\/[^/]+\/app\/assets\//
+    pattern = /^components\/[^\/]+\/app\/assets\//
 
-    console.log 'aaa'
+    console.log 'aaa', assets
     for asset in assets
-      asset = asset.replace(pattern, '')
+      assetRelPath = asset.replace(pattern, '')
       console.log 'bbb: ' + asset
 
-      grunt.file.copy asset, "public/#{asset}"
+      if grunt.file.isFile(asset)
+        grunt.file.copy asset, "public/#{assetRelPath}"
       console.log 'ccc'
