@@ -225,7 +225,7 @@ module.exports = (grunt) ->
 
     dom_munger:
       link:
-        src: 'public/index.html'
+        src: 'app/index.html'
         dest: 'public/index.html'
         options:
           append: [
@@ -274,10 +274,13 @@ module.exports = (grunt) ->
 
     jade:
       options:
-        basedir: 'app/'
+        # Let downstream build step handles compression when building for
+        # production
+        pretty: true
       default:
         files:
-          'staging/index.html': 'app/index.jade'
+          # Use the Jade include system, so only include `index.jade` here
+          'staging/index.html': 'app/jade/index.jade'
 
     ## Script-specific
 
