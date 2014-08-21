@@ -91,6 +91,8 @@ There are some required directories:
     app/index.html  --> An optional special HTML file into which the builder
                         injects the script tag, the style tag, and the markup
                         when built
+    app/index.jade  --> Entry point for templates. Only this file is compiled.
+                        Use Jade's include system to pull in other templates.
     app/params.json --> Optional parameter object to be made available as
                         `module.params`
     app/assets/     --> Asset files are copied as-is to build's top-level

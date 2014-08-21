@@ -306,7 +306,7 @@ module.exports = (grunt) ->
       default:
         files:
           # Use the Jade include system, so only include `index.jade` here
-          'tmp/template.html': 'app/jade/index.jade'
+          'tmp/template.html': 'app/index.jade'
 
     ## Script-specific
 
