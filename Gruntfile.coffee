@@ -99,6 +99,8 @@ module.exports = (grunt) ->
     'concat:css'
     'concat:html'
     'dom_munger:link'
+
+    'clean:tmp'
   ]
 
   # Template-related
