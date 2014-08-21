@@ -7,21 +7,15 @@ below.
 
 ## Installation
 
-Run the following commands.
+If you haven't installed Grunt.js and Component.IO already:
 
-```
-$ npm install -g grunt-cli
-$ npm install -g component
-$ npm install --save-dev https://github.com/pixbi/build/tarball/master
-$ make install -f node_modules/pixbi-build/Makefile
-```
+    $ npm install -g grunt-cli
+    $ npm install -g component
 
-Basically:
+Then install the npm module and run its Makefile:
 
-1. Install Grunt.js
-2. Install Component.IO
-3. Install via npm
-4. Install the builder
+    $ npm install --save-dev https://github.com/pixbi/build/tarball/master
+    $ make install -f node_modules/pixbi-build/Makefile
 
 The reason behind using Makefile to run a Gruntfile is for abstraction and
 centralized management of the build tool (e.g. for versioning).
@@ -123,6 +117,9 @@ replace whatever is built at their respective locations. An `index.html` in
         <script src="script.js"></script>
       </body>
     </html>
+
+The output file exposes the mode via the `module.mode` attribute. When in
+development, `module.mode === 'dev';` should be `true`.
 
 
 ## CSS/Stylus Order
