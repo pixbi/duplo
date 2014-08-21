@@ -315,8 +315,9 @@ module.exports = (grunt) ->
   grunt.registerTask 'link', 'dom_munger'
 
   grunt.registerTask 'optimize', ->
-    if NODE_ENV isnt 'dev'
-      grunt.task.run(optimizeScriptTasks)
+    # TODO: turn on after our refactoring
+    #if NODE_ENV isnt 'dev'
+    #  grunt.task.run(optimizeScriptTasks)
 
   grunt.registerTask 'updateComponent', ->
     manifest = grunt.file.readJSON('component.json')
