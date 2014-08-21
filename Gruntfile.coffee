@@ -422,17 +422,17 @@ module.exports = (grunt) ->
       when 'stylus'
         # Compile with or without variable injection
         if grunt.task.exists(styleVariableFile)
-          grunt.task.run('stylus:withVariables')
+          grunt.task.run [
+            'stylus:withVariables'
+            'runAutoprefixer'
+            'runCssShrink'
+          ]
         else
-          grunt.task.run('stylus:noVariables')
-
-        if grunt.task.exists('tmp/style.css')
-          grunt.task.run('autoprefixer')
-
-        # Optimize only when we're in production and if there are stylesheets
-        if NODE_ENV isnt 'dev' and
-           grunt.task.exists('public/style.css')
-          grunt.task.run('cssshrink')
+          grunt.task.run [
+            'stylus:noVariables'
+            'runAutoprefixer'
+            'runCssShrink'
+          ]
 
       when 'jade'
         grunt.task.run(templateTasks)
@@ -440,6 +440,15 @@ module.exports = (grunt) ->
       # Compile dependencies
       when 'deps'
         runOnDeps('build')
+
+  grunt.registerTask 'runAutoprefixer', ->
+    if grunt.file.exists('tmp/style.css')
+      grunt.task.run 'autoprefixer'
+
+  # Optimize only when we're in production and if there are stylesheets
+  grunt.registerTask 'runCssShrink', ->
+    if NODE_ENV isnt 'dev' and grunt.task.exists('public/style.css')
+      grunt.task.run('cssshrink')
 
   # We need to manually handle components as the `cwd` path is dynamic
   # depending on the assets
