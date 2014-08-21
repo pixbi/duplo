@@ -15,15 +15,14 @@ If you haven't installed Grunt.js and Component.IO already:
     $ npm install -g grunt-cli
     $ npm install -g component
 
-Then install the npm module and run its Makefile:
+Then install the npm module and run the install script:
 
     $ npm install --save-dev pixbi-build
-    $ make install -f node_modules/pixbi-build/Makefile
+    $ node_modules/pixbi-build/install
 
 
 ## Usage
 
-* `make install` installs a specific Grunt to the repo using this builder
 * `grunt dev` starts a local server and re-compiles on file change
 * `grunt build` runs a build. This could be used for checking the code against
   Closure Compiler. Alias: `grunt`
