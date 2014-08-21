@@ -106,7 +106,7 @@ There are some required directories:
 
 During development, everything in the `dev/` directory is copied over as-is *at
 the end* of the build process. This means that files in the directory would
-replace whatever is built at their respective locations. An `index.html` in
+replace whatever is built at their respective locations. The `index.html` in
 `dev/` would need to reference the script and the tag manually, e.g.
 
     <html>
