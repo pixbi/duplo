@@ -11,8 +11,9 @@ lib-cov
 pids
 logs
 results
-Makefile
 
+Gruntfile.*
+package.json
 npm-debug.log
 node_modules/
 public/

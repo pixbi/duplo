@@ -32,10 +32,10 @@ module.exports = (grunt) ->
   # Run a task over the repo's dependencies
   runOnDeps = (task) ->
     for manifest in manifests
-      path = manifest.path or '.'
+      path = manifest.path or process.cwd()
 
       whenExists path, (path) ->
-        grunt.task.run("shell:make:#{task}:#{path}")
+        grunt.task.run("shell:grunt:#{task}:#{path}")
 
   # Find root
   findRoot = (pathArray) ->
@@ -72,9 +72,15 @@ module.exports = (grunt) ->
   do ->
     whenExists "#{__dirname}/package.json", (path) ->
       manifest = grunt.file.readJSON(path)
-      deps = manifest.dependencies
+      deps = manifest.dependencies or {}
       delete deps.grunt
       loadPlugins Object.keys(deps)
+
+  # Chain an arra of commands into one string
+  chainCommands = (commands...) ->
+    commands.map((command) ->
+      command.join(';')
+    ).join(';')
 
 
   ####
@@ -231,10 +237,6 @@ module.exports = (grunt) ->
         push: false
 
     shell:
-      tag:
-        command: (version) ->
-          "git tag #{version}"
-
       writeVersion:
         command: (appName, version) ->
           appName = appName.replace(/-/g, '_')
@@ -245,9 +247,39 @@ module.exports = (grunt) ->
         command: (mode) ->
           "echo 'module.mode = \"#{mode}\";' >> public/script.js"
 
-      make:
-        command: (task, path = '.') ->
-          "BASE=#{path} make #{task}"
+      precommit:
+        command: ->
+          chainCommands [
+            'git stash'
+            'git checkout develop'
+          ]
+
+      commit:
+        command: ->
+          # Update `component.js`
+          grunt.task.run('updateComponent')
+
+          chainCommands [
+            # Commit
+            'git add component.json'
+            "git commit -m 'Bump version'"
+            # Merge into master
+            'git checkout master'
+            # Always force the new changes
+            'git merge develop -X theirs'
+            # Apply tag
+            "git tag #{thisManifest.version}"
+            # Sync with Github
+            'git push origin develop:develop'
+            'git push origin master:master'
+            'git push origin --tags'
+            # Go back to develop
+            'git checkout develop'
+          ]
+
+      grunt:
+        command: (task, path) ->
+          "grunt --base #{path} #{task}"
 
     dom_munger:
       link:
@@ -326,11 +358,18 @@ module.exports = (grunt) ->
   ## Custom tasks
   ####
 
+  grunt.registerTask 'default', 'build'
+
   grunt.registerTask 'dev', compileTasks.concat ['connect', 'watch']
 
   grunt.registerTask 'build', compileTasks
 
   grunt.registerTask 'link', 'dom_munger'
+
+  grunt.registerTask 'release', (level) ->
+    grunt.task.run('shell:precommit')
+    grunt.task.run("bump:#{level}")
+    grunt.task.run('shell:commit')
 
   grunt.registerTask 'optimize', ->
     # TODO: turn on after our refactoring
@@ -345,9 +384,6 @@ module.exports = (grunt) ->
 
     content = JSON.stringify(manifest, null, '  ')
     grunt.file.write('component.json', content)
-
-  grunt.registerTask 'tag', ->
-    grunt.task.run("shell:tag:#{thisManifest.version}")
 
   grunt.registerTask 'inject', (type) ->
     switch type
@@ -402,16 +438,11 @@ module.exports = (grunt) ->
   # We need to manually handle components as the `cwd` path is dynamic
   # depending on the assets
   grunt.registerTask 'copyComponentAssets', ->
-    console.log 'ddd'
     assets = grunt.file.expand 'components/*/app/assets/**/*'
-    console.log 'eee'
     pattern = /^components\/[^\/]+\/app\/assets\//
 
-    console.log 'aaa', assets
     for asset in assets
       assetRelPath = asset.replace(pattern, '')
-      console.log 'bbb: ' + asset
 
       if grunt.file.isFile(asset)
         grunt.file.copy asset, "public/#{assetRelPath}"
-      console.log 'ccc'
