@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
-cp -i gitignore ../../.gitignore
-cp -f package.json ../../package.json
-cp -f Gruntfile.coffee ../../Gruntfile.coffee
-cp -rf node_modules/* ../../node_modules/
+#DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+#cp -i $DIR/node_modules/pixbi-build/gitignore $DIR/.gitignore
+#cp -f $DIR/node_modules/pixbi-build/package.json $DIR
+#cp -f $DIR/node_modules/pixbi-build/Gruntfile.coffee $DIR

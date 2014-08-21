@@ -2,9 +2,6 @@
   "name": "pixbi-build",
   "version": "0.3.6",
   "homepage": "https://github.com/pixbi/build",
-  "scripts": {
-    "install": "./install.sh"
-  },
   "devDependencies": {
     "grunt": "^0.4.5"
   },
