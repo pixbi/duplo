@@ -41,7 +41,8 @@ commit:
 	git commit -m 'Bump version'
 	# Merge into master
 	git checkout master
-	git merge develop
+	# Always force the new changes
+	git merge develop -X theirs
 	# Apply tag
 	$(run) tag
 	# Sync with Github
