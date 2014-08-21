@@ -10,8 +10,8 @@ default:
 
 # Installs Makefile symlink and gitignore
 install:
-	cp gitignore ../../.gitignore
-  ln -s Makefile ../../Makefile
+	cp -f node_modules/pixbi-build/gitignore .gitignore
+	ln -s node_modules/pixbi-build/Makefile Makefile
 
 check:
 	$(run) check

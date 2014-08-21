@@ -13,8 +13,7 @@ Run the following commands.
 $ npm install -g grunt-cli
 $ npm install -g component
 $ npm install --save-dev https://github.com/pixbi/build/tarball/master
-$ cp node_modules/pixbi-build/Makefile .
-$ cp node_modules/pixbi-build/gitignore ./.gitignore
+$ make install -f node_modules/pixbi-build/Makefile
 ```
 
 Basically:
@@ -22,8 +21,7 @@ Basically:
 1. Install Grunt.js
 2. Install Component.IO
 3. Install via npm
-4. Copy the `Makefile` from this repo
-5. Copy over the `.gitignore` file as well
+4. Install the builder
 
 The reason behind using Makefile to run a Gruntfile is for abstraction and
 centralized management of the build tool (e.g. for versioning).
