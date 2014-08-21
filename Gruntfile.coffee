@@ -87,6 +87,7 @@ module.exports = (grunt) ->
     'clean:tmp'
 
     'copy:assets'
+    'copy:params'
 
     'compile:js'
     'compile:stylus'
@@ -97,16 +98,15 @@ module.exports = (grunt) ->
     'concat:js'
     'concat:css'
     'concat:html'
+    'inject:mode'
     'inject:dev'
+    'inject:params'
+    'concat:params'
 
     'optimize'
     'link'
 
     'clean:tmp'
-  ]
-
-  devTasks = compileTasks.concat [
-    'copy:dev'
   ]
 
   # Template-related
@@ -143,7 +143,7 @@ module.exports = (grunt) ->
           'components/**/*'
           'dev/**/*'
         ]
-        tasks: devTasks
+        tasks: compileTasks
         options:
           livereload: true
 
@@ -180,6 +180,10 @@ module.exports = (grunt) ->
         src: 'public/script.min.js'
         dest: 'public/script.js'
 
+      params:
+        src: 'app/params.json'
+        dest: 'public/params.json'
+
     concat:
       js:
         src: [
@@ -189,18 +193,27 @@ module.exports = (grunt) ->
           'tmp/**/*.js'
         ]
         dest: 'public/script.js'
+
       css:
         src: [
           'components/**/public/style.css'
           'tmp/style.css'
         ]
         dest: 'public/style.css'
+
       html:
         src: [
           'components/**/public/template.html'
           'tmp/template.html'
         ]
         dest: 'public/template.html'
+
+      params:
+        src: [
+          'public/script.js'
+          'tmp/params.js'
+        ]
+        dest: 'public/script.js'
 
     connect:
       server:
@@ -313,7 +326,7 @@ module.exports = (grunt) ->
   ## Custom tasks
   ####
 
-  grunt.registerTask 'dev', devTasks.concat ['connect', 'watch']
+  grunt.registerTask 'dev', compileTasks.concat ['connect', 'watch']
 
   grunt.registerTask 'build', compileTasks
 
@@ -344,8 +357,20 @@ module.exports = (grunt) ->
         task = "shell:writeVersion:#{appName}:#{version}"
         grunt.task.run(task)
 
-      when 'dev'
+      when 'mode'
         grunt.task.run("shell:writeMode:#{NODE_ENV}")
+
+      when 'dev'
+        if NODE_ENV is 'dev'
+          grunt.task.run('copy:dev')
+
+      when 'params'
+        whenExists 'public/params.json', (path) ->
+          content =
+            'module.params = ' +
+            JSON.stringify(grunt.file.readJSON(path)) +
+            ';'
+          grunt.file.write('tmp/params.js', content)
 
   grunt.registerTask 'compile', (type) ->
     switch type

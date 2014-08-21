@@ -84,22 +84,24 @@ The Makefile basically dispatches commands to `git` or `grunt`. You may set the
 
 There are some required directories:
 
-    app/           --> Application code
-    app/index.html --> An optional special HTML file into which the builder
-                       injects the script tag, the style tag, and the markup
-                       when built
-    app/assets/    --> Asset files are copied as-is to build's top-level
-                       directory
-    app/styl/      --> Any application top-level style (see below for details)
-    app/modules/   --> Module within the application that are ordered AFTER code
-                       in the top-level `app/` directory when building
-    components/    --> Other repos imported via Component.IO
-    dev/           --> Any code necessary to run the application in dev mode
-    node_modules/  --> Contains this repo
-    public/        --> Built files when developing. This is NOT committed to
-                       source
-    test/          --> Test files go here and should have an extension of
-                       `.spec.js`
+    app/            --> Application code
+    app/index.html  --> An optional special HTML file into which the builder
+                        injects the script tag, the style tag, and the markup
+                        when built
+    app/params.json --> Optional parameter object to be made available as
+                        `module.params`
+    app/assets/     --> Asset files are copied as-is to build's top-level
+                        directory
+    app/styl/       --> Any application top-level style (see below for details)
+    app/modules/    --> Module within the application that are ordered AFTER
+                        code in the top-level `app/` directory when building
+    components/     --> Other repos imported via Component.IO
+    dev/            --> Any code necessary to run the application in dev mode
+    node_modules/   --> Contains this repo
+    public/         --> Built files when developing. This is NOT committed to
+                        source
+    test/           --> Test files go here and should have an extension of
+                        `.spec.js`
 
 
 ## Development
@@ -119,7 +121,50 @@ replace whatever is built at their respective locations. The `index.html` in
     </html>
 
 The output file exposes the mode via the `module.mode` attribute. When in
-development, `module.mode === 'dev';` should be `true`.
+development, `module.mode === 'dev'` should be `true`.
+
+
+## Application Parameters
+
+Since the bootloader accepts a `params` object for `module.init()`, you may
+specify an optional `params.json`, the content of which would be injected as
+`module.params`. For instance, with a `params.json` of:
+
+```json
+{
+  "config": {
+    "kickass": true
+  }
+}
+```
+
+`public/script.js` would look something like:
+
+```js
+...
+module.mode = "dev";
+module.params = {
+  "config": {
+    "kickass": true
+  }
+};
+```
+
+And we then may call it in `index.html` like this:
+
+```html
+<body>
+  <script>
+    document.addEventListener('DOMContentLoaded', function () {
+      module.init(module.params);
+    });
+  </script>
+</body>
+```
+
+The benefit of this is that we could place a `params.json` in `dev/` for dev
+mode and one in `app/` for production and have a complete isolation between code
+And configuration.
 
 
 ## CSS/Stylus Order
