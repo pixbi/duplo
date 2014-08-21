@@ -174,20 +174,22 @@ module.exports = (grunt) ->
     concat:
       js:
         src: [
+          # Bootloader needs to be built first
+          'components/pixbi-bootloader/public/*.js'
+          'components/**/public/*.js'
           'tmp/**/*.js'
-          'components/**/tmp/*.js'
         ]
         dest: 'public/index.js'
       css:
         src: [
+          'components/**/public/*.css'
           'tmp/index.css'
-          'components/**/tmp/*.css'
         ]
         dest: 'public/index.css'
       html:
         src: [
+          'components/**/public/index.html'
           'tmp/index.html'
-          'components/**/tmp/index.html'
         ]
         dest: 'tmp/index.html'
 
