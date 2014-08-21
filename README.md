@@ -123,6 +123,10 @@ replace whatever is built at their respective locations. The `index.html` in
 The output file exposes the mode via the `module.mode` attribute. When in
 development, `module.mode === 'dev'` should be `true`.
 
+NOTE: because of the builder recursively building dependencies, it does not
+watch for changes in `components/` directory. If you update a repo's
+dependencies, you need to restart Grunt.js.
+
 
 ## Application Parameters
 

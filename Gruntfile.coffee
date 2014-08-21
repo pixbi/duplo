@@ -150,7 +150,6 @@ module.exports = (grunt) ->
       default:
         files: [
           'app/**/*'
-          'components/**/*'
           'dev/**/*'
         ]
         tasks: compileTasks
