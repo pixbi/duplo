@@ -29,9 +29,8 @@ centralized management of the build tool (e.g. for versioning).
 
 ## Usage
 
-Four commands:
-
-* `make dev` starts a local server and re-compiles on file change
+* `make` starts a local server and re-compiles on file change
+* `make install` installs references to the project using this builder
 * `make check` runs the Closure Compiler by itself for error checking
 * `make patch` builds the project and bump the patch version
 * `make minor` builds the project and bump the minor version
