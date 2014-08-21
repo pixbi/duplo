@@ -108,12 +108,6 @@ module.exports = (grunt) ->
     'jade'
   ]
 
-  # Style-related
-  styleTasks = [
-    'autoprefixer'
-    'cssshrink'
-  ]
-
   # Stylus files follow an order
   styleFiles = [
     'app/styl/keyframes.styl'
@@ -305,34 +299,6 @@ module.exports = (grunt) ->
   ## Custom tasks
   ####
 
-  grunt.registerTask 'compile', (type) ->
-    switch type
-      when 'js'
-        grunt.task.run('copy:js')
-
-        # Optimize
-        if NODE_ENV isnt 'dev'
-          grunt.task.run(scriptTasks)
-
-      when 'stylus'
-        # Compile with or without variable injection
-        if grunt.task.exists(styleVariableFile)
-          grunt.task.run('stylus:withVariables')
-        else
-          grunt.task.run('stylus:noVariables')
-
-        # Optimize only when we're in production and if there are stylesheets
-        if NODE_ENV isnt 'dev' and
-           grunt.file.expand('app/**/*.styl').length > 0
-          grunt.task.run(styleTasks)
-
-      when 'jade'
-        grunt.task.run(templateTasks)
-
-      # Compile dependencies
-      when 'deps'
-        runOnDeps('build')
-
   grunt.registerTask 'check', ['closure-compiler']
 
   grunt.registerTask 'dev', ['build', 'connect', 'watch']
@@ -349,3 +315,33 @@ module.exports = (grunt) ->
         version = thisManifest.version
         task = "shell:writeVersion:#{appName}:#{version}"
         grunt.task.run(task)
+
+  grunt.registerTask 'compile', (type) ->
+    switch type
+      when 'js'
+        grunt.task.run('copy:js')
+
+        # Optimize
+        if NODE_ENV isnt 'dev'
+          grunt.task.run(scriptTasks)
+
+      when 'stylus'
+        # Compile with or without variable injection
+        if grunt.task.exists(styleVariableFile)
+          grunt.task.run('stylus:withVariables')
+        else
+          grunt.task.run('stylus:noVariables')
+
+        grunt.task.run('autoprefixer')
+
+        # Optimize only when we're in production and if there are stylesheets
+        if NODE_ENV isnt 'dev' and
+           grunt.file.expand('app/**/*.styl').length > 0
+          grunt.task.run('cssshrink')
+
+      when 'jade'
+        grunt.task.run(templateTasks)
+
+      # Compile dependencies
+      when 'deps'
+        runOnDeps('build')
