@@ -4,6 +4,9 @@ This repo basically contains the build tool that is used across all frontend
 projects at Pixbi. The project using this repo must follow a set of conventions
 outlined below.
 
+This build tool assumes that you're using [Pixbi's
+bootloader](https://github.com/pixbi/bootloader/)
+
 
 ## Installation
 
@@ -37,8 +40,8 @@ Compiling the project performs these steps:
 1. Copy files in `app/assets/` to `public/`
 2. Copy files in `dev/` to `public/`
 3. `public/index.html` is created if it doesn't already exist
-4. Compile all Stylus files (order specified [below](#css-order)) under `app/`
-   and concatenate into one CSS file as `public/index.css`
+4. Compile all Stylus files (order specified [below](#cssstylus-order)) under
+   `app/` and concatenate into one CSS file as `public/index.css`
 5. Concatenate all JavaScript under `app/` into one JS file as
    `public/index.js`
 6. Compile all Jade files under `app/` into one HTML file and inject into the
