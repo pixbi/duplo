@@ -361,7 +361,9 @@ module.exports = (grunt) ->
 
   grunt.registerTask 'default', 'build'
 
-  grunt.registerTask 'dev', compileTasks.concat ['connect', 'watch']
+  grunt.registerTask 'dev', ->
+    process.env.NODE_ENV = NODE_ENV = 'dev'
+    grunt.task.run(compileTasks.concat(['connect', 'watch']))
 
   grunt.registerTask 'build', compileTasks
 
