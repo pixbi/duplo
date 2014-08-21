@@ -215,7 +215,7 @@ module.exports = (grunt) ->
 
       writeVersion:
         command: (appName, version) ->
-          appName = appName.replace(/-/g, '')
+          appName = appName.replace(/-/g, '_')
           content = "module.#{appName}.version = \"#{version}\";"
           "mkdir -p tmp; echo '#{content}' >> tmp/version.js"
 
