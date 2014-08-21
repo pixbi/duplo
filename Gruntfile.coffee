@@ -175,23 +175,23 @@ module.exports = (grunt) ->
       js:
         src: [
           # Bootloader needs to be built first
-          'components/pixbi-bootloader/public/*.js'
-          'components/**/public/*.js'
+          'components/pixbi-bootloader/public/script.js'
+          'components/**/public/script.js'
           'tmp/**/*.js'
         ]
-        dest: 'public/index.js'
+        dest: 'public/script.js'
       css:
         src: [
-          'components/**/public/*.css'
+          'components/**/public/style.css'
           'tmp/index.css'
         ]
-        dest: 'public/index.css'
+        dest: 'public/style.css'
       html:
         src: [
           'components/**/public/index.html'
           'tmp/index.html'
         ]
-        dest: 'tmp/index.html'
+        dest: 'public/template.html'
 
     connect:
       server:
@@ -230,13 +230,13 @@ module.exports = (grunt) ->
         options:
           append: [
             selector: 'head'
-            html: '<link rel="stylesheet" type="text/css" href="index.css"/>'
+            html: '<link rel="stylesheet" type="text/css" href="style.css"/>'
           ,
             selector: 'body'
-            html: '<script type="text/javascript" src="index.js"></script>'
+            html: '<script type="text/javascript" src="script.js"></script>'
           ]
           callback: ($) ->
-            template = grunt.file.read('tmp/index.html')
+            template = grunt.file.read('public/template.html')
             $('body').prepend(template)
 
 
