@@ -39,6 +39,8 @@ Four commands:
 * `make minor` builds the project and bump the minor version
 * `make major` builds the project and bump the major version
 
+### Compiling
+
 Compiling the project performs these steps:
 
 1. Copy files in `app/assets/` to `public/`
@@ -52,7 +54,9 @@ Compiling the project performs these steps:
    end of `body` in `public/index.html`
 7. Write into `public/index.html` tags to include `style.css` and `script.js`
 
-Note that while compiling the builder creates a temporary `staging/` directory.
+Note that while compiling the builder creates a temporary `tmp/` directory.
+
+### Building
 
 Building the project performs these steps:
 
@@ -89,19 +93,22 @@ The Makefile basically dispatches commands to `git` or `grunt`. You may set the
 
 There are some required directories:
 
-    app/          --> Application code
-    app/assets/   --> Asset files are copied as-is to build's top-level
-                      directory
-    app/styl/     --> Any application top-level style (see below for details)
-    app/modules/  --> Module within the application that are ordered AFTER code
-                      in the top-level `app/` directory when building
-    components/   --> Other repos imported via Component.IO
-    dev/          --> Any code necessary to run the application in dev mode
-    node_modules/ --> Contains this repo
-    public/       --> Built files when developing. This is NOT committed to
-                      source
-    test/         --> Test files go here and should have an extension of
-                      `.spec.js`
+    app/           --> Application code
+    app/index.html --> An optional special HTML file into which the builder
+                       injects the script tag, the style tag, and the markup
+                       when built
+    app/assets/    --> Asset files are copied as-is to build's top-level
+                       directory
+    app/styl/      --> Any application top-level style (see below for details)
+    app/modules/   --> Module within the application that are ordered AFTER code
+                       in the top-level `app/` directory when building
+    components/    --> Other repos imported via Component.IO
+    dev/           --> Any code necessary to run the application in dev mode
+    node_modules/  --> Contains this repo
+    public/        --> Built files when developing. This is NOT committed to
+                       source
+    test/          --> Test files go here and should have an extension of
+                       `.spec.js`
 
 
 ## CSS/Stylus Order
@@ -109,6 +116,8 @@ There are some required directories:
 Where you place your CSS files within `app/` is significant. Stylus files will
 be concatenated in this order:
 
+    app/styl/variables.styl   --> An optional variable file that gets injected
+                                  into every Stylus file
     app/styl/keyframes.styl   --> Keyframes
     app/styl/fonts.styl       --> Font declarations
     app/styl/reset.styl       --> Resetting existing CSS in the target
@@ -116,13 +125,3 @@ be concatenated in this order:
     app/styl/main.styl        --> Application CSS that goes before any module
                                   CSS
     app/modules/**/index.styl --> CSS relevant to specific modules
-
-Because not all frontend components need styling (e.g. the SDK), Stylus is run
-only when the file `app/styl/variables.styl` exists.
-
-
-## Jade Include System
-
-Assume the Jade's includes to look for files relative to the project's `app/`
-directory. The build tool first compiles the Jade and Stylus for each project
-before concatenating the compiled files into one for final output.
