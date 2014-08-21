@@ -11,6 +11,10 @@ module.exports = (grunt) ->
   whenExists = (path, done) ->
     done(path) if grunt.file.exists(path)
 
+  # Get the most up-to-date version
+  getVersion = ->
+    grunt.file.readJSON('./component.json').version
+
   # All the manifest files of this repo and its dependencies
   thisManifest = null
   manifests = do ->
@@ -256,9 +260,6 @@ module.exports = (grunt) ->
 
       commit:
         command: ->
-          # Update `component.js`
-          grunt.task.run('updateComponent')
-
           chainCommands [
             # Commit
             'git add component.json'
@@ -268,8 +269,8 @@ module.exports = (grunt) ->
             # Always force the new changes
             'git merge develop -X theirs'
             # Apply tag
-            "git tag #{thisManifest.version}"
-            # Sync with Github
+            "git tag #{getVersion()}"
+            ## Sync with Github
             'git push origin develop:develop'
             'git push origin master:master'
             'git push origin --tags'
@@ -367,9 +368,12 @@ module.exports = (grunt) ->
   grunt.registerTask 'link', 'dom_munger'
 
   grunt.registerTask 'release', (level) ->
-    grunt.task.run('shell:precommit')
-    grunt.task.run("bump:#{level}")
-    grunt.task.run('shell:commit')
+    grunt.task.run [
+      'shell:precommit'
+      "bump:#{level}"
+      'updateComponent'
+      'shell:commit'
+    ]
 
   grunt.registerTask 'optimize', ->
     # TODO: turn on after our refactoring
