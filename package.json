@@ -2,9 +2,6 @@
   "name": "pixbi-build",
   "version": "0.0.0",
   "private": true,
-  "scripts": {
-    "install": "ln -s node_modules/pixbi-build/Makefile Makefile"
-  },
   "devDependencies": {
     "grunt": "^0.4.5"
   },

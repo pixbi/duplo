@@ -4,8 +4,14 @@ endif
 
 run=grunt --base $(BASE) --gruntfile node_modules/pixbi-build/Gruntfile.coffee
 
+# Dev mode by default
 default:
 	NODE_ENV=dev $(run) dev
+
+# Installs Makefile symlink and gitignore
+install:
+	cp gitignore ../../.gitignore
+  ln -s Makefile ../../Makefile
 
 check:
 	$(run) check
