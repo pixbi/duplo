@@ -308,6 +308,15 @@ module.exports = (grunt) ->
 
   grunt.registerTask 'build', compileTasks
 
+  grunt.registerTask 'updateComponent', ->
+    manifest = grunt.file.readJSON('component.json')
+    manifest.scripts = grunt.file.expand('app/**/*.js')
+    manifest.styles = grunt.file.expand('app/**/*.styl')
+    manifest.templates = grunt.file.expand('app/**/*.jade')
+
+    content = JSON.stringify(manifest, null, '  ')
+    grunt.file.write('component.json', content)
+
   grunt.registerTask 'tag', ->
     grunt.task.run("shell:tag:#{thisManifest.version}")
 

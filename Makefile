@@ -42,6 +42,8 @@ commit:
 	# Merge into master
 	git checkout master
 	git merge develop
+	# Update `component.js`
+	$(run) updateComponent
 	# Apply tag
 	$(run) tag
 	# Sync with Github
