@@ -137,6 +137,7 @@ module.exports = (grunt) ->
       default:
         files: [
           'app/**/*'
+          'components/**/app/**/*'
           'dev/**/*'
         ]
         tasks: compileTasks
@@ -401,7 +402,7 @@ module.exports = (grunt) ->
         whenExists 'public/params.json', (path) ->
           content =
             'module.params = ' +
-            JSON.stringify(grunt.file.readJSON(path)) +
+            JSON.stringify(grunt.file.readJSON(path), null, '  ') +
             ';'
           grunt.file.write('public/params.js', content)
 
