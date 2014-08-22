@@ -1,20 +1,33 @@
 #!/usr/bin/env bash
 
-DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
-grunt=$DIR/node_modules/.bin/grunt
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+modules="$dir/../lib/node_modules"
+duplo="$modules/duplo"
+grunt="$modules/grunt-cli/bin/grunt"
+gruntfile="$duplo/cli/Gruntfile.coffee"
+run="$grunt --base $duplo --gruntfile $gruntfile"
 
 case "$1" in
   dev)
-    NODE_ENV=dev $(grunt) dev
+    NODE_ENV=dev $run dev
+    ;;
 
   build)
-    NODE_ENV=prod $(grunt) build
+    NODE_ENV=prod $run build
+    echo $run
+    ;;
 
   patch)
-    $(grunt) release:patch
+    $run release:patch
+    ;;
 
   minor)
-    $(grunt) release:minor
+    $run release:minor
+    ;;
 
   major)
-    $(grunt) release:major
+    $run release:major
+    ;;
+
+  *)
+esac
