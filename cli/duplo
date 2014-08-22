@@ -15,11 +15,19 @@ run="$grunt --base $duplo --gruntfile $gruntfile"
 
 case "$1" in
   dev)
-    CWD=$cwd NODE_ENV=dev $run dev
+    if [ -z "$NODE_ENV" ]; then
+      NODE_ENV="dev"
+    fi
+
+    CWD=$cwd NODE_ENV=$NODE_ENV $run dev
     ;;
 
   build)
-    CWD=$cwd NODE_ENV=prod $run build
+    if [ -z "$NODE_ENV" ]; then
+      NODE_ENV="prod"
+    fi
+
+    CWD=$cwd NODE_ENV=$NODE_ENV $run build
     ;;
 
   patch)

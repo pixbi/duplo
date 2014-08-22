@@ -96,7 +96,7 @@ module.exports = (grunt) ->
     'concat:css'
     'concat:html'
     'inject:mode'
-    'inject:dev'
+    'inject:index'
     'inject:params'
     'concat:params'
 
@@ -165,6 +165,10 @@ module.exports = (grunt) ->
         cwd: 'dev/'
         src: '**/*'
         dest: 'public/'
+
+      index:
+        src: 'app/index.html'
+        dest: 'public/index.html'
 
       js:
         expand: true
@@ -271,7 +275,7 @@ module.exports = (grunt) ->
 
     dom_munger:
       link:
-        src: 'app/index.html'
+        src: 'public/index.html'
         dest: 'public/index.html'
         options:
           append: [
@@ -350,7 +354,7 @@ module.exports = (grunt) ->
 
   grunt.registerTask 'build', compileTasks
 
-  grunt.registerTask 'link', 'dom_munger'
+  grunt.registerTask 'link', 'dom_munger:link'
 
   grunt.registerTask 'release', (level) ->
     grunt.task.run [
@@ -385,7 +389,9 @@ module.exports = (grunt) ->
       when 'mode'
         grunt.task.run("shell:writeMode:#{NODE_ENV}")
 
-      when 'dev'
+      when 'index'
+        grunt.task.run('copy:index')
+
         if NODE_ENV is 'dev'
           grunt.task.run('copy:dev')
 
