@@ -1,5 +1,11 @@
 #!/usr/bin/env bash
 
+if [ "$2" ]; then
+  cwd=$2
+else
+  cwd="$(pwd)"
+fi
+
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 modules="$dir/../lib/node_modules"
 duplo="$modules/duplo"
@@ -9,23 +15,23 @@ run="$grunt --base $duplo --gruntfile $gruntfile"
 
 case "$1" in
   dev)
-    NODE_ENV=dev $run dev
+    CWD=$cwd NODE_ENV=dev $run dev
     ;;
 
   build)
-    NODE_ENV=prod $run build
+    CWD=$cwd NODE_ENV=prod $run build
     ;;
 
   patch)
-    $run release:patch
+    CWD=$cwd $run release:patch
     ;;
 
   minor)
-    $run release:minor
+    CWD=$cwd $run release:minor
     ;;
 
   major)
-    $run release:major
+    CWD=$cwd $run release:major
     ;;
 
   *)

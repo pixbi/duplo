@@ -1,7 +1,12 @@
 NODE_ENV = process.env.NODE_ENV or 'prod'
+DUPLO = process.cwd()
+CWD = process.env.CWD or '~'
 
 module.exports = (grunt) ->
-  require('load-grunt-tasks')(grunt)
+  require('load-grunt-tasks') grunt,
+    config: "#{DUPLO}/package.json"
+
+  process.chdir(CWD)
 
   ####
   ## Auxiliary constants and functions
@@ -41,7 +46,7 @@ module.exports = (grunt) ->
       path = manifest.path or process.cwd()
 
       whenExists path, (path) ->
-        grunt.task.run("shell:grunt:#{task}:#{path}")
+        grunt.task.run("shell:duplo:#{task}:#{path}")
 
   # Find root
   findRoot = (pathArray) ->
@@ -259,9 +264,10 @@ module.exports = (grunt) ->
             'git checkout develop'
           ]
 
-      grunt:
+      duplo:
         command: (task, path) ->
-          "grunt --base #{path} #{task}"
+          path = "#{process.cwd()}/#{path}"
+          "duplo #{task} #{path}"
 
     dom_munger:
       link:
