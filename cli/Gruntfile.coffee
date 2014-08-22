@@ -1,4 +1,6 @@
 module.exports = (grunt) ->
+  require('load-grunt-tasks')(grunt)
+
   ####
   ## Auxiliary constants and functions
   ####
@@ -56,27 +58,6 @@ module.exports = (grunt) ->
 
   rootPathArray = do findRoot
   rootPath = rootPathArray.join('/')
-
-  # Load Grunt plugins from `pixbi-build`
-  loadPlugins = (plugins) ->
-    # Special handling with current directory for Grunt
-    cwd = process.cwd()
-    path = rootPathArray.join('/')
-
-    whenExists path, (path) ->
-      process.chdir(path)
-      for plugin in plugins
-        grunt.task.loadNpmTasks plugin
-      process.chdir(cwd)
-
-  # Grunt plugins need to be loaded manually because of the weird setup that we
-  # have (i.e. grunt plugins not being local to the repo)
-  do ->
-    whenExists "#{__dirname}/package.json", (path) ->
-      manifest = grunt.file.readJSON(path)
-      deps = manifest.dependencies or {}
-      delete deps.grunt
-      loadPlugins Object.keys(deps)
 
   # Chain an arra of commands into one string
   chainCommands = (commands...) ->
