@@ -1,37 +1,24 @@
-# Pixbi Build Tool
+# Duplo
 
-This repo basically contains the build tool that is used across all frontend
-projects at Pixbi. The project using this repo must follow a set of conventions
-outlined below.
-
-This build tool assumes that you're using Pixbi's [frontend
-bootloader](https://github.com/pixbi/bootloader/).
+    Intuitive, simple building blocks for building composable, fully managed
+    web applications
 
 
 ## Installation
 
 If you haven't installed Grunt.js and Component.IO already:
 
-    $ npm install -g grunt-cli
-    $ npm install -g component
-
-Then install the npm module and run the install script:
-
-    $ npm install --save-dev pixbi-build
-    $ node_modules/pixbi-build/install
-
-The install script would ask you whether it should overwrite the `.gitignore`
-in yourself directory. It is highly recommended that you do for the first time.
+    $ npm install -g duplo
 
 
 ## Usage
 
-* `grunt dev` starts a local server and re-compiles on file change
-* `grunt build` runs a build. This could be used for checking the code against
-  Closure Compiler. Alias: `grunt`
-* `grunt release:patch` builds the project and bump the patch version
-* `grunt release:minor` builds the project and bump the minor version
-* `grunt release:major` builds the project and bump the major version
+* `duplo dev` starts a local server and re-compiles on file change
+* `duplo build` runs a build. This could be used for checking the code against
+  Closure Compiler. Alias: `duplo`
+* `duplo patch` builds the project and bump the patch version
+* `duplo minor` builds the project and bump the minor version
+* `duplo major` builds the project and bump the major version
 
 ### Compiling
 

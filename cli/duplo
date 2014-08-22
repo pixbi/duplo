@@ -1,0 +1,20 @@
+#!/usr/bin/env bash
+
+DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )/.." && pwd )"
+grunt=$DIR/node_modules/.bin/grunt
+
+case "$1" in
+  dev)
+    NODE_ENV=dev $(grunt) dev
+
+  build)
+    NODE_ENV=prod $(grunt) build
+
+  patch)
+    $(grunt) release:patch
+
+  minor)
+    $(grunt) release:minor
+
+  major)
+    $(grunt) release:major

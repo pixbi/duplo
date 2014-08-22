@@ -1,5 +1,3 @@
-NODE_ENV = process.env.NODE_ENV or 'prod'
-
 module.exports = (grunt) ->
   ####
   ## Auxiliary constants and functions
@@ -345,7 +343,7 @@ module.exports = (grunt) ->
 
     'closure-compiler':
       default:
-        closurePath: "#{__dirname}/.."
+        closurePath: __dirname
         js: 'public/script.js'
         jsOutputFile: 'public/script.min.js'
         options:
@@ -359,11 +357,7 @@ module.exports = (grunt) ->
   ## Custom tasks
   ####
 
-  grunt.registerTask 'default', 'build'
-
-  grunt.registerTask 'dev', ->
-    process.env.NODE_ENV = NODE_ENV = 'dev'
-    grunt.task.run(compileTasks.concat(['connect', 'watch']))
+  grunt.registerTask 'dev', compileTasks.concat ['connect', 'watch']
 
   grunt.registerTask 'build', compileTasks
 
