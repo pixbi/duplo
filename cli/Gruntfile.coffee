@@ -117,8 +117,8 @@ module.exports = (grunt) ->
     'app/styl/fonts.styl'
     'app/styl/reset.styl'
     'app/styl/main.styl'
-    'app/module/**/index.styl'
-    'app/module/**/*.styl'
+    'app/modules/**/index.styl'
+    'app/modules/**/*.styl'
   ]
 
   # Script optimization tasks
