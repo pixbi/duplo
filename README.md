@@ -115,6 +115,36 @@ watch for changes in `components/` directory. If you update a repo's
 dependencies, you need to restart Grunt.js.
 
 
+## Application Name
+
+Note that the application name used in the `component.json` file MUST
+correspond to the name used on `module`. In other words, the following is
+invalid.
+
+In `component.json`:
+
+```json
+{
+  "name": "abc"
+  "version": "1.2.3",
+  ...
+}
+```
+
+In `index.js`:
+
+```js
+module("xyz", {
+  init: function init () {
+    ...
+  }
+});
+```
+
+Technically you could do this but duplo wouldn't be able to find and include
+the module.
+
+
 ## Application Parameters
 
 Since the bootloader accepts a `params` object for `module.init()`, you may
