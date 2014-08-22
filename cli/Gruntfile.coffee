@@ -12,7 +12,7 @@ module.exports = (grunt) ->
   ## Auxiliary constants and functions
   ####
 
-  styleVariableFile = 'app/styl/variables.styl'
+  styleVariableFile = "#{CWD}/app/styl/variables.styl"
 
   # Callback is called if the provided file path points to a file that exists
   whenExists = (path, done) ->
@@ -117,8 +117,8 @@ module.exports = (grunt) ->
     'app/styl/fonts.styl'
     'app/styl/reset.styl'
     'app/styl/main.styl'
-    'app/modules/**/index.styl'
-    'app/modules/**/*.styl'
+    'app/module/**/index.styl'
+    'app/module/**/*.styl'
   ]
 
   # Script optimization tasks
@@ -200,14 +200,14 @@ module.exports = (grunt) ->
       html:
         src: [
           'components/**/public/template.html'
-          'tmp/template.html'
+          'public/template.html'
         ]
         dest: 'public/template.html'
 
       params:
         src: [
           'public/script.js'
-          'tmp/params.js'
+          'public/params.js'
         ]
         dest: 'public/script.js'
 
@@ -295,18 +295,18 @@ module.exports = (grunt) ->
 
       withVariables:
         options:
-          paths: styleVariableFile
-          import: 'variables'
+          paths: [styleVariableFile]
+          import: ['variables']
         files:
-          'tmp/style.css': styleFiles
+          'public/style.css': styleFiles
 
       noVariables:
         files:
-          'tmp/style.css': styleFiles
+          'public/style.css': styleFiles
 
     autoprefixer:
       default:
-        src: 'tmp/style.css'
+        src: 'public/style.css'
         dest: 'public/style.css'
         options:
           browsers: ['last 2 Chrome versions', 'last 2 iOS versions', 'ie 10']
@@ -326,7 +326,7 @@ module.exports = (grunt) ->
       default:
         files:
           # Use the Jade include system, so only include `index.jade` here
-          'tmp/template.html': 'app/index.jade'
+          'public/template.html': 'app/index.jade'
 
     ## Script-specific
 
@@ -395,7 +395,7 @@ module.exports = (grunt) ->
             'module.params = ' +
             JSON.stringify(grunt.file.readJSON(path)) +
             ';'
-          grunt.file.write('tmp/params.js', content)
+          grunt.file.write('public/params.js', content)
 
   grunt.registerTask 'compile', (type) ->
     switch type
@@ -404,7 +404,7 @@ module.exports = (grunt) ->
 
       when 'stylus'
         # Compile with or without variable injection
-        if grunt.task.exists(styleVariableFile)
+        if grunt.file.exists(styleVariableFile)
           grunt.task.run [
             'stylus:withVariables'
             'runAutoprefixer'
@@ -425,7 +425,7 @@ module.exports = (grunt) ->
         runOnDeps('build')
 
   grunt.registerTask 'runAutoprefixer', ->
-    if grunt.file.exists('tmp/style.css')
+    if grunt.file.exists('public/style.css')
       grunt.task.run 'autoprefixer'
 
   # Optimize only when we're in production and if there are stylesheets
