@@ -14,7 +14,6 @@ case "$1" in
 
   build)
     NODE_ENV=prod $run build
-    echo $run
     ;;
 
   patch)
