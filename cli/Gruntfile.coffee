@@ -1,3 +1,5 @@
+NODE_ENV = process.env.NODE_ENV or 'prod'
+
 module.exports = (grunt) ->
   require('load-grunt-tasks')(grunt)
 

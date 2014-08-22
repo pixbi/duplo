@@ -6,9 +6,9 @@
 
 ## Installation
 
-If you haven't installed Grunt.js and Component.IO already:
-
     $ npm install -g duplo
+
+That's it!
 
 
 ## Usage
