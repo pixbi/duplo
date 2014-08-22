@@ -1,7 +1,7 @@
 # Duplo
 
-    Intuitive, simple building blocks for building composable, fully managed
-    web applications
+Intuitive, simple building blocks for building composable, completely
+self-managed web applications
 
 
 ## Installation
