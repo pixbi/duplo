@@ -193,7 +193,7 @@ module.exports = (grunt) ->
       css:
         src: [
           'components/**/public/style.css'
-          'tmp/style.css'
+          'public/style.css'
         ]
         dest: 'public/style.css'
 
