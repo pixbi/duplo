@@ -1,4 +1,4 @@
-NODE_ENV = process.env.NODE_ENV or 'prod'
+NODE_ENV = process.env.NODE_ENV or 'dev'
 DUPLO = process.cwd()
 CWD = process.env.CWD or '~'
 
@@ -183,7 +183,7 @@ module.exports = (grunt) ->
 
       params:
         src: 'app/params.json'
-        dest: 'public/params.json'
+        dest: 'tmp/params.json'
 
     concat:
       js:
@@ -211,8 +211,8 @@ module.exports = (grunt) ->
 
       params:
         src: [
-          'public/script.js'
-          'public/params.js'
+          'tmp/script.js'
+          'tmp/params.js'
         ]
         dest: 'public/script.js'
 
@@ -399,12 +399,12 @@ module.exports = (grunt) ->
           grunt.task.run('copy:dev')
 
       when 'params'
-        whenExists 'public/params.json', (path) ->
+        whenExists 'tmp/params.json', (path) ->
           content =
             'module.params = ' +
             JSON.stringify(grunt.file.readJSON(path), null, '  ') +
             ';'
-          grunt.file.write('public/params.js', content)
+          grunt.file.write('tmp/params.js', content)
 
   grunt.registerTask 'compile', (type) ->
     switch type
