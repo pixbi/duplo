@@ -166,7 +166,11 @@ module.exports = (grunt) ->
       dev:
         expand: true
         cwd: 'dev/'
-        src: '**/*'
+        src: [
+          '**/*'
+          # Params are managed separately
+          '!params.json'
+        ]
         dest: 'public/'
 
       index:
