@@ -104,7 +104,7 @@ module.exports = (grunt) ->
     'concat:params'
 
     'optimize'
-    'link'
+    'dom_massager:link'
 
     'clean:tmp'
     'clean:build'
@@ -359,11 +359,18 @@ module.exports = (grunt) ->
   ## Custom tasks
   ####
 
-  grunt.registerTask 'dev', compileTasks.concat ['connect', 'watch']
+  grunt.registerTask 'dev', (role) ->
+    tasks = compileTasks
+    tasks.push.call tasks, 'connect', 'watch'
+    if role is 'root'
+      tasks.push.call tasks, 'clean:build'
+    grunt.task.run tasks
 
-  grunt.registerTask 'build', compileTasks
-
-  grunt.registerTask 'link', 'dom_massager:link'
+  grunt.registerTask 'build', (role) ->
+    tasks = compileTasks
+    if role is 'root'
+      tasks.push.call tasks, 'clean:build'
+    grunt.task.run tasks
 
   grunt.registerTask 'release', (level) ->
     grunt.task.run [
@@ -439,7 +446,7 @@ module.exports = (grunt) ->
 
       # Compile dependencies
       when 'deps'
-        runOnDeps('build')
+        runOnDeps('buildDep')
 
   grunt.registerTask 'runAutoprefixer', ->
     if grunt.file.exists('public/style.css')

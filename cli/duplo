@@ -3,7 +3,7 @@
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
 if [ "$2" ]; then
-  cwd=$2
+  cwd="$( cd "$2" && pwd )"
 else
   cwd="$(pwd)"
 fi
@@ -25,10 +25,18 @@ case "$1" in
       NODE_ENV="dev"
     fi
 
-    CWD=$cwd NODE_ENV=$NODE_ENV $run dev
+    CWD=$cwd NODE_ENV=$NODE_ENV $run dev:root
     ;;
 
   build)
+    if [ -z "$NODE_ENV" ]; then
+      NODE_ENV="prod"
+    fi
+
+    CWD=$cwd NODE_ENV=$NODE_ENV $run build:root
+    ;;
+
+  buildDep)
     if [ -z "$NODE_ENV" ]; then
       NODE_ENV="prod"
     fi
