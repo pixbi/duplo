@@ -107,6 +107,7 @@ module.exports = (grunt) ->
     'link'
 
     'clean:tmp'
+    'clean:build'
   ]
 
   # Template-related
@@ -272,26 +273,24 @@ module.exports = (grunt) ->
           path = "#{process.cwd()}/#{path}"
           "duplo #{task} #{path}"
 
-    dom_munger:
+    dom_massager:
       link:
-        src: 'public/index.html'
-        dest: 'public/index.html'
+        files:
+          'public/': 'public/index.html'
         options:
-          append: [
-            selector: 'head'
-            html: '<link rel="stylesheet" type="text/css" href="style.css"/>'
-          ,
-            selector: 'head'
-            html: '<script type="text/javascript" src="script.js" defer="defer"></script>'
-          ]
-
-          callback: ($) ->
-            $('body').prepend(grunt.file.read('public/template.html'))
-
-            # Defer cleaning because stupid jQuery `$.append` doesn't provide a callback
-            setTimeout ->
-              grunt.task.run('clean:build')
-            , 100
+          writeDom: true
+          normalizeWhitespace: true
+          selectors:
+            head:
+              action: 'append'
+              input: [
+                '<link rel="stylesheet" type="text/css" href="style.css"/>'
+                '<script type="text/javascript" src="script.js" defer="defer"></script>'
+              ]
+            body:
+              action: 'prepend'
+              input: ->
+                grunt.file.read('public/template.html')
 
 
     ## Style-specific
@@ -364,7 +363,7 @@ module.exports = (grunt) ->
 
   grunt.registerTask 'build', compileTasks
 
-  grunt.registerTask 'link', 'dom_munger:link'
+  grunt.registerTask 'link', 'dom_massager:link'
 
   grunt.registerTask 'release', (level) ->
     grunt.task.run [
