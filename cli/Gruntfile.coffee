@@ -288,8 +288,8 @@ module.exports = (grunt) ->
             selector: 'head'
             html: '<link rel="stylesheet" type="text/css" href="style.css"/>'
           ,
-            selector: 'body'
-            html: '<script type="text/javascript" src="script.js"></script>'
+            selector: 'head'
+            html: '<script type="text/javascript" src="script.js" defer="defer"></script>'
           ]
           callback: ($) ->
             template = grunt.file.read('public/template.html')
