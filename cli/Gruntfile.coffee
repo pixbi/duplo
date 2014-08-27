@@ -83,11 +83,6 @@ module.exports = (grunt) ->
 
     'copyComponentAssets'
     'copy:assets'
-    # Copy over the app's params first, then the dev version, which takes
-    # precedence
-    'copy:paramsApp'
-    'copy:paramsDev'
-    'copy:dev'
 
     'compile:js'
     'compile:stylus'
@@ -100,6 +95,7 @@ module.exports = (grunt) ->
     'concat:html'
     'inject:mode'
     'inject:index'
+    'inject:dev'
     'inject:params'
     'concat:params'
 
@@ -176,13 +172,6 @@ module.exports = (grunt) ->
         cwd: 'app/'
         src: '**/*.js'
         dest: 'tmp/'
-
-      paramsApp:
-        src: 'app/params.json'
-        dest: 'tmp/params.json'
-      paramsDev:
-        src: 'dev/params.json'
-        dest: 'tmp/params.json'
 
     concat:
       js:
@@ -408,8 +397,14 @@ module.exports = (grunt) ->
       when 'index'
         grunt.task.run('copy:index')
 
+      when 'dev'
         if NODE_ENV is 'dev'
           grunt.task.run('copy:dev')
+          whenExists 'dev/params.json', (path) ->
+            grunt.file.copy(path, 'tmp/params.json')
+        else
+          whenExists 'app/params.json', (path) ->
+            grunt.file.copy(path, 'tmp/params.json')
 
       when 'params'
         whenExists 'tmp/params.json', (path) ->
