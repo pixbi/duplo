@@ -239,7 +239,7 @@ module.exports = (grunt) ->
 
       writeMode:
         command: (mode) ->
-          "echo 'module.mode = \"#{mode}\";' >> public/script.js"
+          "echo 'module.mode = \"#{mode}\";' >> tmp/script.js"
 
       precommit:
         command: ->
