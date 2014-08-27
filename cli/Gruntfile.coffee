@@ -107,7 +107,6 @@ module.exports = (grunt) ->
     'dom_massager:link'
 
     'clean:tmp'
-    'clean:build'
   ]
 
   # Template-related
