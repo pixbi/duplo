@@ -125,7 +125,8 @@ module.exports = (grunt) ->
   ]
 
   # Script optimization tasks
-  optimizeScriptTasks = [
+  optimizeTasks = [
+    'optimizeStyle'
     'uglify'
   ]
 
@@ -319,8 +320,8 @@ module.exports = (grunt) ->
 
     cssshrink:
       default:
-        files:
-          'public/style.css': 'public/style.css'
+        src: 'public/style.css'
+        dest: 'public/style.css'
 
     ## Template-specific
 
@@ -349,9 +350,8 @@ module.exports = (grunt) ->
 
     uglify:
       default:
-        files:
-          src: 'public/script.js'
-          dest: 'public/script.js'
+        src: 'public/script.js'
+        dest: 'public/script.js'
 
 
   ####
@@ -380,9 +380,8 @@ module.exports = (grunt) ->
     ]
 
   grunt.registerTask 'optimize', ->
-    # TODO: turn on after our refactoring
     if NODE_ENV isnt 'dev'
-      grunt.task.run(optimizeScriptTasks)
+      grunt.task.run(optimizeTasks)
 
   grunt.registerTask 'updateComponent', ->
     manifest = grunt.file.readJSON('component.json')
@@ -430,14 +429,10 @@ module.exports = (grunt) ->
         if grunt.file.exists(styleVariableFile)
           grunt.task.run [
             'stylus:withVariables'
-            'runAutoprefixer'
-            'runCssShrink'
           ]
         else
           grunt.task.run [
             'stylus:noVariables'
-            'runAutoprefixer'
-            'runCssShrink'
           ]
 
       when 'jade'
@@ -447,14 +442,12 @@ module.exports = (grunt) ->
       when 'deps'
         runOnDeps('buildDep')
 
-  grunt.registerTask 'runAutoprefixer', ->
+  grunt.registerTask 'optimizeStyle', ->
     if grunt.file.exists('public/style.css')
-      grunt.task.run 'autoprefixer'
-
-  # Optimize only when we're in production and if there are stylesheets
-  grunt.registerTask 'runCssShrink', ->
-    if NODE_ENV isnt 'dev' and grunt.task.exists('public/style.css')
-      grunt.task.run('cssshrink')
+      grunt.task.run [
+        'autoprefixer'
+        'cssshrink'
+      ]
 
   # We need to manually handle components as the `cwd` path is dynamic
   # depending on the assets
