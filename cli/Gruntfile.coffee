@@ -123,7 +123,7 @@ module.exports = (grunt) ->
 
   # Script optimization tasks
   optimizeScriptTasks = [
-    'closure-compiler'
+    'uglify'
     'copy:jsmin'
     'clean:jsmin'
   ]
@@ -346,6 +346,12 @@ module.exports = (grunt) ->
           warning_level: 'verbose'
           summary_detail_level: 3
 
+    uglify:
+      default:
+        files:
+          src: 'public/script.js'
+          dest: 'public/script.min.js'
+
 
   ####
   ## Custom tasks
@@ -367,8 +373,8 @@ module.exports = (grunt) ->
 
   grunt.registerTask 'optimize', ->
     # TODO: turn on after our refactoring
-    #if NODE_ENV isnt 'dev'
-    #  grunt.task.run(optimizeScriptTasks)
+    if NODE_ENV isnt 'dev'
+      grunt.task.run(optimizeScriptTasks)
 
   grunt.registerTask 'updateComponent', ->
     manifest = grunt.file.readJSON('component.json')
