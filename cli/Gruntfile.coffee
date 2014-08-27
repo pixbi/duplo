@@ -78,7 +78,8 @@ module.exports = (grunt) ->
   ####
 
   compileTasks = [
-    'clean:all'
+    'clean:public'
+    'clean:tmp'
 
     'copyComponentAssets'
     'copy:assets'
@@ -105,7 +106,7 @@ module.exports = (grunt) ->
     'optimize'
     'link'
 
-    'clean:build'
+    'clean:tmp'
   ]
 
   # Template-related
@@ -145,15 +146,11 @@ module.exports = (grunt) ->
           livereload: true
 
     clean:
-      all: [
-        'tmp'
-        'public'
-      ]
-
+      public: 'public'
+      tmp: 'tmp'
       build: [
-        'tmp'
-        'public/**/*.json'
         'public/template.html'
+        'public/params.json'
       ]
 
     copy:
@@ -166,11 +163,7 @@ module.exports = (grunt) ->
       dev:
         expand: true
         cwd: 'dev/'
-        src: [
-          '**/*'
-          # Params are managed separately
-          '!params.json'
-        ]
+        src: '**/*'
         dest: 'public/'
 
       index:
