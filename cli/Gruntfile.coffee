@@ -77,14 +77,16 @@ module.exports = (grunt) ->
   ## Tasks
   ####
 
-  # Always call explicitly with parameter to allow easy extension in the future
   compileTasks = [
-    'clean:public'
-    'clean:tmp'
+    'clean:all'
 
     'copyComponentAssets'
     'copy:assets'
-    'copy:params'
+    # Copy over the app's params first, then the dev version, which takes
+    # precedence
+    'copy:paramsApp'
+    'copy:paramsDev'
+    'copy:dev'
 
     'compile:js'
     'compile:stylus'
@@ -103,7 +105,7 @@ module.exports = (grunt) ->
     'optimize'
     'link'
 
-    'clean:tmp'
+    'clean:build'
   ]
 
   # Template-related
@@ -124,8 +126,6 @@ module.exports = (grunt) ->
   # Script optimization tasks
   optimizeScriptTasks = [
     'uglify'
-    'copy:jsmin'
-    'clean:jsmin'
   ]
 
 
@@ -145,14 +145,16 @@ module.exports = (grunt) ->
           livereload: true
 
     clean:
-      public:
-        src: 'public'
+      all: [
+        'tmp'
+        'public'
+      ]
 
-      tmp:
-        src: 'tmp'
-
-      jsmin:
-        src: 'public/script.min.js'
+      build: [
+        'tmp'
+        'public/**/*.json'
+        'public/template.html'
+      ]
 
     copy:
       assets:
@@ -177,12 +179,11 @@ module.exports = (grunt) ->
         src: '**/*.js'
         dest: 'tmp/'
 
-      jsmin:
-        src: 'public/script.min.js'
-        dest: 'public/script.js'
-
-      params:
+      paramsApp:
         src: 'app/params.json'
+        dest: 'tmp/params.json'
+      paramsDev:
+        src: 'dev/params.json'
         dest: 'tmp/params.json'
 
     concat:
@@ -193,7 +194,7 @@ module.exports = (grunt) ->
           'components/**/public/script.js'
           'tmp/**/*.js'
         ]
-        dest: 'public/script.js'
+        dest: 'tmp/script.js'
 
       css:
         src: [
@@ -339,7 +340,7 @@ module.exports = (grunt) ->
       default:
         closurePath: __dirname
         js: 'public/script.js'
-        jsOutputFile: 'public/script.min.js'
+        jsOutputFile: 'public/script.js'
         options:
           compilation_level: 'ADVANCED_OPTIMIZATIONS'
           language_in: 'ECMASCRIPT5_STRICT'
@@ -350,7 +351,7 @@ module.exports = (grunt) ->
       default:
         files:
           src: 'public/script.js'
-          dest: 'public/script.min.js'
+          dest: 'public/script.js'
 
 
   ####
