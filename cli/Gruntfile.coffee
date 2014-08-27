@@ -291,9 +291,14 @@ module.exports = (grunt) ->
             selector: 'head'
             html: '<script type="text/javascript" src="script.js" defer="defer"></script>'
           ]
+
           callback: ($) ->
-            template = grunt.file.read('public/template.html')
-            $('body').prepend(template)
+            $('body').prepend(grunt.file.read('public/template.html'))
+
+            # Defer cleaning because stupid jQuery `$.append` doesn't provide a callback
+            setTimeout ->
+              grunt.task.run('clean:build')
+            , 100
 
 
     ## Style-specific
