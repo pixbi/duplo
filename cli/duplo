@@ -1,15 +1,21 @@
 #!/usr/bin/env bash
 
+dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
 if [ "$2" ]; then
   cwd=$2
 else
   cwd="$(pwd)"
 fi
 
-dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
-modules="$dir/../lib/node_modules"
-duplo="$modules/duplo"
-grunt="$modules/grunt-cli/bin/grunt"
+duploGlobal="$dir/../lib/node_modules/duplo"
+if [ -d "$duploGlobal" ]; then
+  duplo="$( cd $duploGlobal && pwd )"
+else
+  duplo="$( cd "$dir/.." && pwd )"
+fi
+
+grunt="$duplo/node_modules/grunt-cli/bin/grunt"
 gruntfile="$duplo/cli/Gruntfile.coffee"
 run="$grunt --base $duplo --gruntfile $gruntfile"
 
