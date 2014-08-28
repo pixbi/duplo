@@ -133,6 +133,7 @@ module.exports = (grunt) ->
 
     watch:
       options:
+        interrupt: true
         atBegin: true
         livereload: true
       default:
