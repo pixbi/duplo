@@ -370,7 +370,7 @@ module.exports = (grunt) ->
     manifest = grunt.file.readJSON('component.json')
     manifest.scripts = grunt.file.expand('app/**/*.js')
     manifest.styles = grunt.file.expand('app/**/*.styl')
-    manifest.templates = grunt.file.expand('app/**/*.jade')
+    manifest.templates = grunt.file.expand('app/**/*.(jade|html)')
     manifest.images = grunt.file.expand('app/assets/images/**/*.*')
     manifest.fonts = grunt.file.expand('app/assets/fonts/**/*.*')
 
