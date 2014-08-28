@@ -46,7 +46,7 @@ module.exports = (grunt) ->
       path = manifest.path or process.cwd()
 
       whenExists path, (path) ->
-        grunt.task.run("shell:duplo:#{task}:#{path}")
+        grunt.task.run("exec:duplo:#{task}:#{path}")
 
   # Find root
   findRoot = (pathArray) ->
@@ -132,6 +132,9 @@ module.exports = (grunt) ->
     ## General
 
     watch:
+      options:
+        atBegin: true
+        livereload: true
       default:
         files: [
           'app/**/*'
@@ -139,8 +142,6 @@ module.exports = (grunt) ->
           'dev/**/*'
         ]
         tasks: compileTasks
-        options:
-          livereload: true
 
     clean:
       public: 'public'
@@ -219,26 +220,26 @@ module.exports = (grunt) ->
         createTag: false
         push: false
 
-    shell:
+    exec:
       writeVersion:
-        command: (appName, version) ->
+        cmd: (appName, version) ->
           appName = appName.replace(/-/g, '_')
           content = "module.#{appName}.version = \"#{version}\";"
           "mkdir -p tmp; echo '#{content}' >> tmp/version.js"
 
       writeMode:
-        command: (mode) ->
+        cmd: (mode) ->
           "echo 'module.mode = \"#{mode}\";' >> tmp/script.js"
 
       precommit:
-        command: ->
+        cmd: ->
           chainCommands [
             'git stash'
             'git checkout develop'
           ]
 
       commit:
-        command: ->
+        cmd: ->
           chainCommands [
             # Commit
             'git add component.json'
@@ -258,7 +259,7 @@ module.exports = (grunt) ->
           ]
 
       duplo:
-        command: (task, path) ->
+        cmd: (task, path) ->
           path = "#{process.cwd()}/#{path}"
           "duplo #{task} #{path}"
 
@@ -348,9 +349,7 @@ module.exports = (grunt) ->
   ####
 
   grunt.registerTask 'dev', (role) ->
-    tasks = compileTasks.concat()
-    tasks.push.call tasks, 'connect', 'watch'
-    grunt.task.run tasks
+    grunt.task.run 'connect', 'watch'
 
   grunt.registerTask 'build', (role) ->
     tasks = compileTasks.concat()
@@ -360,10 +359,10 @@ module.exports = (grunt) ->
 
   grunt.registerTask 'release', (level) ->
     grunt.task.run [
-      'shell:precommit'
+      'exec:precommit'
       "bump:#{level}"
       'updateComponent'
-      'shell:commit'
+      'exec:commit'
     ]
 
   grunt.registerTask 'optimize', ->
@@ -386,11 +385,11 @@ module.exports = (grunt) ->
       when 'version'
         appName = thisManifest.name
         version = thisManifest.version
-        task = "shell:writeVersion:#{appName}:#{version}"
+        task = "exec:writeVersion:#{appName}:#{version}"
         grunt.task.run(task)
 
       when 'mode'
-        grunt.task.run("shell:writeMode:#{NODE_ENV}")
+        grunt.task.run("exec:writeMode:#{NODE_ENV}")
 
       when 'index'
         grunt.task.run('copy:index')

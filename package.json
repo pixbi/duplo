@@ -21,7 +21,7 @@
     "grunt-contrib-watch": "^0.6.1",
     "grunt-cssshrink": "https://github.com/kenhkan/grunt-cssshrink/tarball/use-guard",
     "grunt-dom-massager": "^0.1.1",
-    "grunt-shell": "^1.0.1",
+    "grunt-exec": "^0.4.6",
     "load-grunt-tasks": "^0.6.0"
   }
 }
