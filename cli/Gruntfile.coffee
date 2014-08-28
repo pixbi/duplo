@@ -94,13 +94,13 @@ module.exports = (grunt) ->
     'concat:css'
     'concat:html'
     'inject:mode'
-    'inject:index'
+    'copy:index'
     'inject:dev'
     'inject:params'
     'concat:params'
 
+    'replace:link'
     'optimize'
-    'dom_massager:link'
 
     'clean:tmp'
   ]
@@ -264,24 +264,20 @@ module.exports = (grunt) ->
           path = "#{process.cwd()}/#{path}"
           "duplo #{task} #{path}"
 
-    dom_massager:
+    replace:
       link:
         files:
-          'public/': 'public/index.html'
+          'public/index.html': 'public/index.html'
         options:
-          writeDom: true
-          normalizeWhitespace: true
-          selectors:
-            head:
-              action: 'append'
-              input: [
-                '<link rel="stylesheet" type="text/css" href="style.css"/>'
-                '<script type="text/javascript" src="script.js" defer="defer"></script>'
-              ]
-            body:
-              action: 'prepend'
-              input: ->
-                grunt.file.read('public/template.html')
+          patterns: [
+            match: /<\/head>/
+            replacement: ->
+              grunt.file.read("#{DUPLO}/cli/head.html")
+          ,
+            match: /<\/body>/
+            replacement: ->
+              grunt.file.read('public/template.html')
+          ]
 
 
     ## Style-specific
@@ -391,9 +387,6 @@ module.exports = (grunt) ->
 
       when 'mode'
         grunt.task.run("exec:writeMode:#{NODE_ENV}")
-
-      when 'index'
-        grunt.task.run('copy:index')
 
       when 'dev'
         if NODE_ENV is 'dev'
