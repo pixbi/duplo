@@ -348,14 +348,12 @@ module.exports = (grunt) ->
   ####
 
   grunt.registerTask 'dev', (role) ->
-    tasks = compileTasks
+    tasks = compileTasks.concat()
     tasks.push.call tasks, 'connect', 'watch'
-    if role is 'root'
-      tasks.push.call tasks, 'clean:build'
     grunt.task.run tasks
 
   grunt.registerTask 'build', (role) ->
-    tasks = compileTasks
+    tasks = compileTasks.concat()
     if role is 'root'
       tasks.push.call tasks, 'clean:build'
     grunt.task.run tasks
