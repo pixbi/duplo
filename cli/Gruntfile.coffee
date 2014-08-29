@@ -187,15 +187,15 @@ module.exports = (grunt) ->
 
       css:
         src: [
-          'components/**/public/style.css'
           'public/style.css'
+          'components/**/public/style.css'
         ]
         dest: 'public/style.css'
 
       html:
         src: [
-          'components/**/public/template.html'
           'public/template.html'
+          'components/**/public/template.html'
         ]
         dest: 'public/template.html'
 
