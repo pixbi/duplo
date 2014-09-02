@@ -93,6 +93,9 @@ module.exports = (grunt) ->
     'concat:js'
     'concat:css'
     'concat:html'
+
+    'autoprefixer'
+
     'inject:mode'
     'copy:index'
     'inject:dev'
@@ -434,7 +437,6 @@ module.exports = (grunt) ->
   grunt.registerTask 'optimizeStyle', ->
     if grunt.file.exists('public/style.css')
       grunt.task.run [
-        'autoprefixer'
         'cssshrink'
       ]
 
