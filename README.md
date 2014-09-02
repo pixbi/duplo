@@ -202,3 +202,9 @@ be concatenated in this order:
     app/styl/main.styl        --> Application CSS that goes before any module
                                   CSS
     app/modules/**/index.styl --> CSS relevant to specific modules
+
+
+## Copyright and License
+
+Code and documentation copyright 2014 Pixbi. Code released under the MIT
+license. Docs released under Creative Commons.
