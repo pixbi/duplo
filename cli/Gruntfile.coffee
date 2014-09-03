@@ -1,6 +1,9 @@
-NODE_ENV = process.env.NODE_ENV or 'dev'
 DUPLO = process.cwd()
 CWD = process.env.CWD or '~'
+# User-configurable mode
+NODE_ENV = process.env.NODE_ENV or 'dev'
+# Always `dev` in dev mode and `prod` in build mode
+BUILD_MODE = process.env.BUILD_MODE or 'dev'
 
 module.exports = (grunt) ->
   require('load-grunt-tasks') grunt,
@@ -395,7 +398,7 @@ module.exports = (grunt) ->
         grunt.task.run("exec:writeMode:#{NODE_ENV}")
 
       when 'dev'
-        if NODE_ENV is 'dev'
+        if BUILD_MODE is 'dev'
           grunt.task.run('copy:dev')
           whenExists 'dev/params.json', (path) ->
             grunt.file.copy(path, 'tmp/params.json')

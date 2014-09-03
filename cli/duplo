@@ -25,7 +25,7 @@ case "$1" in
       NODE_ENV="dev"
     fi
 
-    CWD=$cwd NODE_ENV=$NODE_ENV $run dev:root
+    CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=dev $run dev:root
     ;;
 
   build)
@@ -33,7 +33,7 @@ case "$1" in
       NODE_ENV="prod"
     fi
 
-    CWD=$cwd NODE_ENV=$NODE_ENV $run build:root
+    CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=dev $run build:root
     ;;
 
   buildDep)
@@ -41,7 +41,7 @@ case "$1" in
       NODE_ENV="prod"
     fi
 
-    CWD=$cwd NODE_ENV=$NODE_ENV $run build
+    CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=dev $run build
     ;;
 
   patch)
