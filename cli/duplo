@@ -33,15 +33,11 @@ case "$1" in
       NODE_ENV="prod"
     fi
 
-    CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=dev $run build:root
+    CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=prod $run build:root
     ;;
 
   buildDep)
-    if [ -z "$NODE_ENV" ]; then
-      NODE_ENV="prod"
-    fi
-
-    CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=dev $run build
+    CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=$BUILD_MODE $run build
     ;;
 
   patch)

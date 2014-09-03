@@ -369,7 +369,7 @@ module.exports = (grunt) ->
     ]
 
   grunt.registerTask 'optimize', ->
-    if NODE_ENV isnt 'dev'
+    if BUILD_MODE isnt 'dev'
       grunt.task.run(optimizeTasks)
 
   grunt.registerTask 'updateComponent', ->
