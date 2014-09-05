@@ -20,6 +20,10 @@ gruntfile="$duplo/cli/Gruntfile.coffee"
 run="$grunt --base $duplo --gruntfile $gruntfile"
 
 case "$1" in
+  version)
+    node "$duplo/cli/version.js"
+    ;;
+
   dev)
     if [ -z "$NODE_ENV" ]; then
       NODE_ENV="dev"
@@ -53,4 +57,5 @@ case "$1" in
     ;;
 
   *)
+    echo 'Unknown command'
 esac
