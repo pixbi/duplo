@@ -278,11 +278,11 @@ module.exports = (grunt) ->
           patterns: [
             match: /<\/head>/
             replacement: ->
-              grunt.file.read("#{DUPLO}/cli/head.html")
+              grunt.file.read("#{DUPLO}/cli/head.html") + '</head>'
           ,
             match: /<\/body>/
             replacement: ->
-              grunt.file.read('public/template.html')
+              grunt.file.read('public/template.html') + '</body>'
           ]
 
 
