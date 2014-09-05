@@ -100,7 +100,6 @@ module.exports = (grunt) ->
     'autoprefixer'
 
     'inject:mode'
-    'copy:index'
     'inject:dev'
     'inject:params'
     'concat:params'
@@ -170,10 +169,6 @@ module.exports = (grunt) ->
         cwd: 'dev/'
         src: '**/*'
         dest: 'public/'
-
-      index:
-        src: 'app/index.html'
-        dest: 'public/index.html'
 
       js:
         expand: true
