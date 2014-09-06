@@ -2,8 +2,8 @@
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-if [ "$2" ]; then
-  cwd="$( cd "$2" && pwd )"
+if [ "$CWD" ]; then
+  cwd="$( cd "$CWD" && pwd )"
 else
   cwd="$(pwd)"
 fi
@@ -22,6 +22,50 @@ run="$grunt --base $duplo --gruntfile $gruntfile"
 case "$1" in
   version)
     node "$duplo/cli/version.js"
+    ;;
+
+  new)
+    name="$2"
+    repo="$3"
+
+    if [ -z "$name" ]; then
+      echo "There must be a name."
+      exit
+    fi
+    if [ -z "$repo" ]; then
+      echo "There must be a Git repo URL."
+      exit
+    fi
+
+    # Make sure it's a Git repo
+    git init
+    # Main modules directory structure
+    mkdir -p "$cwd/app/modules"
+    # Asset directory
+    mkdir -p "$cwd/app/assets"
+    # Stylus directory
+    mkdir -p "$cwd/app/styl"
+    # Dev directory
+    mkdir -p "$cwd/dev"
+    # Component.IO
+    echo '{"name":"'$name'","version":"0.0.0"}' > "$cwd/component.json"
+    # We need a README
+    echo "# $name" > "README.md"
+    # Ignore files
+    cat <<- EOF >> "$cwd/.gitignore"
+public/
+components/
+tmp/
+EOF
+    # Initial commit
+    git add .
+    git commit -m "Initialized with duplo"
+    # We need a develop branch
+    git checkout -b develop
+    # We need to set the repo
+    git remote add origin $3
+    # Confirm
+    echo "Initialized with duplo"
     ;;
 
   dev)
