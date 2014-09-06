@@ -13,6 +13,7 @@ That's it!
 
 ## Usage
 
+* `duplo new <name> <git-repo-url>` scaffolds a new duplo repo
 * `duplo dev` starts a local server and re-compiles on file change
 * `duplo build` runs a build. This could be used for checking the code against
   Closure Compiler
