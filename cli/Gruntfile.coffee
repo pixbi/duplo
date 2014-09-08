@@ -263,7 +263,7 @@ module.exports = (grunt) ->
       duplo:
         cmd: (task, path) ->
           path = "#{process.cwd()}/#{path}"
-          "duplo #{task} #{path}"
+          "cd #{path}; duplo #{task}"
 
     replace:
       link:
@@ -364,7 +364,7 @@ module.exports = (grunt) ->
     ]
 
   grunt.registerTask 'optimize', ->
-    if BUILD_MODE isnt 'dev'
+    if NODE_ENV isnt 'dev'
       grunt.task.run(optimizeTasks)
 
   grunt.registerTask 'updateComponent', ->

@@ -2,7 +2,8 @@
 
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 
-if [ "$CWD" ]; then
+# Only makes sense for the top level to define CWD
+if [ "$1" != "buildDep" ] && [ "$CWD" ]; then
   cwd="$( cd "$CWD" && pwd )"
 else
   cwd="$(pwd)"
