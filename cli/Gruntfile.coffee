@@ -1,9 +1,12 @@
+_ = require('lodash')
+
 DUPLO = process.cwd()
 CWD = process.env.CWD or '~'
 # User-configurable mode
 NODE_ENV = process.env.NODE_ENV or 'dev'
 # Always `dev` in dev mode and `prod` in build mode
 BUILD_MODE = process.env.BUILD_MODE or 'dev'
+BUILD_FORM = 'default'
 
 module.exports = (grunt) ->
   require('load-grunt-tasks') grunt,
@@ -49,7 +52,20 @@ module.exports = (grunt) ->
       path = manifest.path or process.cwd()
 
       whenExists path, (path) ->
-        grunt.task.run("exec:duplo:#{task}:#{path}")
+        grunt.task.run("exec:duplo:#{task}:#{path}:#{BUILD_FORM}")
+
+  # Clean unwanted dependencies
+  cleanDeps = ->
+    manifest = grunt.file.readJSON('./component.json')
+    forms = manifest.exclude or {}
+    deps = forms[BUILD_FORM] or {}
+
+    for dep in deps
+      # Component.IO convention
+      dep = dep.replace(/\//g, '-')
+
+      whenExists "components/#{dep}/public", (path) ->
+        grunt.file.delete path
 
   # Find root
   findRoot = (pathArray) ->
@@ -91,6 +107,7 @@ module.exports = (grunt) ->
     'compile:stylus'
     'compile:jade'
     'compile:deps'
+    'compile:cleanDeps'
     'inject:version'
 
     'concat:js'
@@ -346,10 +363,14 @@ module.exports = (grunt) ->
   ## Custom tasks
   ####
 
-  grunt.registerTask 'dev', (role) ->
+  grunt.registerTask 'dev', (role, form) ->
+    BUILD_FORM = form || 'default'
+
     grunt.task.run 'connect', 'watch'
 
-  grunt.registerTask 'build', (role) ->
+  grunt.registerTask 'build', (role, form) ->
+    BUILD_FORM = form || 'default'
+
     tasks = compileTasks.concat()
     if role is 'root'
       tasks.push.call tasks, 'clean:build'
@@ -431,6 +452,10 @@ module.exports = (grunt) ->
       # Compile dependencies
       when 'deps'
         runOnDeps('buildDep')
+
+      # Clean unwanted dependencies
+      when 'cleanDeps'
+        cleanDeps()
 
   grunt.registerTask 'optimizeStyle', ->
     if grunt.file.exists('public/style.css')

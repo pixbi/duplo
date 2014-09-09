@@ -16,7 +16,7 @@ That's it!
 * `duplo new <name> <git-repo-url>` scaffolds a new duplo repo
 * `duplo dev` starts a local server and re-compiles on file change
 * `duplo build` runs a build. This could be used for checking the code against
-  Closure Compiler
+  Closure Compiler.
 * `duplo patch` builds the project and bump the patch version
 * `duplo minor` builds the project and bump the minor version
 * `duplo major` builds the project and bump the major version
@@ -84,6 +84,7 @@ There are some required directories:
     app/modules/    --> Module within the application that are ordered AFTER
                         code in the top-level `app/` directory when building
     components/     --> Other repos imported via Component.IO
+    component.json  --> The Component.IO manifest
     dev/            --> Any code necessary to run the application in dev mode
     node_modules/   --> Contains this repo
     public/         --> Built files when developing. This is NOT committed to
@@ -203,6 +204,26 @@ be concatenated in this order:
     app/styl/main.styl        --> Application CSS that goes before any module
                                   CSS
     app/modules/**/index.styl --> CSS relevant to specific modules
+
+
+## Selective Exclusion
+
+Some cases require the repo to be polymorphic in the sense that we could
+generate different forms of the same codebase. For example, you may need to
+build the repo in an embeddable form which would exclude certain dependencies
+that are required in its standalone form. In this case you would include an
+`exclude` attribute in the `component.json` manifest file. The `forms` object
+then contains the `embeddable` and the `standalone` attributes, each of which
+then contains an array of dependencies as specified in the `dependencies`
+attribute to *exclude*.
+
+Running `duplo build embeddable` would build without the specified dependencies
+under `embeddable` while running `duplo build standalone` would do the same
+with those specified under the `standalone` attribute. `duplo build` would
+build with all dependencies.
+
+Note that selective exclusion applies at the dependency level but not files in
+the component.
 
 
 ## Copyright and License

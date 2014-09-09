@@ -74,7 +74,9 @@ EOF
       NODE_ENV="dev"
     fi
 
-    CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=dev $run dev:root
+    form="$2"
+
+    CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=dev $run dev:root:$form
     ;;
 
   build)
@@ -82,11 +84,15 @@ EOF
       NODE_ENV="prod"
     fi
 
-    CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=prod $run build:root
+    form="$2"
+
+    CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=prod $run build:root:$form
     ;;
 
   buildDep)
-    CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=$BUILD_MODE $run build
+    form="$2"
+
+    CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=$BUILD_MODE $run build:$form
     ;;
 
   patch)
@@ -102,5 +108,5 @@ EOF
     ;;
 
   *)
-    echo 'Unknown command'
+    echo "Unknown command"
 esac
