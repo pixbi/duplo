@@ -28,29 +28,11 @@ module.exports = (grunt) ->
   getVersion = ->
     grunt.file.readJSON('./component.json').version
 
-  # All the manifest files of this repo and its dependencies
-  thisManifest = null
-  manifests = do ->
-    whenExists './component.json', (path) ->
-      thisManifest = grunt.file.readJSON(path)
-      deps = Object.keys(thisManifest.dependencies or {})
-      output = []
-
-      # Find this repo's dependency manifests
-      for dep in deps
-        dep = dep.replace('/', '-')
-        whenExists "./components/#{dep}/component.json", (path) ->
-          m = grunt.file.readJSON(path)
-          m.path = "./components/#{dep}/"
-          output.push(m)
-
-      output
-
   # Run a task over the repo's dependencies
   runOnDeps = (task) ->
-    for manifest in manifests
-      path = manifest.path or process.cwd()
+    paths = grunt.file.expand('./components/*')
 
+    for path in paths
       whenExists path, (path) ->
         grunt.task.run("exec:duplo:#{task}:#{path}:#{BUILD_FORM}")
 
@@ -405,8 +387,9 @@ module.exports = (grunt) ->
   grunt.registerTask 'inject', (type) ->
     switch type
       when 'version'
-        appName = thisManifest.name
-        version = thisManifest.version
+        manifest = grunt.file.readJSON('./component.json')
+        appName = manifest.name
+        version = manifest.version
         task = "exec:writeVersion:#{appName}:#{version}"
         grunt.task.run(task)
 
