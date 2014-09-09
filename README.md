@@ -225,6 +225,26 @@ build with all dependencies.
 Note that selective exclusion applies at the dependency level but not files in
 the component.
 
+An example of a `component.json`:
+
+```json
+{
+  "dependencies": {
+    "pixbi/sdk": "1.1.1",
+    "pixbi/embeddable": "2.2.2",
+    "pixbi/standalone": "3.3.3"
+  },
+  "exclude": {
+    "embeddable": [
+      "pixbi/standalone"
+    ],
+    "standalone": [
+      "pixbi/embeddable"
+    ]
+  }
+}
+```
+
 
 ## Copyright and License
 
