@@ -7,6 +7,8 @@ NODE_ENV = process.env.NODE_ENV or 'dev'
 # Always `dev` in dev mode and `prod` in build mode
 BUILD_MODE = process.env.BUILD_MODE or 'dev'
 BUILD_FORM = 'default'
+# Server port
+PORT = process.env.PORT || 8888
 
 module.exports = (grunt) ->
   require('load-grunt-tasks') grunt,
@@ -209,7 +211,7 @@ module.exports = (grunt) ->
     connect:
       server:
         options:
-          port: 8888
+          port: PORT
           hostname: '*'
           base: 'public'
 
