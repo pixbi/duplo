@@ -180,8 +180,6 @@ module.exports = (grunt) ->
     concat:
       js:
         src: [
-          # Include external libraries first
-          'bower_components/**/*.js'
           # Bootloader needs to be built first
           'components/pixbi-bootloader/public/script.js'
           'components/**/public/script.js'
