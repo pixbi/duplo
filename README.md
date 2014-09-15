@@ -127,7 +127,7 @@ In `component.json`:
 
 ```json
 {
-  "name": "abc"
+  "name": "abc",
   "version": "1.2.3",
   ...
 }
