@@ -24,13 +24,15 @@ That's it!
 
 ## Philosophies
 
-1. Stay as close to raw JavaScript as possible, because JavaScript lacks the
-   mechanism to build strong abstraction.
-2. Closures are discouraged. Optimally, there should be no function, anonymous
-   or otherwise, nested within another function. A callback should be named
-   explicitly to another static function.
-3. `this` is evil. Developers should not need to context-switch between
-   functions. See [Context](#Context) for duplo's solution.
+* Stay as close to raw JavaScript as possible, because JavaScript lacks the
+  mechanism to build strong abstraction.
+* Closures are discouraged. Optimally, there should be no function, anonymous
+  or otherwise, nested within another function. A callback should be named
+  explicitly to another static function.
+* `this` is evil. Developers should not need to context-switch between
+  functions. See [Context](#Context) for duplo's solution.
+* One file contains one module that does one thing. I believe it is called the
+  UNIX philosophy.
 
 Ultimately, there is really just one guiding principle: Keep It Simple, Stupid.
 
@@ -107,6 +109,45 @@ function main () {
   return out + 1; // -> 4
 }
 ```
+
+### Module Path
+
+There is actually something incomplete in the above example: the first
+parameter to `require(2)` must be a "module path". The path consists of the
+the repo in which the module lives, as referenced by its Component.IO name,
+followed by its path in its location relative to its module's `app/modules/`
+directory.
+
+For example, if the repo running duplo is `pixbi/war`, as per Component.IO
+convention:
+
+```js
+// components/pixbi-nuclear-missile/app/modules/dod/pentagon/launch.js
+function launch () {
+  // World annihilation
+}
+
+function main (countdown) {
+  setTimeout(launch, countdown);
+}
+
+// app/modules/white-house/president/declare-war.js
+var launch = require('pixbi.nuclearMissile.dod.pentagon.launch');
+
+function main () {
+  launch(10000);
+}
+
+// app/index.js
+var declare = require('pixbi.war.whiteHouse.president.declareWar');
+
+function main () {
+  declare();
+}
+```
+
+Yes, it is relatively verbose to call another module. The point is to be
+explicit as possible and to encourage shorter module names.
 
 ### Factory Pattern
 
