@@ -1,4 +1,4 @@
-# Duplo
+# duplo
 
 Intuitive, simple building blocks for building composable, completely
 self-managed web applications
@@ -7,8 +7,6 @@ self-managed web applications
 ## Installation
 
     $ npm install -g duplo
-
-That's it!
 
 
 ## Usage
@@ -46,26 +44,21 @@ Ultimately, there is really just one guiding principle: Keep It Simple, Stupid.
 
 ## File Structure
 
-There are some required directories:
-
     app/            --> Application code
     app/index.jade  --> Entry point for templates. Only this file is compiled.
                         Use Jade's include system to pull in other templates.
-    app/params.json --> Optional parameter object to be made available as
+    app/params.json --> Optional parameter object made available as
                         `module.params`
     app/assets/     --> Asset files are copied as-is to build's top-level
                         directory
-    app/styl/       --> Any application top-level style (see below for details)
-    app/modules/    --> Module within the application that are ordered AFTER
+    app/styl/       --> Any application style (see below for details)
+    app/modules/    --> Module within the application that are included AFTER
                         code in the top-level `app/` directory when building
     components/     --> Other repos imported via Component.IO
     component.json  --> The Component.IO manifest
     dev/            --> Any code necessary to run the application in dev mode
-    node_modules/   --> Contains this repo
-    public/         --> Built files when developing. This is NOT committed to
-                        source
-    test/           --> Test files go here and should have an extension of
-                        `.spec.js`
+    public/         --> Built files when developing. Not committed to source
+    test/           --> Test files go here
 
 
 ## Development
@@ -101,7 +94,7 @@ function main (x) {
 }
 
 // b.js
-var a = require('my-dep');
+var a = require('a');
 
 function main () {
   var out = a(3);
@@ -114,7 +107,7 @@ function main () {
 
 There is actually something incomplete in the above example: the first
 parameter to `require(2)` must be a "module path". The path consists of the
-the repo in which the module lives, as referenced by its Component.IO name,
+repo in which the module lives, as referenced by its Component.IO name,
 followed by its path in its location relative to its module's `app/modules/`
 directory.
 
@@ -152,10 +145,10 @@ explicit as possible and to encourage shorter module names.
 ### Factory Pattern
 
 The factory pattern is implemented at the module level to avoid having to
-implement it at the application level. This is to simplify application
-development by offering only one way to do one thing.
+implement it at the application level, as it is a common pattern. This is to
+simplify application development by offering only one way to do one thing.
 
-A module is instantiated by specifying a name to `require(2)`, as the second
+A module is instantiated by specifying a name to `require(2)` as the second
 parameter. Take the following example:
 
 ```js
@@ -198,21 +191,23 @@ function main () {
 ```
 
 Note that when the second parameter is absent, it is effectively "naming" the
-instance as an empty string. In other words, all modules are singletons by
-default and optionally instantiable by name.
+instance as an empty string. In short, all modules are singletons by default
+and optionally instantiable by name.
 
 ### Debugging
 
 It may seem at first glance that this approach is effective a strict revealing
 module pattern with only `main()` exposed, and so it should be difficult to
-inspect the internals at run-time. However, it is actually rewritten at
-build-time to object literal form and run as you would with the
-[bootloader](https://github.com/pixbi/bootloader).
+inspect the internals at run-time. However, in development mode, there is a
+secret door into the instance.
 
-That means knowing the module path, say, `user.repo.a.b.c`, you could type in
-`module.user.repo.a.b.c.main` to access the `main()` function of the module in
-your browser's dev tools. Likewise, a module variable `x` could be accessed as
-`module.user.repo.a.b.c.x`.
+You would call `require(3)` like so: `require('user.repo.a.b.c', '', true);` to
+access the instance.  Likewise, a module variable `x` could be accessed as
+`require('user.repo.a.b.c', '', true).x`. To access a named instance's
+functions or variables, use `require('user.repo.a.b.c', 'an-instance-name',
+true).x`.
+
+Note that this is only available in development mode.
 
 
 ## Application Parameters
@@ -360,7 +355,7 @@ Building the project performs these steps:
 
 AMD is used for dependency resolution; however, you do not need to use
 `define(2)`. In fact, AMD is used during the build step and is completely
-invisible to Duplo users. In other words, there is no `define(2)` available.
+invisible to duplo users. So `define(2)` is actually not available.
 
 ### Context
 
