@@ -360,18 +360,18 @@ invisible to duplo users. So `define(2)` is actually not available.
 ### Context
 
 Each module is actually just a function. It gets run after its dependencies
-have been resolved. The `main()` function then becomes the only entry point
-into the module.
+have been resolved. The `main()` function then becomes the only window into the
+module.
 
-Even though it feels as if `this` is bound to the module, that is not exactly
-true. The context actually depends on the instance as named via `require(2)` in
-order for the factory pattern as highlighted above to work.
+Even though it feels as if `this` everywhere in the module is bound to the
+module, that is not exactly true. The context is actually the instance as named
+via `require(2)` in order for the factory pattern as highlighted above to work.
 
 All top-level functions within the module are "bound" to the current instance
-of the module. This "binding" is not a "hard" bind using `bind()`. A rewrite is
-performed at build-time to convert `this` references to a hygienic reference to
-`this` of the module function. And all calls to bound functions (note: the only
-free function should be `require(2)`) are called with that reference. In
+of the module. This "binding" is a "hard" bind unlike using `bind()`. A rewrite
+is performed at build-time to convert `this` references to a hygienic reference
+to `this` of the module function. And all calls to bound functions (note: the
+only free function should be `require(2)`) are called with that reference. In
 addition, non-local variables (i.e. those which are top-level in the module)
 are also rewritten to properties of the module function's `this`.
 
