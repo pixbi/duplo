@@ -1,0 +1,14 @@
+{
+  "name": "duplo",
+  "repo": "pixbi/duplo",
+  "description": "Intuitive, simple building blocks for building composable, completely self-managed web applications",
+  "version": "0.8.1",
+  "dependencies": {
+    "pixbi/bootloader": "0.2.6"
+  },
+  "scripts": [],
+  "styles": [],
+  "templates": [],
+  "images": [],
+  "fonts": []
+}
