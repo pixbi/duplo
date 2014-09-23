@@ -375,14 +375,11 @@ only free function should be `require(2)`) are called with that reference. In
 addition, non-local variables (i.e. those which are top-level in the module)
 are also rewritten to properties of the module function's `this`.
 
-For the category-inclined, duplo modules are *loosely* applicative functors.
-`require(2)` is analogous to `pure` in that it lifts the main module function
-into an applicative and normal function calls thereafter are analogous to `<*>`
-in that all calls to other module functions by `main()` are essentially
-`fmap`ping.
-
-And since all code is organized in modules in the duplo world, the entire
-program is basically one big applicative functor.
+For the category-inclined, duplo modules are *loosely* restricted monads.
+`require(2)` is `bind` in that it lifts the main module function into a monad
+with the named instance as the input value. Functions called thereafter are
+implicitly `lift`ed in that all calls to other functions in the module by
+`main()` are essentially function application in the given monad.
 
 
 ## Copyright and License
