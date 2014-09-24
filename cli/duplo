@@ -26,12 +26,32 @@ abort() {
   printf "\n  \033[31mError: $@\033[0m\n\n" && exit 1
 }
 
-setVersion() {
+set_version() {
   eval "$3=`cat "$1/$2.json" | $json | egrep '\["version"\]' | egrep -o '[0-9\.]+'`"
 }
 
-showVersionString() {
+display_version_string() {
   echo 'Duplo v'$version
+}
+
+display_help() {
+  cat <<-EOF
+
+  Usage: duplo [commands] [args]
+
+  Commands:
+
+    duplo new <name> <repo-url>      scaffolds a new duplo repo
+    duplo dev                        starts a local server and re-compiles on 
+                                     file change
+    duplo build                      runs a build. This could be used for checking
+                                     the code against Closure Compiler.
+    duplo patch                      builds the project and bump the patch version
+    duplo minor                      builds the project and bump the minor version
+    duplo major                      builds the project and bump the major version
+
+EOF
+  exit 0
 }
 
 precommit() {
@@ -41,7 +61,7 @@ precommit() {
 
 commit() {
   ver='0.0.0'
-  setVersion $cwd component ver
+  set_version $cwd component ver
 
   # Commit
   git add component.json
@@ -61,11 +81,11 @@ commit() {
 }
 
 # init version
-setVersion $duplo package version
+set_version $duplo package version
 
 case "$1" in
   version|ver|-v|--ver|--version)
-    showVersionString
+    display_version_string
     ;;
   
   new)
@@ -149,6 +169,7 @@ EOF
     ;;
 
   *)
-    abort "Unknown command"
+    display_help
+    ;;
 
 esac
