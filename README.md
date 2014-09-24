@@ -28,7 +28,7 @@ self-managed web applications
   or otherwise, nested within another function. A callback should be named
   explicitly to another static function.
 * `this` is evil. Developers should not need to context-switch between
-  functions. See [Context](#Context) for duplo's solution.
+  functions.
 * One file contains one module that does one thing. I believe it is called the
   UNIX philosophy.
 
@@ -363,23 +363,10 @@ Each module is actually just a function. It gets run after its dependencies
 have been resolved. The `main()` function then becomes the only window into the
 module.
 
-Even though it feels as if `this` everywhere in the module is bound to the
-module, that is not exactly true. The context is actually the instance as named
-via `require(2)` in order for the factory pattern as highlighted above to work.
-
-All top-level functions within the module are "bound" to the current instance
-of the module. This "binding" is a "hard" bind unlike using `bind()`. A rewrite
-is performed at build-time to convert `this` references to a hygienic reference
-to `this` of the module function. And all calls to bound functions (note: the
-only free function should be `require(2)`) are called with that reference. In
-addition, non-local variables (i.e. those which are top-level in the module)
-are also rewritten to properties of the module function's `this`.
-
-For the category-inclined, duplo modules are *loosely* restricted monads.
-`require(2)` is `bind` in that it lifts the main module function into a monad
-with the named instance as the input value. Functions called thereafter are
-implicitly `lift`ed in that all calls to other functions in the module by
-`main()` are essentially function application in the given monad.
+Rather than using `this` (which should be avoided at all costs anyway), simply
+call the named variables or functions. Factory pattern is implicitly used so a
+module function that needs to call another "instance" of the the same module
+needs to explicitly `require(3)` that particular instance.
 
 
 ## Copyright and License
