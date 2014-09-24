@@ -235,10 +235,10 @@ An example of a `component.json`:
     "pixbi/standalone": "3.3.3"
   },
   "exclude": {
-    "embeddable": [
+    "pixbi/embeddable": [
       "pixbi/standalone"
     ],
-    "standalone": [
+    "pixbi/standalone": [
       "pixbi/embeddable"
     ]
   }

@@ -13,6 +13,7 @@ var
   concat = require('gulp-concat'),
   stylus = require('gulp-stylus'),
   rimraf = require('gulp-rimraf'),
+  jshint = require('gulp-jshint'),
   prepend = require('gulp-inject-string').prepend,
   wrap = require('gulp-inject-string').wrap,
   autoprefixer = require('gulp-autoprefixer'),
@@ -47,7 +48,7 @@ process.chdir(CWD);
 
 function cleanBefore (prefix) {
   return gulp
-    .src(['public/', 'tmp/'], {read: false})
+    .src(['public/', 'tmp/', 'components/**/public/'], {read: false})
     .pipe(rimraf({force: true}));
 }
 
@@ -175,9 +176,17 @@ function compileParams (prefix) {
 
 function compileDeps (callback) {
   var prefixs = [];
+  var excludes = manifest.exclude && manifest.exclude[BUILD_FORM.replace('-', '/')];
   return gulp
     .src('components/*')
     .pipe(es.through(function write (dir) {
+      if (excludes) {
+        var i;
+        var base = path.basename(dir.path).replace('-', '/');
+        for (i=0; i<excludes.length; i++) {
+          if (base === excludes[i]) return;
+        }
+      }
       prefixs.push(dir.path + '/');
     }, function end () {
       async.each(prefixs, compile, callback);
@@ -192,6 +201,9 @@ function concatJS () {
       'public/script.js',
       'public/params.js'
     ])
+    .pipe(jshint())
+    .pipe(jshint.reporter('jshint-stylish'))
+    // .pipe(jshint.reporter('fail'))
     .pipe(concat('script.js'));
 
   if (BUILD_MODE !== 'dev') {
@@ -287,12 +299,7 @@ function devWithHTTP () {
 
 function build () {
   onlyBuild = true;
-  if (!BUILD_FORM) {
-    dev();
-  } else {
-    finished = true;
-    dev(CWD + '/components/' + BUILD_FORM);
-  }
+  dev();
 }
 
 function release (level) {
