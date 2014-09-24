@@ -127,10 +127,13 @@ function selectAppAssets (prefix) {
 
 function compileJS (prefix) {
   var manifest = getManifest(prefix);
+  var base = /^[a-zA-Z_]{1}\w*$/.test(manifest.name) 
+    ? 'module.' + manifest.name
+    : 'module["' + manifest.name + '"]';
   var src = '' +
     // use [] to support app name with symbol '-', because module.x-y is invalid in ES
-    util.format('module["%s"] = module["%s"] || {}; module["%s"].version = "%s";\n',
-      manifest.name, manifest.name, manifest.name, manifest.version) +
+    util.format('%s = %s || {}; %s.version = "%s";\n',
+      base, base, base, manifest.version) +
     util.format('module.mode = "%s";\n', NODE_ENV);
   return gulp
     .src(prefix+'app/**/*.js')
