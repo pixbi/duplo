@@ -21,42 +21,18 @@ That's it!
 * `duplo minor` builds the project and bump the minor version
 * `duplo major` builds the project and bump the major version
 
-### Compiling
 
-Compiling the project performs these steps:
+## Philosophies
 
-1. Copy files in `app/assets/` to `public/`
-2. Copy files in `dev/` to `public/`
-3. `public/index.html` is created if it doesn't already exist
-4. Compile all Stylus files (order specified [below](#cssstylus-order)) under
-   `app/` and concatenate into one CSS file as `public/index.css`
-5. Concatenate all JavaScript under `app/` into one JS file as
-   `public/index.js`
-6. Compile all Jade files under `app/` into one HTML file and inject into the
-   end of `body` in `public/index.html`
-7. Write into `public/index.html` tags to include `style.css` and `script.js`
+1. Stay as close to raw JavaScript as possible, because JavaScript lacks the
+   mechanism to build strong abstraction.
+2. Closures are discouraged. Optimally, there should be no function, anonymous
+   or otherwise, nested within another function. A callback should be named
+   explicitly to another static function.
+3. `this` is evil. Developers should not need to context-switch between
+   functions. See [Context](#Context) for duplo's solution.
 
-Note that while compiling the builder creates a temporary `tmp/` directory.
-
-### Building
-
-Building the project performs these steps:
-
-1.  Stash changes to git to avoid data loss (you should of course make sure
-    there is no uncommitted code as well)
-2.  Checkout the `develop` branch
-3.  Compile the project
-4.  Apply Closure Compiler with advanced optimizations on the built JavaScript.
-    Any error would stop the process here and fixes should be applied before
-    retrying.
-5.  Apply any transformation for further uglification
-6.  Scan through the `app/` directory and write all relevant file references to
-    `components.json`
-7.  Bump the respective version
-8.  Commit to git
-9.  Checkout the `master` branch and merge `develop` into `master`
-10. Apply the new version as a new git tag
-11. Checkout the `develop` branch again
+Ultimately, there is really just one guiding principle: Keep It Simple, Stupid.
 
 
 ## Technologies
@@ -71,9 +47,6 @@ Building the project performs these steps:
 There are some required directories:
 
     app/            --> Application code
-    app/index.html  --> An optional special HTML file into which the builder
-                        injects the script tag, the style tag, and the markup
-                        when built
     app/index.jade  --> Entry point for templates. Only this file is compiled.
                         Use Jade's include system to pull in other templates.
     app/params.json --> Optional parameter object to be made available as
@@ -112,46 +85,99 @@ replace whatever is built at their respective locations. The `index.html` in
 The output file exposes the mode via the `module.mode` attribute. When in
 development, `module.mode === 'dev'` should be `true`.
 
-NOTE: because of the builder recursively building dependencies, it does not
-watch for changes in `components/` directory. If you update a repo's
-dependencies, you need to restart Grunt.js.
 
+## Dependency Management
 
-## Application Name
+One declares a dependency by calling `require(2)`. It is not unlike CommonJS,
+but the similarity ends there. There is neither `exports` nor `module`.
+Instead, the `main()` function is always exported.
 
-Note that the application name used in the `component.json` file MUST
-correspond to the name used on `module`. In other words, the following is
-invalid.
+```js
+// a.js
+function main (x) {
+  return x + 1;
+}
 
-In `component.json`:
+// b.js
+var a = require('my-dep');
 
-```json
-{
-  "name": "abc",
-  "version": "1.2.3",
-  ...
+function main () {
+  var out = a(3);
+
+  return out + 1; // -> 4
 }
 ```
 
-In `index.js`:
+### Factory Pattern
+
+The factory pattern is implemented at the module level to avoid having to
+implement it at the application level. This is to simplify application
+development by offering only one way to do one thing.
+
+A module is instantiated by specifying a name to `require(2)`, as the second
+parameter. Take the following example:
 
 ```js
-module("xyz", {
-  init: function init () {
-    ...
-  }
-});
+// a.js
+var x = 0;
+
+function main (y) {
+  x += y;
+
+  return x;
+}
+
+// b.js
+var a = require('user.repo.a', 'someName');
+
+function main () {
+  a(1); // -> 1
+}
+
+// c.js
+var a = require('user.repo.a', 'someOtherName');
+
+function main () {
+  a(2); // -> 2
+}
+
+// d.js
+var a = require('user.repo.a', 'someName');
+
+function main () {
+  a(3); // -> 4
+}
+
+// e.js
+var a = require('user.repo.a');
+
+function main () {
+  a(4); // -> 4
+}
 ```
 
-Technically you could do this but duplo wouldn't be able to find and include
-the module.
+Note that when the second parameter is absent, it is effectively "naming" the
+instance as an empty string. In other words, all modules are singletons by
+default and optionally instantiable by name.
+
+### Debugging
+
+It may seem at first glance that this approach is effective a strict revealing
+module pattern with only `main()` exposed, and so it should be difficult to
+inspect the internals at run-time. However, it is actually rewritten at
+build-time to object literal form and run as you would with the
+[bootloader](https://github.com/pixbi/bootloader).
+
+That means knowing the module path, say, `user.repo.a.b.c`, you could type in
+`module.user.repo.a.b.c.main` to access the `main()` function of the module in
+your browser's dev tools. Likewise, a module variable `x` could be accessed as
+`module.user.repo.a.b.c.x`.
 
 
 ## Application Parameters
 
-Since the bootloader accepts a `params` object for `module.init()`, you may
-specify an optional `params.json`, the content of which would be injected as
-`module.params`. For instance, with a `params.json` of:
+You may specify an optional `params.json`, the content of which would be
+injected as `module.params`. For instance, with a `params.json` of:
 
 ```json
 {
@@ -186,8 +212,8 @@ And we then may call it in `index.html` like this:
 ```
 
 The benefit of this is that we could place a `params.json` in `dev/` for dev
-mode and one in `app/` for production and have a complete isolation between code
-And configuration.
+mode and one in `app/` for production and have a complete isolation between
+code And configuration.
 
 
 ## CSS/Stylus Order
@@ -235,15 +261,92 @@ An example of a `component.json`:
     "pixbi/standalone": "3.3.3"
   },
   "exclude": {
-    "pixbi/embeddable": [
+    "embeddable": [
       "pixbi/standalone"
     ],
-    "pixbi/standalone": [
+    "standalone": [
       "pixbi/embeddable"
     ]
   }
 }
 ```
+
+
+## In-Depth Explanation
+
+The following sections are explanations for how it works. Feel free to skip if
+the actual implementations do not bother you, although understanding how it
+works helps with debugging by offering a mental model of where everything goes.
+
+### Compiling
+
+Compiling the project performs these steps:
+
+1. Copy files in `app/assets/` to `public/`
+2. Copy files in `dev/` to `public/`
+3. `public/index.html` is created if it doesn't already exist
+4. Compile all Stylus files (order specified [below](#cssstylus-order)) under
+   `app/` and concatenate into one CSS file as `public/index.css`
+5. Concatenate all JavaScript under `app/` into one JS file as
+   `public/index.js`
+6. Compile all Jade files under `app/` into one HTML file and inject into the
+   end of `body` in `public/index.html`
+7. Write into `public/index.html` tags to include `style.css` and `script.js`
+
+Note that while compiling the builder creates a temporary `tmp/` directory.
+
+### Building
+
+Building the project performs these steps:
+
+1.  Stash changes to git to avoid data loss (you should of course make sure
+    there is no uncommitted code as well)
+2.  Checkout the `develop` branch
+3.  Compile the project
+4.  Apply Closure Compiler with advanced optimizations on the built JavaScript.
+    Any error would stop the process here and fixes should be applied before
+    retrying.
+5.  Apply any transformation for further uglification
+6.  Scan through the `app/` directory and write all relevant file references to
+    `components.json`
+7.  Bump the respective version
+8.  Commit to git
+9.  Checkout the `master` branch and merge `develop` into `master`
+10. Apply the new version as a new git tag
+11. Checkout the `develop` branch again
+
+### Dependency Resolution
+
+AMD is used for dependency resolution; however, you do not need to use
+`define(2)`. In fact, AMD is used during the build step and is completely
+invisible to Duplo users. In other words, there is no `define(2)` available.
+
+### Context
+
+Each module is actually just a function. It gets run after its dependencies
+have been resolved. The `main()` function then becomes the only entry point
+into the module.
+
+Even though it feels as if `this` is bound to the module, that is not exactly
+true. The context actually depends on the instance as named via `require(2)` in
+order for the factory pattern as highlighted above to work.
+
+All top-level functions within the module are "bound" to the current instance
+of the module. This "binding" is not a "hard" bind using `bind()`. A rewrite is
+performed at build-time to convert `this` references to a hygienic reference to
+`this` of the module function. And all calls to bound functions (note: the only
+free function should be `require(2)`) are called with that reference. In
+addition, non-local variables (i.e. those which are top-level in the module)
+are also rewritten to properties of the module function's `this`.
+
+For the category-inclined, duplo modules are *loosely* applicative functors.
+`require(2)` is analogous to `pure` in that it lifts the main module function
+into an applicative and normal function calls thereafter are analogous to `<*>`
+in that all calls to other module functions by `main()` are essentially
+`fmap`ping.
+
+And since all code is organized in modules in the duplo world, the entire
+program is basically one big applicative functor.
 
 
 ## Copyright and License
