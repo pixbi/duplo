@@ -287,7 +287,7 @@ function dev (prefix) {
 
 function connect () {
   require('gulp-connect').server({
-    root: 'app',
+    root: 'public',
     port: PORT,
     livereload: true
   });
