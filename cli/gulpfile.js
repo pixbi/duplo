@@ -134,6 +134,9 @@ function compileJS (prefix) {
     util.format('module.mode = "%s";\n', NODE_ENV);
   return gulp
     .src(prefix+'app/**/*.js')
+    .pipe(jshint())
+    .pipe(jshint.reporter('jshint-stylish'))
+    // .pipe(jshint.reporter('fail'))
     .pipe(concat('script.js'))
     .pipe(prepend(src));
 }
@@ -202,9 +205,6 @@ function concatJS () {
       'public/script.js',
       'public/params.js'
     ])
-    .pipe(jshint())
-    .pipe(jshint.reporter('jshint-stylish'))
-    // .pipe(jshint.reporter('fail'))
     .pipe(concat('script.js'));
 
   if (BUILD_MODE !== 'dev') {
