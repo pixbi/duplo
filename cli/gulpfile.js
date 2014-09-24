@@ -347,8 +347,7 @@ function updateComponentField (json, glob, name) {
 }
 
 // for development
-gulp.task('dev', dev);
-gulp.task('dev:http', devWithHTTP);
+gulp.task('dev', devWithHTTP);
 gulp.task('dev:connect', connect);
 
 // for production
