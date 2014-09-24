@@ -81,12 +81,11 @@ EOF
     if [ -z "$NODE_ENV" ]; then
       NODE_ENV="dev"
     fi
-    form="$2"
 
     if [ -z "$2" ]; then
       CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=dev $run dev
     else
-      CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=dev $run dev:$2
+      CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=dev BUILD_FORM=$2 $run dev
     fi
     ;;
   
@@ -96,17 +95,11 @@ EOF
     fi
 
     if [ -z "$2" ]; then
+      # build project/app
       CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=prod $run build
     else
-      CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=prod $run build:$2
-    fi
-    ;;
-
-  buildDep|builddep)
-    if [ -z "$2" ]; then
-      abort "dependency name required"
-    else
-      CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=prod $run build:$2
+      # build dep
+      CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=prod BUILD_FORM=$2 $run build
     fi
     ;;
 

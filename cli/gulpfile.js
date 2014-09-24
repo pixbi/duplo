@@ -25,11 +25,13 @@ var
   CWD = process.env.CWD || '~',
   NODE_ENV = process.env.NODE_ENV || 'dev',
   BUILD_MODE = process.env.BUILD_MODE || 'dev',
+  BUILD_FORM = process.env.BUILD_FORM,
   STYLUS_VAR_FILE = CWD + '/app/styl/variables.styl',
   head = fs.readFileSync(path.join(DUPLO, './head.html')),
   hasVariableStylus = fs.existsSync(STYLUS_VAR_FILE),
   finished = false,
   watched = false,
+  onlyBuild = false,
   manifest = getManifest();
 
 var styleFiles = [
@@ -43,14 +45,6 @@ var styleFiles = [
 
 process.chdir(CWD);
 
-function connect () {
-  require('gulp-connect').server({
-    root: 'app',
-    port: PORT,
-    livereload: true
-  });
-}
-
 function cleanBefore (prefix) {
   return gulp
     .src(['public/', 'tmp/'], {read: false})
@@ -58,32 +52,33 @@ function cleanBefore (prefix) {
 }
 
 function cleanAfter () {
+  if (BUILD_MODE === 'dev') return;
   return gulp
-    .src('public/params.js', {read: false})
+    .src([
+      'public/params.js*',
+      'public/template.html'
+    ], {read: false})
     .pipe(rimraf({force: true}));
-}
-
-function dev () {
-  cleanBefore().pipe(es.wait(compile));
-}
-
-function devWithHTTP () {
-  dev();
-  connect();
 }
 
 function compile (prefix, callback) {
   var prefix = (typeof prefix === 'string') ? prefix : '';
   (prefix !== '') && gutil.log('compiling ', path.basename(prefix));
-  es.merge(
+
+  // build list for step1
+  var list = [
     selectComponents(prefix),
     selectAppAssets(prefix),
     compileJS(prefix),
     compileCSS(prefix),
-    compileJadeTemplates(prefix),
-    compileDev(prefix),
-    compileParams(prefix)
-  )
+    compileJadeTemplates(prefix)
+  ];
+  if (BUILD_MODE === 'dev') {
+    list.push(compileDev(prefix));
+  }
+  list.push(compileParams(prefix));
+
+  es.merge.apply(es, list)
     .pipe(gulp.dest(prefix+'public'))
     .pipe(es.wait(function onend () {
       (prefix !== '') && gutil.log('ok ', path.basename(prefix));
@@ -107,6 +102,8 @@ function finish () {
     .pipe(es.wait(function onfinished () {
       gutil.log('Finished basic build');
       cleanAfter();
+      // if only need to build, we should quit here right now
+      if (onlyBuild) return;
       watch();
       // set finished to false, when build whole once
       // and ready for next build by watch.on('change', fn)
@@ -165,11 +162,7 @@ function compileJadeTemplates (prefix) {
 }
 
 function compileDev (prefix) {
-  if (BUILD_MODE === 'dev') {
-    return gulp.src(prefix+'dev/**/*');
-  } else {
-    return gutil.noop();
-  }
+  return gulp.src(prefix+'dev/**/*');
 }
 
 function compileParams (prefix) {
@@ -204,6 +197,7 @@ function concatJS () {
   if (BUILD_MODE !== 'dev') {
     var uglify = require('gulp-uglify');
     gstream = gstream.pipe(uglify());
+    gutil.log('uglifying js files...');
   }
   return gstream;
 }
@@ -222,6 +216,7 @@ function concatCSS () {
   if (BUILD_MODE !== 'dev') {
     var cssshrink = require('gulp-cssshrink');
     gstream = gstream.pipe(cssshrink());
+    gutil.log('cssshrinking...');
   }
   return gstream;
 }
@@ -271,11 +266,40 @@ function getManifest (prefix) {
   return manifest;
 }
 
+function dev (prefix) {
+  cleanBefore().pipe(es.wait(function () {
+    compile(prefix);
+  }));
+}
+
+function connect () {
+  require('gulp-connect').server({
+    root: 'app',
+    port: PORT,
+    livereload: true
+  });
+}
+
+function devWithHTTP () {
+  dev();
+  connect();
+}
+
+function build () {
+  onlyBuild = true;
+  if (!BUILD_FORM) {
+    dev();
+  } else {
+    finished = true;
+    dev(CWD + '/components/' + BUILD_FORM);
+  }
+}
+
 gulp.task('dev', dev);
 gulp.task('dev:http', devWithHTTP);
 gulp.task('dev:connect', connect);
 
-// gulp.task('build');
+gulp.task('build', build);
 // gulp.task('build:deps');
 // gulp.task('release:patch');
 // gulp.task('release:minor');
