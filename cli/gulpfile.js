@@ -8,14 +8,11 @@ var
   jade = require('gulp-jade'),
   file = require('gulp-file'),
   gutil = require('gulp-util'),
-  // connect = require('gulp-connect'),
   replace = require('gulp-replace'),
   rename = require('gulp-rename'),
   concat = require('gulp-concat'),
   stylus = require('gulp-stylus'),
   rimraf = require('gulp-rimraf'),
-  // uglify = require('gulp-uglify'),
-  // cssshrink = require('gulp-cssshrink'),
   prepend = require('gulp-inject-string').prepend,
   wrap = require('gulp-inject-string').wrap,
   autoprefixer = require('gulp-autoprefixer'),
@@ -32,6 +29,7 @@ var
   head = fs.readFileSync(path.join(DUPLO, './head.html')),
   hasVariableStylus = fs.existsSync(STYLUS_VAR_FILE),
   finished = false,
+  watched = false,
   manifest = getManifest();
 
 var styleFiles = [
@@ -44,14 +42,14 @@ var styleFiles = [
 ];
 
 process.chdir(CWD);
-gulp.task('connect', function () {
+
+function connect () {
   require('gulp-connect').server({
     root: 'app',
     port: PORT,
     livereload: true
   });
-});
-
+}
 
 function cleanBefore (prefix) {
   return gulp
@@ -63,6 +61,15 @@ function cleanAfter () {
   return gulp
     .src('public/params.js', {read: false})
     .pipe(rimraf({force: true}));
+}
+
+function dev () {
+  cleanBefore().pipe(es.wait(compile));
+}
+
+function devWithHTTP () {
+  dev();
+  connect();
 }
 
 function compile (prefix, callback) {
@@ -80,7 +87,7 @@ function compile (prefix, callback) {
     .pipe(gulp.dest(prefix+'public'))
     .pipe(es.wait(function onend () {
       (prefix !== '') && gutil.log('ok ', path.basename(prefix));
-      callback && callback();
+      (typeof callback === 'function') && callback();
       finish();
     }));
 }
@@ -97,7 +104,14 @@ function finish () {
       concatHTML()
     )
     .pipe(gulp.dest('./public'))
-    .pipe(es.wait(cleanAfter));
+    .pipe(es.wait(function onfinished () {
+      gutil.log('Finished basic build');
+      cleanAfter();
+      watch();
+      // set finished to false, when build whole once
+      // and ready for next build by watch.on('change', fn)
+      finished = false;
+    }));
   });
 }
 
@@ -177,7 +191,7 @@ function compileDeps (callback) {
     }));
 }
 
-function concatJS (prefix) {
+function concatJS () {
   var gstream = gulp
     .src([
       'components/pixbi-bootloader/public/script.js',
@@ -194,7 +208,7 @@ function concatJS (prefix) {
   return gstream;
 }
 
-function concatCSS (prefix) {
+function concatCSS () {
   var gstream = gulp
     .src([
       'public/style.css',
@@ -212,7 +226,7 @@ function concatCSS (prefix) {
   return gstream;
 }
 
-function concatHTML (prefix) {
+function concatHTML () {
   return gulp
     .src([
       'public/template.html',
@@ -231,6 +245,19 @@ function concatHTML (prefix) {
     ));
 }
 
+function watch () {
+  gutil.log('Watching app');
+  if (watched) return;
+  watched = true;
+  gulp.watch([
+    './app/**/*',
+    './dev/**/*',
+    './components/pixbi-**/app/**/*'
+  ], function onappchange (e) {
+    cleanBefore().pipe(es.wait(compile));
+  });
+}
+
 function getManifest (prefix) {
   var manifest;
   var p = (prefix && prefix !== '')
@@ -244,6 +271,12 @@ function getManifest (prefix) {
   return manifest;
 }
 
-gulp.task('clean:before', cleanBefore);
-gulp.task('dev:root', ['clean:before'], compile);
-gulp.task('dev:root:http', ['connect', 'dev:root']);
+gulp.task('dev', dev);
+gulp.task('dev:http', devWithHTTP);
+gulp.task('dev:connect', connect);
+
+// gulp.task('build');
+// gulp.task('build:deps');
+// gulp.task('release:patch');
+// gulp.task('release:minor');
+// gulp.task('release:major');

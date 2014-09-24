@@ -84,9 +84,9 @@ EOF
     form="$2"
 
     if [ -z "$2" ]; then
-      CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=dev $run dev:root
+      CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=dev $run dev
     else
-      CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=dev $run dev:root:$2
+      CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=dev $run dev:$2
     fi
     ;;
   
@@ -96,9 +96,9 @@ EOF
     fi
 
     if [ -z "$2" ]; then
-      CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=prod $run build:root
+      CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=prod $run build
     else
-      CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=prod $run build:root:$2
+      CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=prod $run build:$2
     fi
     ;;
 
@@ -106,7 +106,7 @@ EOF
     if [ -z "$2" ]; then
       abort "dependency name required"
     else
-      CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=prod $run build:root:$2
+      CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=prod $run build:$2
     fi
     ;;
 
