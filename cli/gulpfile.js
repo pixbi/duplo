@@ -295,12 +295,56 @@ function build () {
   }
 }
 
+function release (level) {
+  // gulp-bump would use `patch` as its default value
+  var bump = require('gulp-bump');
+  return gulp
+    .src('./component.json')
+    .pipe(bump({type: level}))
+    .pipe(es.through(
+      function ondata (file) {
+        var self = this;
+        var componentjs = initComponentJSON(file._contents);
+        es.merge(
+          updateComponentField(componentjs, './app/**/*.js', 'scripts'),
+          updateComponentField(componentjs, './app/**/*.styl', 'styles'),
+          updateComponentField(componentjs, ['app/**/*.jade', 'app/**/*.html'], 'templates'),
+          updateComponentField(componentjs, 'app/assets/images/**/*.*', 'images'),
+          updateComponentField(componentjs, 'app/assets/fonts/**/*.*', 'fonts')
+        )
+        .pipe(es.wait(function () {
+          file._contents = new Buffer(JSON.stringify(componentjs, null, 2));
+          file.pipe(fs.createWriteStream(file.path));
+        }));
+      }
+    ));
+}
+
+function initComponentJSON (buffer) {
+  var json = JSON.parse(buffer.toString());
+  json['scripts'] = [];
+  json['styles'] = [];
+  json['templates'] = [];
+  json['images'] = [];
+  json['fonts'] = [];
+  return json;
+}
+
+function updateComponentField (json, glob, name) {
+  return gulp
+    .src(glob, {read: false})
+    .pipe(es.through(function onfile (file) {
+      json[name].push(path.relative(CWD, file.path));
+    }));
+}
+
+// for development
 gulp.task('dev', dev);
 gulp.task('dev:http', devWithHTTP);
 gulp.task('dev:connect', connect);
 
+// for production
 gulp.task('build', build);
-// gulp.task('build:deps');
-// gulp.task('release:patch');
-// gulp.task('release:minor');
-// gulp.task('release:major');
+gulp.task('release:patch', release);
+gulp.task('release:minor', release.bind(release, 'minor'));
+gulp.task('release:major', release.bind(release, 'major'));

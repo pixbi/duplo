@@ -20,19 +20,52 @@ json="$duplo/node_modules/.bin/JSON.sh"
 gulp="$duplo/node_modules/.bin/gulp"
 gulpfile="$duplo/cli/gulpfile.js"
 run="$gulp --base $duplo --gulpfile $gulpfile"
-version=`cat "$duplo/package.json" | $json | egrep '\["version"\]' | egrep -o '[0-9\.]+'`
+version='0.0.0'
 
 abort() {
   printf "\n  \033[31mError: $@\033[0m\n\n" && exit 1
 }
 
-showVersion() {
+setVersion() {
+  eval "$3=`cat "$1/$2.json" | $json | egrep '\["version"\]' | egrep -o '[0-9\.]+'`"
+}
+
+showVersionString() {
   echo 'Duplo v'$version
 }
 
+precommit() {
+  git stash
+  git checkout develop
+}
+
+commit() {
+  ver='0.0.0'
+  setVersion $cwd component ver
+
+  # Commit
+  git add component.json
+  git commit -m 'Bump version'
+  # Merge into master
+  git checkout master
+  # Always force the new changes
+  git merge develop -X theirs
+  # Apply tag
+  git tag $ver
+  ## Sync with Github
+  git push origin develop:develop
+  git push origin master:master
+  git push origin --tags
+  # Go back to develop
+  git checkout develop
+}
+
+# init version
+setVersion $duplo package version
+
 case "$1" in
   version|ver|-v|--ver|--version)
-    showVersion
+    showVersionString
     ;;
   
   new)
@@ -103,16 +136,16 @@ EOF
     fi
     ;;
 
-  patch)
-    CWD=$cwd $run release:patch
+  patch|release)
+    precommit && CWD=$cwd $run release:patch && commit
     ;;
 
   minor)
-    CWD=$cwd $run release:minor
+    precommit && CWD=$cwd $run release:minor && commit
     ;;
 
   major)
-    CWD=$cwd $run release:major
+    precommit && CWD=$cwd $run release:major && commit
     ;;
 
   *)
