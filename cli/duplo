@@ -16,26 +16,34 @@ else
   duplo="$( cd "$dir/.." && pwd )"
 fi
 
-grunt="$duplo/node_modules/grunt-cli/bin/grunt"
-gruntfile="$duplo/cli/Gruntfile.coffee"
-run="$grunt --base $duplo --gruntfile $gruntfile"
+json="$duplo/node_modules/.bin/JSON.sh"
+gulp="$duplo/node_modules/.bin/gulp"
+gulpfile="$duplo/cli/gulpfile.js"
+run="$gulp --base $duplo --gulpfile $gulpfile"
+version=`cat "$duplo/package.json" | $json | egrep '\["version"\]' | egrep -o '[0-9\.]+'`
+
+abort() {
+  printf "\n  \033[31mError: $@\033[0m\n\n" && exit 1
+}
+
+showVersion() {
+  echo 'Duplo v'$version
+}
 
 case "$1" in
-  version)
-    node "$duplo/cli/version.js"
+  version|ver|-v|--ver|--version)
+    showVersion
     ;;
-
+  
   new)
-    name="$2"
-    repo="$3"
+    name=$2
+    repo=$3
 
     if [ -z "$name" ]; then
-      echo "There must be a name."
-      exit
+      abort "There must be a name."
     fi
     if [ -z "$repo" ]; then
-      echo "There must be a Git repo URL."
-      exit
+      abort "There must be a Git repo URL."
     fi
 
     # Make sure it's a Git repo
@@ -73,26 +81,33 @@ EOF
     if [ -z "$NODE_ENV" ]; then
       NODE_ENV="dev"
     fi
-
     form="$2"
 
-    CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=dev $run dev:root:$form
+    if [ -z "$2" ]; then
+      CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=dev $run dev:root
+    else
+      CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=dev $run dev:root:$2
+    fi
     ;;
-
+  
   build)
     if [ -z "$NODE_ENV" ]; then
       NODE_ENV="prod"
     fi
 
-    form="$2"
-
-    CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=prod $run build:root:$form
+    if [ -z "$2" ]; then
+      CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=prod $run build:root
+    else
+      CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=prod $run build:root:$2
+    fi
     ;;
 
-  buildDep)
-    form="$2"
-
-    CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=$BUILD_MODE $run build:$form
+  buildDep|builddep)
+    if [ -z "$2" ]; then
+      abort "dependency name required"
+    else
+      CWD=$cwd NODE_ENV=$NODE_ENV BUILD_MODE=prod $run build:root:$2
+    fi
     ;;
 
   patch)
@@ -108,5 +123,6 @@ EOF
     ;;
 
   *)
-    echo "Unknown command"
+    abort "Unknown command"
+
 esac
