@@ -293,7 +293,7 @@ function connect () {
     root: 'public',
     port: PORT,
     livereload: true,
-    fallback: 'index.html'
+    fallback: 'public/index.html'
   });
 }
 
