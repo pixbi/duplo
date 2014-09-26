@@ -292,7 +292,8 @@ function connect () {
   require('gulp-connect').server({
     root: 'public',
     port: PORT,
-    livereload: true
+    livereload: true,
+    fallback: 'public/index.html'
   });
 }
 
