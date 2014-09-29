@@ -1,0 +1,4 @@
+
+function require (path) {
+
+}
