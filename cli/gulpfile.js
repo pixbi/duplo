@@ -242,6 +242,8 @@ function concatJS () {
     .pipe(wrap(
       'var app = ' + JSON.stringify(manifest) + ';\n' +
       'var require;\n' +
+      // XXX(Yorkie): hacky a bit, move to bootloader
+      'module.mode = \'' + NODE_ENV + '\';\n' +
       '(function () {\n',
         // .. source code ..
       '})();\n'
