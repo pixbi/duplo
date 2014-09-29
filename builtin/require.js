@@ -1,11 +1,11 @@
 
-var module = {};
+var packages = {};
 
-function defineModule (name, ns, initFn) {
-  if (!module[name]) {
-    module[name] = {};
+function definePackage (name, ns, initFn) {
+  if (!packages[name]) {
+    packages[name] = {};
   }
-  module[name][ns] = {
+  packages[name][ns] = {
     'inited': false,
     'fn': initFn,
     'exports': {}
@@ -13,9 +13,9 @@ function defineModule (name, ns, initFn) {
 }
 
 function try_require (name, ns) {
-  var m = module[name][ns];
+  var m = packages[name][ns];
   if (!m) {
-    throw new Error('could not load module: ' + name + ns);
+    throw new Error('could not load package: ' + name + ns);
   }
   if (!m.inited) {
     m.inited = true;
@@ -26,14 +26,14 @@ function try_require (name, ns) {
 
 function require (_path) {
   
-  // load local module
+  // load local package
   if (!_path) {
     _path = 'index';
   }
-  if (module[app.name][_path]) {
+  if (packages[app.name][_path]) {
     return try_require(app.name, _path);
   }
-  if (module[app.name][_path + '.index']) {
+  if (packages[app.name][_path + '.index']) {
     return try_require(app.name, _path + '.index');
   }
 
@@ -41,18 +41,18 @@ function require (_path) {
   var pathObj = _path.split('.');
   var name = pathObj[1];
   var ns = pathObj.slice(2).join('.');
-  var notfoundErr = new Error('could not load module: ' + _path);
+  var notfoundErr = new Error('could not load package: ' + _path);
   
   if (!ns) {
     ns = 'index';
   }
-  if (!module[name]) {
+  if (!packages[name]) {
     throw notfoundErr;
   }
-  if (module[name][ns]) {
+  if (packages[name][ns]) {
     return try_require(name, ns);
   }
-  if (module[name][ns + '.index']) {
+  if (packages[name][ns + '.index']) {
     return try_require(name, ns + '.index');
   }
   throw notfoundErr;

@@ -128,9 +128,10 @@ function selectAppAssets (prefix) {
 
 function compileJS (prefix) {
   var manifest = getManifest(prefix);
-  var base = /^[a-zA-Z_]{1}\w*$/.test(manifest.name) 
-    ? 'module.' + manifest.name
-    : 'module["' + manifest.name + '"]';
+  var name = camelize(manifest.name);
+  var base = /^[a-zA-Z_]{1}\w*$/.test(name)
+    ? 'packages.' + name
+    : 'packages["' + name + '"]';
   var src = '' +
     // use [] to support app name with symbol '-', because module.x-y is invalid in ES
     util.format('%s = %s || {}; %s.version = "%s";\n',
@@ -148,25 +149,27 @@ function compileJS (prefix) {
 
       if (relpathObj[0] === 'app') {
         var start = relpathObj[1] === 'modules' ? 2 : 1;
-        ns = relpathObj.slice(start).join('.').replace('.js', '');
+        ns = camelize(relpathObj.slice(start).join('.').replace('.js', ''));
       }
 
       if (relpathObj[0] === 'components') {
         var start = relpathObj[3] === 'modules' ? 4 : 3;
-        ns = relpathObj.slice(start).join('.').replace('.js', '');
+        ns = camelize(relpathObj.slice(start).join('.').replace('.js', ''));
       }
-
-      ns = camelize(ns);
-      name = camelize(name);
 
       var moduleExpr = util.format('%s[\'%s\']', base, ns);
       var blocks = [
         new Buffer('\n' + moduleExpr + ' = {};'),
-        new Buffer('\ndefineModule(\'' + name + '\', \'' + ns + '\','),
-        new Buffer('\nfunction (module, exports) {\n'),
+        new Buffer('\ndefinePackage(\'' + name + '\', \'' + ns + '\','),
+        new Buffer('\nfunction (pkg, exports) {\n'),
+        // XXX(Yorkie): remove this after enable app variable at bootloader
+        new Buffer('\nvar module = module || {};\n'),
+        new Buffer('\nmodule.mode = \'' + NODE_ENV + '\';\n'),
+        new Buffer('\nwindow.module = module;\n'),
+        // ----------------------------------------------------------------
         new Buffer('\nvar main;\n'),
         source._contents,
-        new Buffer('\nmodule.exports = main;\n'),
+        new Buffer('\npkg.exports = main || exports;\n'),
         new Buffer('\n});')
       ];
       source._contents = Buffer.concat(blocks);
