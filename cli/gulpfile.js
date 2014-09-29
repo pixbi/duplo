@@ -28,7 +28,6 @@ var
   BUILD_MODE = process.env.BUILD_MODE || 'dev',
   BUILD_FORM = process.env.BUILD_FORM,
   STYLUS_VAR_FILE = CWD + '/app/styl/variables.styl',
-  MODULE_BASE = CWD + '/app/modules',
   head = fs.readFileSync(path.join(DUPLO, './head.html')),
   hasVariableStylus = fs.existsSync(STYLUS_VAR_FILE),
   finished = false,
