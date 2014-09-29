@@ -18,6 +18,7 @@ var
   wrap = require('gulp-inject-string').wrap,
   autoprefixer = require('gulp-autoprefixer'),
   async = require('async'),
+  camelize = require('humps').camelize,
   es = require('event-stream');
 
 var
@@ -143,7 +144,7 @@ function compileJS (prefix) {
 
       var relpath = source.path.replace(CWD, '').slice(1);
       var relpathObj = relpath.split('/');
-      var ns;
+      var ns, name = manifest.name;
 
       if (relpathObj[0] === 'app') {
         var start = relpathObj[1] === 'modules' ? 2 : 1;
@@ -155,10 +156,13 @@ function compileJS (prefix) {
         ns = relpathObj.slice(start).join('.').replace('.js', '');
       }
 
+      ns = camelize(ns);
+      name = camelize(name);
+
       var moduleExpr = util.format('%s[\'%s\']', base, ns);
       var blocks = [
         new Buffer('\n' + moduleExpr + ' = {};'),
-        new Buffer('\ndefineModule(\'' +manifest.name+ '\', \'' +ns+ '\','),
+        new Buffer('\ndefineModule(\'' + name + '\', \'' + ns + '\','),
         new Buffer('\nfunction (module) {\n'),
         new Buffer('\nvar main, exports;\n'),
         source._contents,
