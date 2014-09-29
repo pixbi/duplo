@@ -20,17 +20,17 @@ self-managed web applications
 * `duplo major` builds the project and bump the major version
 
 
-## Philosophies
+## Principles
 
-* Stay as close to raw JavaScript as possible, because JavaScript lacks the
-  mechanism to build strong abstraction.
-* Closures are discouraged. Optimally, there should be no function, anonymous
-  or otherwise, nested within another function. A callback should be named
-  explicitly to another static function.
-* `this` is evil. Developers should not need to context-switch between
-  functions.
-* One file contains one module that does one thing. I believe it is called the
-  UNIX philosophy.
+1. Stay as close to raw JavaScript as possible, because JavaScript lacks the
+   mechanism to build strong abstraction.
+2. Closures are discouraged. Optimally, there should be no function, anonymous
+   or otherwise, nested within another function. A callback should be named
+   explicitly to another static function.
+3. `this` is evil. Developers should not need to context-switch between
+   functions.
+4. One file contains one module that does one thing. I believe it is called the
+   UNIX philosophy.
 
 Ultimately, there is really just one guiding principle: Keep It Simple, Stupid.
 
@@ -241,6 +241,25 @@ The reason against passing any data from the caller to the module instance is
 to avoid needless dynamicity. A module should perform one thing and only one
 thing. The purpose of instantiation is to allow state to be separated
 explicitly and statically.
+
+### The Reactor Pattern
+
+The reactor pattern should *NOT* be used at the module level. The pattern is of
+course pervasive in the world of DOM via `addEventListener(2)`; however, with
+cross-module communication in duplo, it is best to stay with function call (see
+[Principle #1](#principles).
+
+The reactor pattern has no place in duplo because of one reason: it is only a
+great pattern when the system is highly dynamic. The only case for this pattern
+is when there does not already exist a system which organizes data flow.
+
+In a flat, static, single-function module architecture employed by duplo, you
+do not need to build a pipeline. Since the flow of an event is known ahead of
+time (i.e. static), there is no hierarchy of nested objects and functions to
+traverse mentally by the programmer (i.e. flat), and one module can only
+perform one thing (i.e. single-function), there is no need to build a pipeline
+on top of an already clear pipeline that is a series of non-nested function
+calls.
 
 ### Debugging
 
