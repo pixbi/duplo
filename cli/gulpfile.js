@@ -28,6 +28,7 @@ var
   BUILD_MODE = process.env.BUILD_MODE || 'dev',
   BUILD_FORM = process.env.BUILD_FORM,
   STYLUS_VAR_FILE = CWD + '/app/styl/variables.styl',
+  MODULE_BASE = CWD + '/app/modules',
   head = fs.readFileSync(path.join(DUPLO, './head.html')),
   hasVariableStylus = fs.existsSync(STYLUS_VAR_FILE),
   finished = false,
@@ -133,13 +134,42 @@ function compileJS (prefix) {
   var src = '' +
     // use [] to support app name with symbol '-', because module.x-y is invalid in ES
     util.format('%s = %s || {}; %s.version = "%s";\n',
-      base, base, base, manifest.version) +
-    util.format('module.mode = "%s";\n', NODE_ENV);
+      base, base, base, manifest.version);
   return gulp
     .src(prefix+'app/**/*.js')
     .pipe(jshint())
     .pipe(jshint.reporter('jshint-stylish'))
     // .pipe(jshint.reporter('fail'))
+    .pipe(es.through(function wrapfunc (source) {
+
+      var relpath = source.path.replace(CWD, '').slice(1);
+      var relpathObj = relpath.split('/');
+      var ns;
+
+      if (relpathObj[0] === 'app') {
+        var start = relpathObj[1] === 'modules' ? 2 : 1;
+        ns = relpathObj.slice(start).join('.').replace('.js', '');
+      }
+
+      if (relpathObj[0] === 'components') {
+        var start = relpathObj[3] === 'modules' ? 4 : 3;
+        ns = relpathObj.slice(start).join('.').replace('.js', '');
+      }
+
+      var moduleExpr = util.format('%s[\'%s\']', base, ns);
+      var blocks = [
+        new Buffer('\n' + moduleExpr + ' = {};'),
+        new Buffer('\ndefineModule(\'' +manifest.name+ '\', \'' +ns+ '\','),
+        new Buffer('\nfunction (module) {\n'),
+        new Buffer('\nvar main, exports;\n'),
+        source._contents,
+        new Buffer('\nmodule.exports = main || exports;'),
+        new Buffer('\n'),
+        new Buffer('\n});')
+      ];
+      source._contents = Buffer.concat(blocks);
+      this.emit('data', source);
+    }))
     .pipe(concat('script.js'))
     .pipe(prepend(src));
 }
@@ -203,12 +233,20 @@ function compileDeps (callback) {
 function concatJS () {
   var gstream = gulp
     .src([
+      path.join(DUPLO, '../builtin/*.js'),
       'components/pixbi-bootloader/public/script.js',
       'components/**/public/script.js',
       'public/script.js',
       'public/params.js'
     ])
-    .pipe(concat('script.js'));
+    .pipe(concat('script.js'))
+    .pipe(wrap(
+      'var app = ' + JSON.stringify(manifest) + ';\n' +
+      'var require;\n' +
+      '(function () {\n',
+        // .. source code ..
+      '})();\n'
+    ));
 
   if (BUILD_MODE !== 'dev') {
     var uglify = require('gulp-uglify');
