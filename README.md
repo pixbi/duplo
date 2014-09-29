@@ -194,6 +194,54 @@ Note that when the second parameter is absent, it is effectively "naming" the
 instance as an empty string. In short, all modules are singletons by default
 and optionally instantiable by name.
 
+#### The Messy Factory
+
+Question: how do you create dynamic instances?
+
+Short answer: You don't. The reason behind this strictness on instance creation
+is because of the complexity that the factory pattern introduces. Take the
+following example, per the conventional JavaScript prototypal model:
+
+A `new Car()` is instantiated; an `new Engine()` is then instantiated as a
+result. The conventional approach is that the new engine can only be referenced
+from within the car instance. This provides run-time isolation.
+
+The flip-side of this is that potentally a complicated tree of dynamic objects
+are interconnected in a way that is difficult to hold in a single person's
+working memory. The result is typically an unmanageable codebase.
+
+An alternative approach is to make everything static. Instead of dynamically
+instantiating objects (in this case, modules), you would name your instance. In
+duplo, you write `var a = require('a.b.c', 'some-name');`.
+
+The primary issue with this approach is that any two modules could be referring
+to the same instance of another module without knowing that someone else is
+doing the same. This is a typical source of bugs as this introduces global
+state. However, this is also the only way to provide shared state without
+passing around instances via a global mediator. Global state exists either way,
+but the latter has a complexity cost due to its dynamic nature.
+
+#### The Factory Solution
+
+So back to the original question: how do you create dynamic instances, for
+cases where you need a new engine in a new car?
+
+The answer is still: you don't. You embrace the functional programming
+philosophy, that modules, given that they are simply functions, are units of
+pure computation. Think of the module as a "code template". It dictates how
+things are computed given certain inputs. An instance, on the other hand, is
+*NOT* a concrete form of this template, as you would expect in object-oriented
+programming, but a specific scenario where this template applies.
+
+Example: an engine could be a module. An engine for a car and an engine for a
+private jet would then be instances of the module. The two instances are
+behaviorally identical but serve slightly different purposes.
+
+The reason against passing any data from the caller to the module instance is
+to avoid needless dynamicity. A module should perform one thing and only one
+thing. The purpose of instantiation is to allow state to be separated
+explicitly and statically.
+
 ### Debugging
 
 It may seem at first glance that this approach is effective a strict revealing
