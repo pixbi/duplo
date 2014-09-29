@@ -19,7 +19,7 @@ function try_require (name, ns) {
   }
   if (!m.inited) {
     m.inited = true;
-    m.fn(m);
+    m.fn(m, m.exports);
   }
   return m.exports;
 }

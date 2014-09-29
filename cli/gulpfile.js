@@ -163,11 +163,10 @@ function compileJS (prefix) {
       var blocks = [
         new Buffer('\n' + moduleExpr + ' = {};'),
         new Buffer('\ndefineModule(\'' + name + '\', \'' + ns + '\','),
-        new Buffer('\nfunction (module) {\n'),
-        new Buffer('\nvar main, exports;\n'),
+        new Buffer('\nfunction (module, exports) {\n'),
+        new Buffer('\nvar main;\n'),
         source._contents,
-        new Buffer('\nmodule.exports = main || exports;'),
-        new Buffer('\n'),
+        new Buffer('\nmodule.exports = main;\n'),
         new Buffer('\n});')
       ];
       source._contents = Buffer.concat(blocks);
@@ -246,8 +245,6 @@ function concatJS () {
     .pipe(wrap(
       'var app = ' + JSON.stringify(manifest) + ';\n' +
       'var require;\n' +
-      // XXX(Yorkie): hacky a bit, move to bootloader
-      'module.mode = \'' + NODE_ENV + '\';\n' +
       '(function () {\n',
         // .. source code ..
       '})();\n'
