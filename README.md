@@ -44,7 +44,7 @@ self-managed web applications
     app/            --> Application code
     app/index.jade  --> Entry point for templates. Only this file is compiled.
                         Use Jade's include system to pull in other templates.
-    app/params.json --> Optional parameter object made available as
+    app/index.json  --> Optional parameter object made available as
                         `module.params`
     app/assets/     --> Asset files are copied as-is to build's top-level
                         directory
@@ -74,8 +74,11 @@ replace whatever is built at their respective locations. The `index.html` in
       </body>
     </html>
 
-The output file exposes the mode via the `module.mode` attribute. When in
-development, `module.mode === 'dev'` should be `true`.
+
+## Mode
+
+The `MODE` free variable is exposed in `app/index.js`. When in development,
+`MODE === 'dev'` should be `true`.
 
 
 ## Dependency Management
