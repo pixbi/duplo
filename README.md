@@ -44,8 +44,7 @@ self-managed web applications
     app/            --> Application code
     app/index.jade  --> Entry point for templates. Only this file is compiled.
                         Use Jade's include system to pull in other templates.
-    app/index.json  --> Optional parameter object made available as
-                        `module.params`
+    app/index.json  --> Optional parameter object made available as `APP`
     app/assets/     --> Asset files are copied as-is to build's top-level
                         directory
     app/styl/       --> Any application style (see below for details)

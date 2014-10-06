@@ -3,7 +3,10 @@
   "version": "0.9.2",
   "homepage": "https://github.com/pixbi/duplo",
   "bin": {
-    "duplo": "cli/duplo"
+    "duplo": "app/dist/build/duplo"
+  },
+  "scripts": {
+    "install": "app/util/build.sh"
   },
   "dependencies": {
     "JSON.sh": "0.1.9",
