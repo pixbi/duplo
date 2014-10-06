@@ -29,10 +29,7 @@ self-managed web applications
    explicitly to another static function.
 3. `this` is evil. Developers should not need to context-switch between
    functions.
-4. One file contains one module that does one thing. I believe it is called the
-   UNIX philosophy.
-
-Ultimately, there is really just one guiding principle: Keep It Simple, Stupid.
+4. One file contains one module that does one thing.
 
 
 ## Technologies
@@ -85,22 +82,28 @@ development, `module.mode === 'dev'` should be `true`.
 
 One declares a dependency by calling `require(2)`. It is not unlike CommonJS,
 but the similarity ends there. There is neither `exports` nor `module`.
-Instead, the `main()` function is always exported.
+Instead, all variable and functions global to that module are always exported.
 
 ```js
 // a.js
-function main (x) {
+var count = 0;
+
+function addOne (x) {
+  count++;
   return x + 1;
+}
+
+function addNone (x) {
+  count++;
+  return x;
 }
 
 // b.js
 var a = require('a');
 
-function main () {
-  var out = a(3);
-
-  return out + 1; // -> 4
-}
+a.addOne(10); // === 11
+a.addNone(10); // === 10
+a.count // === 2
 ```
 
 ### Module Path
@@ -115,38 +118,38 @@ For example, if the repo running duplo is `pixbi/war`, as per Component.IO
 convention:
 
 ```js
-// components/pixbi-nuclear-missile/app/modules/dod/pentagon/launch.js
+// components/pixbi-nuclear-missile/app/modules/dod/pentagon.js
 function launch () {
   // World annihilation
 }
 
-function main (countdown) {
-  setTimeout(launch, countdown);
+function countdown (count) {
+  setTimeout(launch, count);
 }
 
-// app/modules/white-house/president/declare-war.js
-var launch = require('pixbi.nuclearMissile.dod.pentagon.launch');
+// app/modules/white-house/president.js
+var pentagon = require('pixbi.nuclearMissile.dod.pentagon');
 
-function main () {
-  launch(10000);
+function destroy () {
+  pentagon.countdown(10000);
 }
 
 // app/index.js
-var declare = require('pixbi.war.whiteHouse.president.declareWar');
+var president = require('pixbi.war.whiteHouse.president');
 
 function main () {
-  declare();
+  president.destroy();
 }
 ```
 
 Yes, it is relatively verbose to call another module. The point is to be
-explicit as possible and to encourage shorter module names.
+explicit as possible and to encourage shorter module names when naming the
+module files.
 
 ### Factory Pattern
 
 The factory pattern is implemented at the module level to avoid having to
-implement it at the application level, as it is a common pattern. This is to
-simplify application development by offering only one way to do one thing.
+implement it at the application level, as it is a common pattern.
 
 A module is instantiated by specifying a name to `require(2)` as the second
 parameter. Take the following example:
@@ -155,7 +158,7 @@ parameter. Take the following example:
 // a.js
 var x = 0;
 
-function main (y) {
+function incrementBy (y) {
   x += y;
 
   return x;
@@ -164,35 +167,27 @@ function main (y) {
 // b.js
 var a = require('user.repo.a', 'someName');
 
-function main () {
-  a(1); // -> 1
-}
+a.incrementBy(1); // -> 1
 
 // c.js
 var a = require('user.repo.a', 'someOtherName');
 
-function main () {
-  a(2); // -> 2
-}
+a.incrementBy(2); // -> 2
 
 // d.js
 var a = require('user.repo.a', 'someName');
 
-function main () {
-  a(3); // -> 4
-}
+a.incrementBy(3); // -> 4
 
 // e.js
 var a = require('user.repo.a');
 
-function main () {
-  a(4); // -> 4
-}
+a.incrementBy(4); // -> 4
 ```
 
-Note that when the second parameter is absent, it is effectively "naming" the
-instance as an empty string. In short, all modules are singletons by default
-and optionally instantiable by name.
+Note that when the second parameter is absent, it "names" the instance as an
+empty string. In effect, all modules are singletons by default and optionally
+instantiable by name.
 
 #### The Messy Factory
 
@@ -202,13 +197,13 @@ Short answer: You don't. The reason behind this strictness on instance creation
 is because of the complexity that the factory pattern introduces. Take the
 following example, per the conventional JavaScript prototypal model:
 
-A `new Car()` is instantiated; an `new Engine()` is then instantiated as a
+Say a `new Car()` is instantiated; an `new Engine()` is then instantiated as a
 result. The conventional approach is that the new engine can only be referenced
 from within the car instance. This provides run-time isolation.
 
 The flip-side of this is that potentally a complicated tree of dynamic objects
-are interconnected in a way that is difficult to hold in a single person's
-working memory. The result is typically an unmanageable codebase.
+are interconnected in a way that is difficult to hold in a person's working
+memory. The result is typically an unmanageable codebase.
 
 An alternative approach is to make everything static. Instead of dynamically
 instantiating objects (in this case, modules), you would name your instance. In
@@ -239,48 +234,67 @@ behaviorally identical but serve slightly different purposes.
 
 The reason against passing any data from the caller to the module instance is
 to avoid needless dynamicity. A module should perform one thing and only one
-thing. The purpose of instantiation is to allow state to be separated
-explicitly and statically.
+thing. The purpose of instantiation is only to allow state to be separated
+statically.
 
 ### The Reactor Pattern
 
-The reactor pattern should *NOT* be used at the module level. The pattern is of
-course pervasive in the world of DOM via `addEventListener(2)`; however, with
-cross-module communication in duplo, it is best to stay with function call (see
-[Principle #1](#principles).
+Another common pattern used in frontend web development is the reactor pattern,
+known to web developers as `addEventListner(2)` and friends. This pattern is
+also implemented at the module level.
 
-The reactor pattern has no place in duplo because of one reason: it is only a
-great pattern when the system is highly dynamic. The only case for this pattern
-is when there does not already exist a system which organizes data flow.
+Every module object, when required, contains an `addEventListener(2)`, a
+`removeEventListener(2)`, and a `dispatchEvent(1)`. All these functions are
+available as free variables within the module. Note that they are different
+from the conventional DOM Event API. These are the custom event API used in
+duplo:
 
-In a flat, static, single-function module architecture employed by duplo, you
-do not need to build a pipeline. Since the flow of an event is known ahead of
-time (i.e. static), there is no hierarchy of nested objects and functions to
-traverse mentally by the programmer (i.e. flat), and one module can only
-perform one thing (i.e. single-function), there is no need to build a pipeline
-on top of an already clear pipeline that is a series of non-nested function
-calls.
+```js
+// a.js
 
-### Debugging
+function remove (listener) {
+  removeEventListener('launch', listener);
+}
 
-It may seem at first glance that this approach is effective a strict revealing
-module pattern with only `main()` exposed, and so it should be difficult to
-inspect the internals at run-time. However, in development mode, there is a
-secret door into the instance.
+function launch () {
+  dispatchEvent({
+    arg: 'must be an object as there is only one argument allowed'
+  });
+}
 
-You would call `require(3)` like so: `require('user.repo.a.b.c', '', true);` to
-access the instance.  Likewise, a module variable `x` could be accessed as
-`require('user.repo.a.b.c', '', true).x`. To access a named instance's
-functions or variables, use `require('user.repo.a.b.c', 'an-instance-name',
-true).x`.
+// b.js
+var a = require('a');
 
-Note that this is only available in development mode.
+function listener (arg) {
+  arg; // == 'must be an object...'
+}
 
+a.addEventListener('launch', listener);
+
+a.launch();
+
+a.removeEventListener('launch', listener);
+// is the same as
+a.remove(listener);
+
+```
+
+
+## Entry Point
+
+Every application has a main entry point. In a duplo application, it is
+`app/index.js`. The content of this file is executed upon the
+`DOMContentLoaded` event is fired.
+
+Each repo may contain its own `app/index.js` but only the repo in which duplo
+is run is its `app/index.js` executed. `app/index.js` files of other repos that
+are pulled into the top-level repo via Component.IO are ignored.
 
 ## Application Parameters
 
-You may specify an optional `params.json`, the content of which would be
-injected as `module.params`. For instance, with a `params.json` of:
+You may specify an optional `assets/app.json` (or `dev/app.json` in
+development, the content of which would be available to `app/index.js` as a
+free variable named `APP`. For instance, with a `params.json` of:
 
 ```json
 {
@@ -290,33 +304,15 @@ injected as `module.params`. For instance, with a `params.json` of:
 }
 ```
 
-`public/script.js` would look something like:
+You may do this in `app/index.js`:
 
 ```js
-...
-module.mode = "dev";
-module.params = {
-  "config": {
-    "kickass": true
-  }
-};
+APP.config.kickass === true;
 ```
 
-And we then may call it in `index.html` like this:
-
-```html
-<body>
-  <script>
-    document.addEventListener('DOMContentLoaded', function () {
-      module.init(module.params);
-    });
-  </script>
-</body>
-```
-
-The benefit of this is that we could place a `params.json` in `dev/` for dev
-mode and one in `app/` for production and have a complete isolation between
-code And configuration.
+The benefit of this is that we could place a `app.json` in `dev/` for dev mode
+and one in `assets/` for production and have a complete isolation between code
+And configuration.
 
 
 ## CSS/Stylus Order
@@ -377,9 +373,10 @@ An example of a `component.json`:
 
 ## In-Depth Explanation
 
-The following sections are explanations for how it works. Feel free to skip if
-the actual implementations do not bother you, although understanding how it
-works helps with debugging by offering a mental model of where everything goes.
+The following sections are explanations for how duplo works. Feel free to skip
+if knowing the implementation details do not bother you, although understanding
+how duplo works under the hood helps with debugging by offering a mental model
+of where everything goes.
 
 ### Compiling
 
@@ -388,15 +385,14 @@ Compiling the project performs these steps:
 1. Copy files in `app/assets/` to `public/`
 2. Copy files in `dev/` to `public/`
 3. `public/index.html` is created if it doesn't already exist
-4. Compile all Stylus files (order specified [below](#cssstylus-order)) under
-   `app/` and concatenate into one CSS file as `public/index.css`
+4. Compile all Stylus files (order specified in the [order
+   section](#cssstylus-order)) under `app/` and concatenate into one CSS file
+   as `public/index.css`
 5. Concatenate all JavaScript under `app/` into one JS file as
    `public/index.js`
 6. Compile all Jade files under `app/` into one HTML file and inject into the
    end of `body` in `public/index.html`
 7. Write into `public/index.html` tags to include `style.css` and `script.js`
-
-Note that while compiling the builder creates a temporary `tmp/` directory.
 
 ### Building
 
@@ -417,23 +413,6 @@ Building the project performs these steps:
 9.  Checkout the `master` branch and merge `develop` into `master`
 10. Apply the new version as a new git tag
 11. Checkout the `develop` branch again
-
-### Dependency Resolution
-
-AMD is used for dependency resolution; however, you do not need to use
-`define(2)`. In fact, AMD is used during the build step and is completely
-invisible to duplo users. So `define(2)` is actually not available.
-
-### Context
-
-Each module is actually just a function. It gets run after its dependencies
-have been resolved. The `main()` function then becomes the only window into the
-module.
-
-Rather than using `this` (which should be avoided at all costs anyway), simply
-call the named variables or functions. Factory pattern is implicitly used so a
-module function that needs to call another "instance" of the the same module
-needs to explicitly `require(3)` that particular instance.
 
 
 ## Copyright and License
