@@ -45,7 +45,7 @@ main = shakeArgs shakeOptions $ do
     cmd "rm" ["-r", "public/"]
 
   ----------
-  -- JavaScript
+  -- Code
   targetJs *> \out -> do
     alwaysRerun
     inputJs  <- inputJsP
@@ -53,7 +53,7 @@ main = shakeArgs shakeOptions $ do
     writeFileChanged out $ concat contents
 
   ----------
-  -- Stylus
+  -- Stylesheet
   targetCss *> \out -> do
     alwaysRerun
     inputStyl    <- inputStylP
