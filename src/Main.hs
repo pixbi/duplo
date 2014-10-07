@@ -3,6 +3,7 @@ import Development.Shake.FilePath
 {-import Development.Shake.Util-}
 import Development.Shake
 import Development.Duplo.Files
+import Development.Duplo.Scripts
 
 main :: IO ()
 main = shakeArgs shakeOptions $ do
@@ -48,8 +49,9 @@ main = shakeArgs shakeOptions $ do
     alwaysRerun
     inputJs  <- inputJsP
     contents <- mapM expandFile inputJs
-    mapM_ putNormal $ map getPath contents
-    writeFileChanged out $ concat $ map getContent contents
+    let scripts = buildScripts contents
+    mapM_ putNormal $ map getPath scripts
+    writeFileChanged out $ concat $ map getContent scripts
 
   {------------}
   {--- Stylesheet-}
