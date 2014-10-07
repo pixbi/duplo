@@ -1,32 +1,41 @@
-import Development.Shake
+{-# LANGUAGE TemplateHaskell #-}
+
+import PseudoMacros
+import System.FilePath.Posix hiding (combine)
 {-import Development.Shake.Command-}
-{-import Development.Shake.FilePath-}
+import Development.Shake.FilePath
 {-import Development.Shake.Util-}
+import Development.Shake
 
 main :: IO ()
 main = shakeArgs shakeOptions $ do
   ----------
   -- Output paths
 
-  let targetDir  = "public/"
-  let targetJs   = targetDir ++ "index.js"
-  {-let targetCss  = targetDir ++ "index.css"-}
-  {-let targetHtml = targetDir ++ "index.html"-}
+  let target     = "public/"
+  let targetJs   = combine target "index.js"
+  let targetCss  = combine target "index.css"
+  {-let targetHtml = target ++ "index.html"-}
 
   ----------
   -- Input paths
 
-  -- JavaScript files only within app directories
   let inputJsP   = getDirectoryFiles "" ["app//*.js", "components/*/app//*.js"]
-  {--- Any Stylus files-}
-  {-let inputStylP = getDirectoryFiles "" ["//*.styl"]-}
+  let inputStylP = getDirectoryFiles "" ["app//*.styl", "components//*.styl"]
   {--- Only the main Jade files in all components-}
-  {-let inputJadeP = getDirectoryFiles "" ["//app/index.jade"]-}
+  {-let inputJadeP = getDirectoryFiles "" ["app/index.jade", "components/*/app/index.jade"]-}
+
+  ----------
+  -- Compiler paths
+
+  let source = takeDirectory $__FILE__
+  let nodeModules  = combine source "../../node_modules/.bin/"
+  let stylCompiler = combine nodeModules "stylus"
 
   ----------
   -- Dependencies
 
-  want [targetJs]
+  want [targetJs, targetCss]
   {-want [targetJs, targetCss, targetHtml]-}
 
   ----------
@@ -39,8 +48,17 @@ main = shakeArgs shakeOptions $ do
   -- JavaScript
   targetJs *> \out -> do
     alwaysRerun
-    -- Get all JS files
-    inputJs    <- inputJsP
-    -- Read all files
-    jsContents <- mapM readFile' inputJs
-    writeFileChanged out $ concat jsContents
+    inputJs  <- inputJsP
+    contents <- mapM readFile' inputJs
+    writeFileChanged out $ concat contents
+
+  ----------
+  -- Stylus
+  targetCss *> \out -> do
+    alwaysRerun
+    inputStyl    <- inputStylP
+    stylContents <- mapM readFile' inputStyl
+    -- Trailing newline is significant in case of empty Stylus
+    let styl = concat stylContents ++ "\n"
+    Stdout cssContents <- command [Stdin styl] stylCompiler []
+    writeFileChanged out cssContents
