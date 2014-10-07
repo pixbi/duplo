@@ -15,7 +15,7 @@ main = shakeArgs shakeOptions $ do
   let target     = "public/"
   let targetJs   = combine target "index.js"
   let targetCss  = combine target "index.css"
-  {-let targetHtml = target ++ "index.html"-}
+  let targetHtml = combine target "index.html"
 
   ----------
   -- Input paths
@@ -23,7 +23,7 @@ main = shakeArgs shakeOptions $ do
   let inputJsP   = getDirectoryFiles "" ["app//*.js", "components/*/app//*.js"]
   let inputStylP = getDirectoryFiles "" ["app//*.styl", "components//*.styl"]
   {--- Only the main Jade files in all components-}
-  {-let inputJadeP = getDirectoryFiles "" ["app/index.jade", "components/*/app/index.jade"]-}
+  let inputJadeP = getDirectoryFiles "" ["app/index.jade", "components/*/app/index.jade"]
 
   ----------
   -- Compiler paths
@@ -31,12 +31,12 @@ main = shakeArgs shakeOptions $ do
   let source = takeDirectory $__FILE__
   let nodeModules  = combine source "../../node_modules/.bin/"
   let stylCompiler = combine nodeModules "stylus"
+  let jadeCompiler = combine nodeModules "jade"
 
   ----------
   -- Dependencies
 
-  want [targetJs, targetCss]
-  {-want [targetJs, targetCss, targetHtml]-}
+  want [targetJs, targetCss, targetHtml]
 
   ----------
   -- Do a build clean-up
@@ -62,3 +62,14 @@ main = shakeArgs shakeOptions $ do
     let styl = concat stylContents ++ "\n"
     Stdout cssContents <- command [Stdin styl] stylCompiler []
     writeFileChanged out cssContents
+
+  ----------
+  -- Markup
+  targetHtml *> \out -> do
+    alwaysRerun
+    inputJade    <- inputJadeP
+    jadeContents <- mapM readFile' inputJade
+    -- Trailing newline is significant in case of empty Jade
+    let jade = concat jadeContents ++ "\n"
+    Stdout htmlContents <- command [Stdin jade] jadeCompiler []
+    writeFileChanged out htmlContents
