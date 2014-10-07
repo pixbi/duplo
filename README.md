@@ -45,6 +45,7 @@ self-managed web applications
     app/index.jade  --> Entry point for templates. Only this file is compiled.
                         Use Jade's include system to pull in other templates.
     app/index.json  --> Optional parameter object made available as `APP`
+    app/index.js    --> Application entry point
     app/assets/     --> Asset files are copied as-is to build's top-level
                         directory
     app/styl/       --> Any application style (see below for details)
@@ -129,7 +130,8 @@ function countdown (count) {
   setTimeout(launch, count);
 }
 
-// app/modules/white-house/president.js
+// app/modules/white-house/index.js
+// Note that the name `index` is dropped when requiring
 var pentagon = require('pixbi.nuclearMissile.dod.pentagon');
 
 function destroy () {
@@ -137,7 +139,9 @@ function destroy () {
 }
 
 // app/index.js
-var president = require('pixbi.war.whiteHouse.president');
+// Note that you may not `require` this as it is only executed upon
+// initialization
+var president = require('pixbi.war.whiteHouse');
 
 function main () {
   president.destroy();

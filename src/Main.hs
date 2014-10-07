@@ -4,6 +4,7 @@ import Development.Shake.FilePath
 import Development.Shake
 import Development.Duplo.Files
 import Development.Duplo.Scripts
+import Development.Duplo.ComponentIO (appRepo)
 
 main :: IO ()
 main = shakeArgs shakeOptions $ do
@@ -47,11 +48,15 @@ main = shakeArgs shakeOptions $ do
   -- Scripts
   targetJs *> \out -> do
     alwaysRerun
-    inputJs  <- inputJsP
-    contents <- mapM expandFile inputJs
-    let scripts = buildScripts contents
-    mapM_ putNormal $ map getPath scripts
-    writeFileChanged out $ concat $ map getContent scripts
+    -- The application repo is the default repo (when it's not a component
+    -- repo)
+    defaultRepo <- appRepo
+    inputJs     <- inputJsP
+    -- Collect all the applicable files
+    files       <- mapM (expandFile defaultRepo) inputJs
+    -- Build the scripts
+    let scripts = buildScripts files
+    writeFileChanged out $ concat $ map getFileContent scripts
 
   {------------}
   {--- Stylesheet-}
