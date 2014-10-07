@@ -1,24 +1,46 @@
 import Development.Shake
 {-import Development.Shake.Command-}
-import Development.Shake.FilePath
-import Development.Shake.Util
+{-import Development.Shake.FilePath-}
+{-import Development.Shake.Util-}
 
 main :: IO ()
-main = shakeArgs shakeOptions{shakeFiles="_build/"} $ do
-    want ["_build/run" <.> exe]
+main = shakeArgs shakeOptions $ do
+  ----------
+  -- Output paths
 
-    phony "clean" $ do
-        putNormal "Cleaning files in _build"
-        removeFilesAfter "_build" ["//*"]
+  let targetDir  = "public/"
+  let targetJs   = targetDir ++ "index.js"
+  {-let targetCss  = targetDir ++ "index.css"-}
+  {-let targetHtml = targetDir ++ "index.html"-}
 
-    "_build/run" <.> exe *> \out -> do
-        cs <- getDirectoryFiles "" ["//*.c"]
-        let os = ["_build" </> c -<.> "o" | c <- cs]
-        need os
-        cmd "gcc -o" [out] os
+  ----------
+  -- Input paths
 
-    "_build//*.o" *> \out -> do
-        let c = dropDirectory1 $ out -<.> "c"
-        let m = out -<.> "m"
-        () <- cmd "gcc -c" [c] "-o" [out] "-MMD -MF" [m]
-        needMakefileDependencies m
+  -- JavaScript files only within app directories
+  let inputJsP   = getDirectoryFiles "" ["app//*.js", "components/*/app//*.js"]
+  {--- Any Stylus files-}
+  {-let inputStylP = getDirectoryFiles "" ["//*.styl"]-}
+  {--- Only the main Jade files in all components-}
+  {-let inputJadeP = getDirectoryFiles "" ["//app/index.jade"]-}
+
+  ----------
+  -- Dependencies
+
+  want [targetJs]
+  {-want [targetJs, targetCss, targetHtml]-}
+
+  ----------
+  -- Do a build clean-up
+  "clean" ~> do
+    putNormal "Cleaning build files"
+    cmd "rm" ["-r", "public/"]
+
+  ----------
+  -- JavaScript
+  targetJs *> \out -> do
+    alwaysRerun
+    -- Get all JS files
+    inputJs    <- inputJsP
+    -- Read all files
+    jsContents <- mapM readFile' inputJs
+    writeFileChanged out $ concat jsContents
