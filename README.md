@@ -143,9 +143,7 @@ function destroy () {
 // initialization
 var president = require('pixbi.war.whiteHouse');
 
-function main () {
-  president.destroy();
-}
+president.destroy();
 ```
 
 Yes, it is relatively verbose to call another module. The point is to be
@@ -250,7 +248,7 @@ known to web developers as `addEventListner(2)` and friends. This pattern is
 also implemented at the module level.
 
 Every module object, when required, contains an `addEventListener(2)`, a
-`removeEventListener(2)`, and a `dispatchEvent(1)`. All these functions are
+`removeEventListener(2)`, and a `dispatchEvent(2)`. All these functions are
 available as free variables within the module. Note that they are different
 from the conventional DOM Event API. These are the custom event API used in
 duplo:
@@ -263,7 +261,7 @@ function remove (listener) {
 }
 
 function launch () {
-  dispatchEvent({
+  dispatchEvent('change', {
     arg: 'must be an object as there is only one argument allowed'
   });
 }

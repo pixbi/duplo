@@ -74,6 +74,6 @@ parsePath appRepo path =
       ("app":"modules":loc) -> (appRepo', loc)
       -- Special treatment for the app entry point
       ("app":"index":_) -> ("main", [])
-      -- TODO: use mtl to put in MaybeT
+      -- TODO: use MaybeT here
       _ -> ([], [])
       -- _ -> Nothing
