@@ -72,7 +72,7 @@ var require = (function setup () {
   function require (moduleName, instanceName) {
     var construct = modules[moduleName];
     // Concatenate module name and instance name to form a unique name
-    name = moduleName + (instanceName || "");
+    name = moduleName + '_' + (instanceName || "");
     var instance = instances[name];
 
     // Instantiate if it doesn't exist

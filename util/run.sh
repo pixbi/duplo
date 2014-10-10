@@ -16,14 +16,14 @@ display_help() {
 
   Commands:
 
-    duplo new <name> <repo-url>      scaffolds a new duplo repo
-    duplo dev                        starts a local server and re-compiles on 
-                                     file change
-    duplo build                      runs a build. This could be used for checking
-                                     the code against Closure Compiler.
-    duplo patch                      builds the project and bump the patch version
-    duplo minor                      builds the project and bump the minor version
-    duplo major                      builds the project and bump the major version
+    duplo new <name> <repo-url>   scaffolds a new duplo repo
+    duplo dev                     starts a local server and re-compiles on file
+                                  change
+    duplo build                   runs a build. This could be used for checking
+                                  the code against Closure Compiler.
+    duplo patch                   builds the project and bump the patch version
+    duplo minor                   builds the project and bump the minor version
+    duplo major                   builds the project and bump the major version
 
 EOF
   exit 0

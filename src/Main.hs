@@ -15,10 +15,13 @@ main = do
   ----------
   -- Parameters
 
-  -- TODO: should `duploPath` not have a default value?
+  -- TODO: `duploPath` should probably not have a default value
   duploPath <- fromMaybe "/" <$> lookupEnv "DUPLO_PATH"
   appMode   <- fromMaybe "dev" <$> lookupEnv "APP_MODE"
   appParams <- fromMaybe "{}" <$> lookupEnv "APP_PARAMS"
+
+  let nodeModulesPath = combine duploPath "node_modules/.bin/"
+  let runtimePath = combine duploPath "src/jsbits/runtime.js"
 
   shakeArgs shakeOptions $ do
     ----------
@@ -40,8 +43,8 @@ main = do
     ----------
     -- Compiler paths
 
-    {-let stylCompiler = combine nodeModules "stylus"-}
-    {-let jadeCompiler = combine nodeModules "jade"-}
+    {-let stylCompiler = combine nodeModulesPath "stylus"-}
+    {-let jadeCompiler = combine nodeModulesPath "jade"-}
 
     ----------
     -- Dependencies
@@ -58,9 +61,6 @@ main = do
     ----------
     -- Scripts
     targetJs *> \out -> do
-      -- TODO: static linkage needed
-      let runtimePath = combine duploPath "src/jsbits/runtime.js"
-
       need [runtimePath]
       alwaysRerun
 
@@ -72,8 +72,12 @@ main = do
       files       <- mapM (expandFile defaultRepo) inputJs
       -- Duplo runtime
       runtime     <- readFile' runtimePath
+      -- The app's settings
+      let appSettings = "APP.mode = \"" ++ appMode ++ "\";\n"
+                     ++ "APP.params = " ++ appParams ++ ";\n"
       -- Build the scripts
-      let script = buildScript files runtime
+      let script = buildScript files appSettings runtime
+      -- Commit the script file
       writeFileChanged out script
 
     {------------}

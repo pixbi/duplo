@@ -1,12 +1,8 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 module Development.Duplo.Files (
   File, FileContent, ModuleId,
-  source, nodeModules,
   expandFile, getFilePath, getFileContent, getModuleId
   ) where
 
-import PseudoMacros
 import System.FilePath.Posix hiding (combine)
 import Development.Shake.FilePath
 import Control.Lens hiding (Action)
@@ -22,13 +18,6 @@ type ModuleId    = String
 type Repo     = String
 type Path     = [String]
 type Location = (Repo, Path)
-
-source :: String
-source = takeDirectory $__FILE__
-
--- TODO: static linkage needed
-nodeModules :: String
-nodeModules = combine source "../../../node_modules/.bin/"
 
 expandFile :: Repo -> FilePath -> Action File
 expandFile appRepo path = do

@@ -5,16 +5,15 @@ import Development.Duplo.Files
 import Control.Lens
 
 -- | Build a script file given a list of files, a string to be placed at the
--- end.
-buildScript :: [File] -> String -> String
-buildScript files runtime = "(function () {\n"
-                         ++ "var APP = {};\n"
-                         -- All the modules
-                         ++ meat ++ "\n"
-                         -- Runtime must be at the end as it extracts modules
-                         -- and removes `APP`
-                         ++ runtime ++ "\n"
-                         ++ "})();\n"
+-- the beginning and at the end.
+buildScript :: [File] -> String -> String -> String
+buildScript files prefix suffix
+    = "(function () {\n"
+   ++ "var APP = {};\n"
+   ++ prefix ++ "\n"
+   ++ meat ++ "\n"
+   ++ suffix ++ "\n"
+   ++ "})();\n"
   where
     scripts = wrapFiles files
     meat    = concat $ map getFileContent scripts
@@ -29,18 +28,20 @@ wrapFile file = over _2 wrap file
     wrap  = wrapModule modId
 
 wrapModule :: ModuleId -> FileContent -> FileContent
-wrapModule modId content = "APP['" ++ modId ++ "'] = "
-                        ++ "function (" ++ args ++ ") {\n"
-                        ++ "var module = null;\n"
-                        ++ "var exports = {};\n"
-                        ++ content
-                        ++ "return module.exports || exports;\n"
-                        ++ "};\n"
+wrapModule modId content
+    = "APP['" ++ modId ++ "'] = "
+   ++ "function (" ++ args ++ ") {\n"
+   ++ "var module = null;\n"
+   ++ "var exports = {};\n"
+   ++ content
+   ++ "return module.exports || exports;\n"
+   ++ "};\n"
   where
     -- Build module function's argument list
-    args = intercalate ", " [ "MODE"
-                            , "APP"
-                            , "addEventListener"
-                            , "removeEventListener"
-                            , "dispatchEvent"
-                            ]
+    args = intercalate ", "
+      [ "MODE"
+      , "APP"
+      , "addEventListener"
+      , "removeEventListener"
+      , "dispatchEvent"
+      ]
