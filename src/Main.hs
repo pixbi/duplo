@@ -75,10 +75,16 @@ main = do
       -- The app's settings
       let appSettings = "APP.mode = \"" ++ appMode ++ "\";\n"
                      ++ "APP.params = " ++ appParams ++ ";\n"
+
       -- Build the scripts
       let script = buildScript files appSettings runtime
+
+      -- Pass it through Closure
+      let closurePath = combine duploPath "util/compiler.jar"
+      Stdout cleaned <- command [Stdin script] "java" ["-jar", closurePath]
+
       -- Commit the script file
-      writeFileChanged out script
+      writeFileChanged out cleaned
 
     {------------}
     {--- Stylesheet-}
