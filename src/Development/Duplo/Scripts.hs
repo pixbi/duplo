@@ -33,7 +33,7 @@ wrapModule modId content
    ++ "function (" ++ args ++ ") {\n"
    ++ "var module = null;\n"
    ++ "var exports = {};\n"
-   ++ content
+   ++ content ++ "\n"
    ++ "return module.exports || exports;\n"
    ++ "};\n"
   where

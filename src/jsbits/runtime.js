@@ -20,8 +20,8 @@ var require = (function setup () {
   var _modules, keys, name, constructor, i, l;
 
   // Save references to app parameters and mode
-  var params = APP.params;
-  var mode = APP.mode;
+  var params = APP._params;
+  var mode = APP._mode;
 
   function addEventListener (allListeners, name, listener) {
     var listeners = allListeners[name];

@@ -1,4 +1,3 @@
-import PseudoMacros
 {-import Development.Shake.Command-}
 import Development.Shake.FilePath
 {-import Development.Shake.Util-}
@@ -16,10 +15,17 @@ main = do
   -- Parameters
 
   -- TODO: `duploPath` should probably not have a default value
-  duploPath <- fromMaybe "/" <$> lookupEnv "DUPLO_PATH"
-  appMode   <- fromMaybe "dev" <$> lookupEnv "APP_MODE"
-  appParams <- fromMaybe "{}" <$> lookupEnv "APP_PARAMS"
+  duploPath  <- fromMaybe "/" <$> lookupEnv "DUPLO_PATH"
+  -- TODO: These default values are useless given that we're calling into this
+  -- from bash
+  appMode    <- fromMaybe "dev" <$> lookupEnv "APP_MODE"
+  appParams' <- fromMaybe "{}" <$> lookupEnv "APP_PARAMS"
 
+  -- App parameters need to be JSON-compatible
+  let appParams =
+        case appParams' of
+          "" -> "{}"
+          _  -> appParams'
   let nodeModulesPath = combine duploPath "node_modules/.bin/"
   let runtimePath = combine duploPath "src/jsbits/runtime.js"
 
@@ -35,7 +41,10 @@ main = do
     ----------
     -- Input paths
 
-    let inputJsP   = getDirectoryFiles "" ["app/index.js", "app/modules//*.js", "components/*/app/modules//*.js"]
+    let inputJsP   = getDirectoryFiles "" [ "app/index.js"
+                                          , "app/modules//*.js"
+                                          , "components/*/app/modules//*.js"
+                                          ]
     {-let inputStylP = getDirectoryFiles "" ["app//*.styl", "components//*.styl"]-}
     -- Only the main Jade files in all components
     {-let inputJadeP = getDirectoryFiles "" ["app/index.jade", "components/*/app/index.jade"]-}
@@ -73,18 +82,32 @@ main = do
       -- Duplo runtime
       runtime     <- readFile' runtimePath
       -- The app's settings
-      let appSettings = "APP.mode = \"" ++ appMode ++ "\";\n"
-                     ++ "APP.params = " ++ appParams ++ ";\n"
+      let appSettings = "APP._mode = \"" ++ appMode ++ "\";\n"
+                     ++ "APP._params = " ++ appParams ++ ";\n"
 
       -- Build the scripts
       let script = buildScript files appSettings runtime
 
-      -- Pass it through Closure
+      -- Prepare Closure
       let closurePath = combine duploPath "util/compiler.jar"
-      Stdout cleaned <- command [Stdin script] "java" ["-jar", closurePath]
+      let closureParams = [ "-jar"
+                          , closurePath
+                          , "--compilation_level"
+                          , "SIMPLE_OPTIMIZATIONS"
+                          ]
+      -- Pick the right compiler and parameters to build
+      let compiler =
+            case appMode of
+              "live" -> "java"
+              _      -> "bash"
+      let params =
+            case appMode of
+              "live" -> closureParams
+              _      -> [combine duploPath "util/echo.sh"]
 
-      -- Commit the script file
-      writeFileChanged out cleaned
+      -- Pass it through the compiler
+      Stdout compiled <- command [Stdin script] compiler params
+      writeFileChanged out compiled
 
     {------------}
     {--- Stylesheet-}
