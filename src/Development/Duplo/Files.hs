@@ -1,7 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Development.Duplo.Files (
-  File, source, nodeModules,
+  File, FileContent, ModuleId,
+  source, nodeModules,
   expandFile, getFilePath, getFileContent, getModuleId
   ) where
 
@@ -17,6 +18,7 @@ type File        = (FilePath, FileContent, ModuleId)
 type FileContent = String
 type ModuleId    = String
 
+-- e.g. pixbi/duplo
 type Repo     = String
 type Path     = [String]
 type Location = (Repo, Path)
@@ -24,14 +26,15 @@ type Location = (Repo, Path)
 source :: String
 source = takeDirectory $__FILE__
 
+-- TODO: static linkage needed
 nodeModules :: String
 nodeModules = combine source "../../../node_modules/.bin/"
 
 expandFile :: Repo -> FilePath -> Action File
 expandFile appRepo path = do
   content <- readFile' path
-  let id = moduleId $ parsePath appRepo path
-  return (path, content, id)
+  let modId = moduleId $ parsePath appRepo path
+  return (path, content, modId)
 
 getFilePath :: File -> String
 getFilePath = view _1

@@ -1,8 +1,16 @@
+// The duplo runtime
+//
 // PRE-CONDITION
 // =============
 //
-// Assume free variable `APP` with attributes `params`, `mode`, and module
-// definitions
+// Assume a free variable `APP` with attributes `params`, `mode`, and module
+// definitions.
+//
+//
+// POST-CONDITION
+// ==============
+//
+// `APP` would be removed and `require(2)` made available.
 
 var require = (function setup () {
   // Contains all modules
@@ -81,20 +89,20 @@ var require = (function setup () {
     var listeners = {};
 
     // Bind, the fast way
-    var ael = function addEventListener (name, listener) {
+    var ael = function (name, listener) {
       return addEventListener(listeners, name, listener);
     };
-    var rel = function removeEventListener (name, listener) {
+    var rel = function (name, listener) {
       return removeEventListener(listeners, name, listener);
     };
-    var de = function dispatchEvent (name, evt) {
+    var de = function (name, evt) {
       return dispatchEvent(listeners, name, evt);
     };
 
     return function construct () {
       // Expose the application mode, parameters, and curried reactor functions
       // to module closure
-      return constructor(mode, params, ael, rel, de);
+      return new constructor(mode, params, ael, rel, de);
     };
   }
 
