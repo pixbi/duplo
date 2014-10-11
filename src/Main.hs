@@ -8,6 +8,7 @@ import Development.Duplo.ComponentIO (appRepo)
 import System.Environment
 import Control.Applicative ((<$>))
 import Data.Maybe
+import Data.List (intercalate)
 
 main :: IO ()
 main = do
@@ -29,36 +30,50 @@ main = do
   let nodeModulesPath = combine duploPath "node_modules/.bin/"
   let runtimePath = combine duploPath "src/jsbits/runtime.js"
 
+  ----------
+  -- Output paths
+
+  let target     = "public/"
+  let targetJs   = combine target "index.js"
+  let targetCss  = combine target "index.css"
+  {-let targetHtml = combine target "index.html"-}
+
+  ----------
+  -- Input paths
+
+  -- Scripts
+  let inputJsP = getDirectoryFiles "" [ "app/index.js"
+                                      , "app/modules//*.js"
+                                      , "components/*/app/modules//*.js"
+                                      ]
+
+  -- Styles
+  let stylBases = [ "app/"
+                  , "components/*/app/"
+                  ]
+  let stylPaths = [ "styl/variables.styl"
+                  , "styl/keyframes.styl"
+                  , "styl/fonts.styl"
+                  , "styl/reset.styl"
+                  , "styl/main.styl"
+                  , "modules/**/index.styl"
+                  ]
+  let stylFullPaths = [ base ++ path | base <- stylBases, path <- stylPaths ]
+
+  -- Only the main Jade files in all components
+  {-let inputJadeP = getDirectoryFiles "" ["app/index.jade", "components/*/app/index.jade"]-}
+
+  ----------
+  -- Compiler paths
+
+  let stylCompiler = combine nodeModulesPath "stylus"
+  {-let jadeCompiler = combine nodeModulesPath "jade"-}
+
   shakeArgs shakeOptions $ do
-    ----------
-    -- Output paths
-
-    let target     = "public/"
-    let targetJs   = combine target "index.js"
-    {-let targetCss  = combine target "index.css"-}
-    {-let targetHtml = combine target "index.html"-}
-
-    ----------
-    -- Input paths
-
-    let inputJsP   = getDirectoryFiles "" [ "app/index.js"
-                                          , "app/modules//*.js"
-                                          , "components/*/app/modules//*.js"
-                                          ]
-    {-let inputStylP = getDirectoryFiles "" ["app//*.styl", "components//*.styl"]-}
-    -- Only the main Jade files in all components
-    {-let inputJadeP = getDirectoryFiles "" ["app/index.jade", "components/*/app/index.jade"]-}
-
-    ----------
-    -- Compiler paths
-
-    {-let stylCompiler = combine nodeModulesPath "stylus"-}
-    {-let jadeCompiler = combine nodeModulesPath "jade"-}
-
     ----------
     -- Dependencies
 
-    want [targetJs]
+    want [targetJs, targetCss]
     {-want [targetJs, targetCss, targetHtml]-}
 
     ----------
@@ -109,16 +124,20 @@ main = do
       Stdout compiled <- command [Stdin script] compiler params
       writeFileChanged out compiled
 
-    {------------}
-    {--- Stylesheet-}
-    {-targetCss *> \out -> do-}
-    {-  alwaysRerun-}
-    {-  inputStyl    <- inputStylP-}
-    {-  stylContents <- mapM readFile' inputStyl-}
-    {-  -- Trailing newline is significant in case of empty Stylus-}
-    {-  let styl = concat stylContents ++ "\n"-}
-    {-  Stdout cssContents <- command [Stdin styl] stylCompiler []-}
-    {-  writeFileChanged out cssContents-}
+    ----------
+    -- Stylesheet
+    targetCss *> \out -> do
+      let compiler = combine nodeModulesPath "stylus"
+      alwaysRerun
+
+      stylFiles <- getDirectoryFilesInOrder "" stylFullPaths
+      stylContents <- mapM readFile' stylFiles
+      -- Trailing newline is significant in case of empty Stylus
+      let styl = (intercalate "\n" stylContents) ++ "\n"
+
+      -- Pass it through the compiler
+      Stdout compiled <- command [Stdin styl] compiler []
+      writeFileChanged out compiled
 
     {------------}
     {--- Markup-}
@@ -130,3 +149,15 @@ main = do
     {-  let jade = concat jadeContents ++ "\n"-}
     {-  Stdout htmlContents <- command [Stdin jade] jadeCompiler []-}
     {-  writeFileChanged out htmlContents-}
+
+getDirectoryFilesInOrder :: FilePath -> [FilePattern] -> Action [FilePath]
+getDirectoryFilesInOrder path patterns =
+    -- Re-package the contents into the list of paths that we've wanted
+    fmap concat files
+  where
+    -- We need to turn all elements into lists for each to be run independently
+    patterns' = fmap (replicate 1) patterns
+    -- Curry the function that gets the files given a list of paths
+    getFiles  = getDirectoryFiles path
+    -- Map over the list monadically to get the paths in order
+    files     = mapM getFiles patterns'
