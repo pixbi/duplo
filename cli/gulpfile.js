@@ -28,9 +28,7 @@ var
   NODE_ENV = process.env.NODE_ENV || 'dev',
   BUILD_MODE = process.env.BUILD_MODE || 'dev',
   BUILD_FORM = process.env.BUILD_FORM,
-  STYLUS_VAR_FILE = CWD + '/app/styl/variables.styl',
   head = fs.readFileSync(path.join(DUPLO, './head.html')),
-  hasVariableStylus = fs.existsSync(STYLUS_VAR_FILE),
   finished = false,
   watched = false,
   onlyBuild = false,
@@ -181,6 +179,8 @@ function compileJS (prefix) {
 
 function compileCSS (prefix) {
   var option = {};
+  var STYLUS_VAR_FILE = prefix + 'app/styl/variables.styl';
+  var hasVariableStylus = fs.existsSync(STYLUS_VAR_FILE);
   if (hasVariableStylus) {
     option['import'] = 'variables';
     option['include'] = STYLUS_VAR_FILE;
