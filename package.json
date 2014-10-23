@@ -1,6 +1,6 @@
 {
   "name": "duplo",
-  "version": "0.9.2",
+  "version": "0.9.3",
   "homepage": "https://github.com/pixbi/duplo",
   "bin": {
     "duplo": "cli/duplo"
