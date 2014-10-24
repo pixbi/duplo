@@ -218,6 +218,7 @@ function compileParams (prefix, mode) {
   var paramsPath = path.join(basename, 'params.json');
   var modeJs = 'module.mode = \'' + mode + '\';';
 
+  console.log('--- compileParams: %s', paramsPath);
   return gulp
     .src(paramsPath)
     .pipe(rename('params.js'))
@@ -250,7 +251,8 @@ function concatJS () {
       'components/pixbi-bootloader/public/script.js',
       'components/**/public/script.js',
       'public/script.js',
-      'components/pixbi-runtime/public/params.js'
+      'components/pixbi-runtime/public/params.js',
+      'components/pixbi-tracker/public/params.js'
     ])
     .pipe(concat('script.js'))
     //.pipe(wrap(
