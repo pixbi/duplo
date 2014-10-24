@@ -262,11 +262,11 @@ function concatJS () {
     //));
     ;
 
-  //if (BUILD_MODE !== 'dev') {
-  //  var uglify = require('gulp-uglify');
-  //  gstream = gstream.pipe(uglify());
-  //  gutil.log('uglifying js files...');
-  //}
+  if (BUILD_MODE !== 'dev') {
+    var uglify = require('gulp-uglify');
+    gstream = gstream.pipe(uglify());
+    gutil.log('uglifying js files...');
+  }
   return gstream;
 }
 
