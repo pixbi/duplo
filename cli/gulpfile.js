@@ -15,6 +15,7 @@ var
   rimraf = require('gulp-rimraf'),
   jshint = require('gulp-jshint'),
   prepend = require('gulp-inject-string').prepend,
+  append = require('gulp-inject-string').append,
   wrap = require('gulp-inject-string').wrap,
   autoprefixer = require('gulp-autoprefixer'),
   async = require('async'),
@@ -62,7 +63,7 @@ function cleanAfter () {
 }
 
 function compile (prefix, callback) {
-  var prefix = (typeof prefix === 'string') ? prefix : '';
+  var prefix = (typeof prefix === 'string') ? prefix : process.cwd();
   (prefix !== '') && gutil.log('compiling ', path.basename(prefix));
 
   // build list for step1
@@ -76,11 +77,14 @@ function compile (prefix, callback) {
   if (BUILD_MODE === 'dev') {
     list.push(compileDev(prefix));
   }
-  list.push(compileParams(prefix));
+  list.push(compileParams(prefix, BUILD_MODE));
 
+  console.log('--- bbb');
+  console.log(prefix);
   es.merge.apply(es, list)
-    .pipe(gulp.dest(prefix+'public'))
+    .pipe(gulp.dest(path.join(prefix, 'public')))
     .pipe(es.wait(function onend () {
+      console.log('--- aaa: %s', prefix);
       (prefix !== '') && gutil.log('ok ', path.basename(prefix));
       (typeof callback === 'function') && callback();
       finish();
@@ -114,72 +118,76 @@ function finish () {
 
 function selectComponents (prefix) {
   return gulp
-    .src(prefix+'components/**/app/assets/**/*')
+    .src(path.join(prefix, 'components/**/app/assets/**/*'))
     .pipe(rename(function (path) {
       path.dirname = path.dirname.replace(/.*\/app\/assets/, '');
     }));
 }
 
 function selectAppAssets (prefix) {
-  return gulp.src(prefix+'app/assets/**/*');
+  return gulp.src(path.join(prefix, 'app/assets/**/*'));
 }
 
 function compileJS (prefix) {
   var manifest = getManifest(prefix);
   var name = camelize(manifest.name);
-  var base = /^[a-zA-Z_]{1}\w*$/.test(name)
-    ? 'packages.' + name
-    : 'packages["' + name + '"]';
-  var src = '' +
-    // use [] to support app name with symbol '-', because module.x-y is invalid in ES
-    util.format('%s = %s || {}; %s.version = "%s";\n',
-      base, base, base, manifest.version);
+  //var base = /^[a-zA-Z_]{1}\w*$/.test(name)
+  //  ? 'packages.' + name
+  //  : 'packages["' + name + '"]';
+  var version =
+    util.format('module.%s = module.%s || {}; module.%s.version = "%s";\n',
+      name, name, name, manifest.version);
+  //var src = '' +
+  //  // use [] to support app name with symbol '-', because module.x-y is invalid in ES
+  //  util.format('%s = %s || {}; %s.version = "%s";\n',
+  //    base, base, base, manifest.version);
   return gulp
-    .src(prefix+'app/**/*.js')
-    .pipe(jshint())
-    .pipe(jshint.reporter('jshint-stylish'))
+    .src(path.join(prefix, 'app/**/*.js'))
+    //.pipe(jshint())
+    //.pipe(jshint.reporter('jshint-stylish'))
     // .pipe(jshint.reporter('fail'))
-    .pipe(es.through(function wrapfunc (source) {
+    //.pipe(es.through(function wrapfunc (source) {
 
-      var relpath = source.path.replace(CWD, '').slice(1);
-      var relpathObj = relpath.split('/');
-      var ns, name = manifest.name;
+    //  var relpath = source.path.replace(CWD, '').slice(1);
+    //  var relpathObj = relpath.split('/');
+    //  var ns, name = manifest.name;
 
-      if (relpathObj[0] === 'app') {
-        var start = relpathObj[1] === 'modules' ? 2 : 1;
-        ns = camelize(relpathObj.slice(start).join('.').replace('.js', ''));
-      }
+    //  if (relpathObj[0] === 'app') {
+    //    var start = relpathObj[1] === 'modules' ? 2 : 1;
+    //    ns = camelize(relpathObj.slice(start).join('.').replace('.js', ''));
+    //  }
 
-      if (relpathObj[0] === 'components') {
-        var start = relpathObj[3] === 'modules' ? 4 : 3;
-        ns = camelize(relpathObj.slice(start).join('.').replace('.js', ''));
-      }
+    //  if (relpathObj[0] === 'components') {
+    //    var start = relpathObj[3] === 'modules' ? 4 : 3;
+    //    ns = camelize(relpathObj.slice(start).join('.').replace('.js', ''));
+    //  }
 
-      var moduleExpr = util.format('%s[\'%s\']', base, ns);
-      var blocks = [
-        new Buffer('\n' + moduleExpr + ' = {};'),
-        new Buffer('\ndefinePackage(\'' + name + '\', \'' + ns + '\','),
-        new Buffer('\nfunction (pkg, exports) {\n'),
-        // XXX(Yorkie): remove this after enable app variable at bootloader
-        new Buffer('\nvar module = module || {};\n'),
-        new Buffer('\nmodule.mode = \'' + NODE_ENV + '\';\n'),
-        new Buffer('\nwindow.module = module;\n'),
-        // ----------------------------------------------------------------
-        new Buffer('\nvar main;\n'),
-        source._contents,
-        new Buffer('\npkg.exports = main || exports;\n'),
-        new Buffer('\n});')
-      ];
-      source._contents = Buffer.concat(blocks);
-      this.emit('data', source);
-    }))
+    //  var moduleExpr = util.format('%s[\'%s\']', base, ns);
+    //  var blocks = [
+    //    new Buffer('\n' + moduleExpr + ' = {};'),
+    //    new Buffer('\ndefinePackage(\'' + name + '\', \'' + ns + '\','),
+    //    new Buffer('\nfunction (pkg, exports) {\n'),
+    //    // XXX(Yorkie): remove this after enable app variable at bootloader
+    //    new Buffer('\nvar module = module || {};\n'),
+    //    new Buffer('\nmodule.mode = \'' + NODE_ENV + '\';\n'),
+    //    new Buffer('\nwindow.module = module;\n'),
+    //    // ----------------------------------------------------------------
+    //    new Buffer('\nvar main;\n'),
+    //    source._contents,
+    //    new Buffer('\npkg.exports = main || exports;\n'),
+    //    new Buffer('\n});')
+    //  ];
+    //  source._contents = Buffer.concat(blocks);
+    //  this.emit('data', source);
+    //}))
     .pipe(concat('script.js'))
-    .pipe(prepend(src));
+    .pipe(append(version));
+    ;
 }
 
 function compileCSS (prefix) {
   var option = {};
-  var STYLUS_VAR_FILE = prefix + 'app/styl/variables.styl';
+  var STYLUS_VAR_FILE = path.join(prefix, 'app/styl/variables.styl');
   var hasVariableStylus = fs.existsSync(STYLUS_VAR_FILE);
   if (hasVariableStylus) {
     option['import'] = 'variables';
@@ -188,7 +196,7 @@ function compileCSS (prefix) {
   return gulp
     .src(styleFiles.map(
       function addprefix (file) {
-        return prefix + file;
+        return path.join(prefix, file);
       }
     ))
     .pipe(stylus(option))
@@ -197,7 +205,7 @@ function compileCSS (prefix) {
 
 function compileJadeTemplates (prefix) {
   return gulp
-    .src(prefix+'app/index.jade')
+    .src(path.join(prefix, 'app/index.jade'))
     .pipe(jade({
       pretty: true
     }))
@@ -205,15 +213,20 @@ function compileJadeTemplates (prefix) {
 }
 
 function compileDev (prefix) {
-  return gulp.src(prefix+'dev/**/*');
+  return gulp.src(path.join(prefix, 'dev/**/*'));
 }
 
-function compileParams (prefix) {
-  var basename = prefix + (BUILD_MODE === 'dev' ? 'dev' : 'app');
+function compileParams (prefix, mode) {
+  var basename = path.join(prefix, (BUILD_MODE === 'dev' ? 'dev' : 'app'));
+  var paramsPath = path.join(basename, 'params.json');
+  var modeJs = 'module.mode = \'' + mode + '\';';
+
+  console.log('--- ccc');
+  console.log(paramsPath);
   return gulp
-    .src(basename + '/params.json')
+    .src(paramsPath)
     .pipe(rename('params.js'))
-    .pipe(wrap('module.params = ', ';'));
+    .pipe(wrap('module.params = ', ';\n' + modeJs));
 }
 
 function compileDeps (callback) {
@@ -238,26 +251,27 @@ function compileDeps (callback) {
 function concatJS () {
   var gstream = gulp
     .src([
-      path.join(DUPLO, '../builtin/*.js'),
+      //path.join(DUPLO, '../builtin/*.js'),
       'components/pixbi-bootloader/public/script.js',
       'components/**/public/script.js',
       'public/script.js',
-      'public/params.js'
+      'components/pixbi-runtime/public/params.js'
     ])
     .pipe(concat('script.js'))
-    .pipe(wrap(
-      'var app = ' + JSON.stringify(manifest) + ';\n' +
-      'var require;\n' +
-      '(function () {\n',
-        // .. source code ..
-      '})();\n'
-    ));
+    //.pipe(wrap(
+    //  'var app = ' + JSON.stringify(manifest) + ';\n' +
+    //  'var require;\n' +
+    //  '(function () {\n',
+    //    // .. source code ..
+    //  '})();\n'
+    //));
+    ;
 
-  if (BUILD_MODE !== 'dev') {
-    var uglify = require('gulp-uglify');
-    gstream = gstream.pipe(uglify());
-    gutil.log('uglifying js files...');
-  }
+  //if (BUILD_MODE !== 'dev') {
+  //  var uglify = require('gulp-uglify');
+  //  gstream = gstream.pipe(uglify());
+  //  gutil.log('uglifying js files...');
+  //}
   return gstream;
 }
 
