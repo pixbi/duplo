@@ -79,12 +79,9 @@ function compile (prefix, callback) {
   }
   list.push(compileParams(prefix, BUILD_MODE));
 
-  console.log('--- bbb');
-  console.log(prefix);
   es.merge.apply(es, list)
     .pipe(gulp.dest(path.join(prefix, 'public')))
     .pipe(es.wait(function onend () {
-      console.log('--- aaa: %s', prefix);
       (prefix !== '') && gutil.log('ok ', path.basename(prefix));
       (typeof callback === 'function') && callback();
       finish();
@@ -221,8 +218,6 @@ function compileParams (prefix, mode) {
   var paramsPath = path.join(basename, 'params.json');
   var modeJs = 'module.mode = \'' + mode + '\';';
 
-  console.log('--- ccc');
-  console.log(paramsPath);
   return gulp
     .src(paramsPath)
     .pipe(rename('params.js'))
