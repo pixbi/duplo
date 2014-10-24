@@ -2,7 +2,7 @@
   "name": "duplo",
   "repo": "pixbi/duplo",
   "description": "Intuitive, simple building blocks for building composable, completely self-managed web applications",
-  "version": "0.9.3",
+  "version": "0.9.4",
   "dependencies": {
     "pixbi/bootloader": "0.2.6"
   },
