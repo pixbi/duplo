@@ -11,7 +11,7 @@ import System.Environment.Executable (splitExecutablePath)
 {-import Development.Duplo.ComponentIO (appRepo)-}
 {-import Development.Duplo.Files-}
 {-import Development.Duplo.Markup as Files-}
-{-import Development.Duplo.Scripts as Scripts-}
+import Development.Duplo.Scripts as Scripts
 {-import Development.Shake.Command-}
 {-import Development.Shake.Util-}
 
@@ -40,13 +40,21 @@ main = do
   let targetStyles  = combine target "index.css"
   let targetMarkups = combine target "index.html"
 
+  -- Report back what's given for confirmation
+  putStr $ ">> Parameters \n"
+        ++ "Environment (i.e. `DUPLO_ENV`):  " ++ duploEnv ++ "\n"
+        ++ "Build Mode (i.e. `DUPLO_MODE`):  " ++ duploMode ++ "\n"
+        ++ "Current working directory:       " ++ cwd ++ "\n"
+        ++ "duplo is installed at:           " ++ duploExecDir ++ "\n"
+        ++ "\n"
+
   shakeArgs shakeOptions $ do
     -- Dependencies
-    want [targetStyles]
+    want [targetStyles, targetScripts]
     {-want [targetScripts, targetStyles, targetMarkups]-}
 
     -- Actions
-    {-targetScripts *> Scripts.build cwd utilPath-}
+    targetScripts *> Scripts.build cwd utilPath duploEnv duploMode duploIn
     targetStyles *> Styles.build cwd nodeModulesPath
     {-targetMarkups *> Markups.build cwd nodeModulesPath-}
 

@@ -11,8 +11,6 @@ import Development.Shake.FilePath (combine)
 build :: FilePath -> FilePath -> FilePath -> Action ()
 build cwd bin = \ out -> do
   logAction "Building styles"
-  -- TODO: to be removed after development
-  alwaysRerun
 
   -- These paths don't need to be expanded
   let staticPaths' = [ "app/styl/variables.styl"
@@ -36,6 +34,7 @@ build cwd bin = \ out -> do
 
   -- Merge both types of paths
   let paths = staticPaths ++ dynamicPaths
+  mapM (putNormal . ("Including " ++)) paths
 
   -- Path to the compiler
   let compiler = combine bin "stylus"
@@ -51,5 +50,4 @@ build cwd bin = \ out -> do
 
   -- Write output
   writeFileChanged out compiled
-
-  logAction ""
+  putNormal ""
