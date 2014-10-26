@@ -2,32 +2,40 @@ module Development.Duplo.Styles (
     build
   ) where
 
+import Control.Monad (filterM)
 import Data.List (intercalate)
-import Development.Duplo.Utilities (getDirectoryFilesInOrder)
+import Development.Duplo.Utilities (getDirectoryFilesInOrder, logAction)
 import Development.Shake
 import Development.Shake.FilePath (combine)
 
 build :: FilePath -> FilePath -> FilePath -> Action ()
 build cwd bin = \ out -> do
+  logAction "Building styles"
   -- TODO: to be removed after development
   alwaysRerun
 
-  -- Paths
-  let bases = [ "app/"
-              , "components/*/app/"
-              ]
-  let paths' = [ "styl/variables.styl"
-               , "styl/keyframes.styl"
-               , "styl/fonts.styl"
-               , "styl/reset.styl"
-               , "styl/main.styl"
-               , "modules/**/index.styl"
-               ]
-  paths <- getDirectoryFilesInOrder cwd
-             [ base ++ path
-             | base <- bases
-             , path <- paths'
-             ]
+  -- These paths don't need to be expanded
+  let staticPaths' = [ "app/styl/variables.styl"
+                     , "app/styl/keyframes.styl"
+                     , "app/styl/fonts.styl"
+                     , "app/styl/reset.styl"
+                     , "app/styl/main.styl"
+                     ]
+  staticPaths <- filterM doesFileExist staticPaths'
+
+  -- These paths need to be expanded by Shake
+  let dynamicPaths' = [ "app/modules//index.styl"
+                      , "components/*/app/styl/variables.styl"
+                      , "components/*/app/styl/keyframes.styl"
+                      , "components/*/app/styl/fonts.styl"
+                      , "components/*/app/styl/reset.styl"
+                      , "components/*/app/styl/main.styl"
+                      , "components/*/app/modules//index.styl"
+                      ]
+  dynamicPaths <- getDirectoryFilesInOrder cwd dynamicPaths'
+
+  -- Merge both types of paths
+  let paths = staticPaths ++ dynamicPaths
 
   -- Path to the compiler
   let compiler = combine bin "stylus"
@@ -43,3 +51,5 @@ build cwd bin = \ out -> do
 
   -- Write output
   writeFileChanged out compiled
+
+  logAction ""

@@ -1,6 +1,7 @@
 import Control.Applicative ((<$>))
 import Data.Maybe (fromMaybe)
 import Development.Duplo.Styles as Styles
+import Development.Duplo.Utilities (logAction)
 import Development.Shake
 import Development.Shake.FilePath (combine)
 import System.Directory (getCurrentDirectory)
@@ -28,25 +29,29 @@ main = do
   -- Application parameter
   duploIn <- getContents
 
+  -- Paths to various relevant directories
   let duploDir        = combine duploExecDir "../.."
   let nodeModulesPath = combine duploDir "node_modules/.bin"
   let utilPath        = combine duploDir "util"
 
+  -- What to build
   let target        = combine cwd "public/"
   let targetScripts = combine target "index.js"
   let targetStyles  = combine target "index.css"
   let targetMarkups = combine target "index.html"
 
   shakeArgs shakeOptions $ do
+    -- Dependencies
     want [targetStyles]
     {-want [targetScripts, targetStyles, targetMarkups]-}
 
+    -- Actions
     {-targetScripts *> Scripts.build cwd utilPath-}
     targetStyles *> Styles.build cwd nodeModulesPath
     {-targetMarkups *> Markups.build cwd nodeModulesPath-}
 
     "clean" ~> do
-      putNormal "Cleaning build files"
+      logAction "Cleaning built files"
       cmd "rm" ["-r", "public/"]
 
     "help" ~> do
