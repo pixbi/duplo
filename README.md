@@ -11,14 +11,16 @@ A opinionated, framework-less build tool for web applications
 ## Usage
 
 * `duplo version` displays the version for this duplo installation.
+* `duplo help` displays all commands.
 * `duplo new <user> <repo>` scaffolds a new duplo repo with a GitHub user
   handle and a repo name. The repo is assumed to already exist.
-* `duplo build` or simply `duplo` builds the project
-* `duplo dev` runs `duplo build` in development, starts a server, and
-  re-compiles on file change. `DUPLO_ENV` is set to `dev` unless already
-  specified.
-* `duplo live` runs `duplo dev`, but in production. `DUPLO_ENV` is set to
-  `live` unless already specified.
+* `duplo build` builds the project. Pass in `dev` to `DUPLO_ENV` environment
+  variable to build in development mode.
+* `duplo serve` runs `duplo build`, starts a server, and rebuilds on file
+  change.
+* `duplo dev`: short-hand for `DUPLO_ENV=dev duplo serve`.
+* `duplo staging`: short-hand for `DUPLO_ENV=staging duplo serve`.
+* `duplo live`: short-hand for `DUPLO_ENV=live duplo serve`.
 * `duplo patch` bumps the patch version.
 * `duplo minor` bumps the minor version.
 * `duplo major` bumps the major version.

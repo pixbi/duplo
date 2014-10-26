@@ -24,12 +24,13 @@ main = do
   cwd <- getCurrentDirectory
   -- Duplo directory
   duploExecPath <- splitExecutablePath
-  let (duploPath, _) = duploExecPath
+  let (duploExecDir, _) = duploExecPath
   -- Application parameter
   duploIn <- getContents
 
-  let nodeModulesPath = combine duploPath "node_modules/.bin/"
-  let utilPath        = combine duploPath "util"
+  let duploDir        = combine duploExecDir "../.."
+  let nodeModulesPath = combine duploDir "node_modules/.bin"
+  let utilPath        = combine duploDir "util"
 
   let target        = combine cwd "public/"
   let targetScripts = combine target "index.js"
@@ -40,10 +41,13 @@ main = do
     want [targetStyles]
     {-want [targetScripts, targetStyles, targetMarkups]-}
 
+    {-targetScripts *> Scripts.build cwd utilPath-}
+    targetStyles *> Styles.build cwd nodeModulesPath
+    {-targetMarkups *> Markups.build cwd nodeModulesPath-}
+
     "clean" ~> do
       putNormal "Cleaning build files"
       cmd "rm" ["-r", "public/"]
 
-    {-targetScripts *> Scripts.build cwd utilPath-}
-    targetStyles *> Styles.build cwd nodeModulesPath
-    {-targetMarkups *> Markups.build cwd nodeModulesPath-}
+    "help" ~> do
+      cmd "cat" [combine duploDir "etc/help.txt"]
