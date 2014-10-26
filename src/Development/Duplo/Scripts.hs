@@ -1,47 +1,43 @@
-module Development.Duplo.Scripts (buildScript) where
+module Development.Duplo.Scripts (
+    build
+  ) where
 
-import Data.List (intercalate)
-import Development.Duplo.Files
-import Control.Lens
+build :: FilePath -> FilePath -> String -> String -> String -> FilePath -> Action a
+build cwd bin env mode input out = \ out -> do
+  alwaysRerun
+  -- The application repo is the default repo (when it's not a component
+  -- repo)
+  defaultRepo <- appRepo
+  inputJs     <- inputJsPaths
+  -- Collect all the applicable files
+  files       <- mapM (expandFile defaultRepo) inputJs
+  -- The app's settings
+  let appParams   = replace "\n" "" input
+  let appSettings = "var DUPLO_ENV = \"" ++ env ++ "\";\n"
+                 ++ "var DUPLO_IN = \"" ++ appParams ++ "\";\n"
 
--- | Build a script file given a list of files, a string to be placed at the
--- the beginning and at the end.
-buildScript :: [File] -> String -> String -> String
-buildScript files prefix suffix
-    = "(function () {\n"
-   ++ "var APP = {};\n"
-   ++ prefix ++ "\n"
-   ++ meat ++ "\n"
-   ++ suffix ++ "\n"
-   ++ "})();\n"
-  where
-    scripts = wrapFiles files
-    meat    = concat $ map getFileContent scripts
+  -- Build the scripts
+  let script = concat $ map getFileContent files
 
-wrapFiles :: [File] -> [File]
-wrapFiles = map wrapFile
+  -- Prepare Closure
+  let closurePath = combine bin "compiler.jar"
+  let closureParams = [ "-jar"
+                      , closurePath
+                      , "--compilation_level"
+                      , "SIMPLE_OPTIMIZATIONS"
+                      ]
+  -- Pick the right compiler and parameters to build
+  let compiler =
+        case mode of
+          "live" -> "java"
+          _      -> "bash"
+  let params =
+        case mode of
+          "live" -> closureParams
+          _      -> [combine bin "echo.sh"]
 
-wrapFile :: File -> File
-wrapFile file = over _2 wrap file
-  where
-    modId = getModuleId file
-    wrap  = wrapModule modId
+  -- Pass it through the compiler
+  Stdout compiled <- command [Stdin script] compiler params
 
-wrapModule :: ModuleId -> FileContent -> FileContent
-wrapModule modId content
-    = "APP['" ++ modId ++ "'] = "
-   ++ "function (" ++ args ++ ") {\n"
-   ++ "var module = null;\n"
-   ++ "var exports = {};\n"
-   ++ content ++ "\n"
-   ++ "return module.exports || exports;\n"
-   ++ "};\n"
-  where
-    -- Build module function's argument list
-    args = intercalate ", "
-      [ "MODE"
-      , "APP"
-      , "addEventListener"
-      , "removeEventListener"
-      , "dispatchEvent"
-      ]
+  -- Write output
+  writeFileChanged out compiled

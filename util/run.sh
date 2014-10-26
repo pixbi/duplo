@@ -1,6 +1,7 @@
 #!/usr/bin/env bash
 
 # Paths
+cwd="$( pwd )"
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 root="$( cd "$dir""/../" && pwd )"
 
@@ -66,7 +67,7 @@ run_duplo() {
 
   # Pass control to compiler with path to duplo root directory, mode, and
   # application paramters. Forward all arguments
-  DUPLO_PATH="$root" APP_MODE="$mode" APP_PARAMS="$appParams" \
+  DUPLO_PATH="$root" PROJ_PATH="$cwd" DUPLO_MODE="$mode" APP_PARAMS="$appParams" \
     "$root"/dist/build/duplo/duplo $builderParams
 }
 
