@@ -99,6 +99,30 @@ consuming application does not see library index files when building the
 project.
 
 
+## Application Parameterization
+
+If you need some build-time customization of the app, such as customizing each
+build with a JSON object of unique IDs and metadata, you can pass any string
+via standard input to duplo. The input is stringified and store into the
+`DUPLO_IN` global variable.
+
+For example, say you need to pass in a random ID for each build, you would
+invoke:
+
+```sh
+$ echo "{\"id\":\""$randomId"\"}" | duplo
+```
+
+Then in `app/index.js`:
+
+```js
+var randomId = JSON.parse(DUPLO_IN).id;
+```
+
+Note that all newline characters are removed before the string is wrapped into
+a JavaScript string.
+
+
 ## JavaScript Concatenation Order
 
 JavaScript files are not concatenated in any particular order. It is good
@@ -143,7 +167,7 @@ attributes, each of which would then contain an array of dependencies as
 specified in the `dependencies` attribute to include.
 
 Running duplo with the environment variable `DUPLO_MODE` set to `embeddable`
-would build with the specified dependencies under `embeddable` while setting
+would build with the dependencies specified under `embeddable` while setting
 `MODE` to `standalone` would do the same with those specified under the
 `standalone` attribute. Otherwise duplo would build with all dependencies.
 
