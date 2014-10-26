@@ -10,7 +10,7 @@ import System.Environment.Executable (splitExecutablePath)
 {-import Data.String.Utils-}
 {-import Development.Duplo.ComponentIO (appRepo)-}
 {-import Development.Duplo.Files-}
-{-import Development.Duplo.Markup as Files-}
+import Development.Duplo.Markups as Markups
 import Development.Duplo.Scripts as Scripts
 {-import Development.Shake.Command-}
 {-import Development.Shake.Util-}
@@ -51,13 +51,12 @@ main = do
 
   shakeArgs shakeOptions $ do
     -- Dependencies
-    want [targetStyles, targetScripts]
-    {-want [targetScripts, targetStyles, targetMarkups]-}
+    want [targetScripts, targetStyles, targetMarkups]
 
     -- Actions
     targetScripts *> Scripts.build cwd utilPath duploEnv duploMode duploIn
     targetStyles *> Styles.build cwd nodeModulesPath
-    {-targetMarkups *> Markups.build cwd nodeModulesPath-}
+    targetMarkups *> Markups.build cwd nodeModulesPath
 
     "clean" ~> do
       logAction "Cleaning built files"

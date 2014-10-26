@@ -153,7 +153,8 @@ There is no particular concatenation order between different dependencies.
 ## HTML/Jade Concatenation Order
 
 Jade files are concatenated in no particular order as the Jade include system
-is used for explicit ordering.
+is used for explicit ordering. Note that any Jade files within the `app/`
+directory are not included. They must be within the `app/modules/` directory.
 
 
 ## Dependency Selection

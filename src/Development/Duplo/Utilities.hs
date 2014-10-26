@@ -5,12 +5,12 @@ module Development.Duplo.Utilities
   , buildWith
   ) where
 
+import Prelude hiding (readFile)
 import Control.Monad (filterM)
 import Data.List (intercalate)
-import Development.Shake
-
-type Params    = [String]
-type Processor = [String] -> [String]
+import Development.Shake hiding (readFile)
+import Development.Duplo.Files (readFile, getFilePath, File)
+import Development.Shake.FilePath (combine)
 
 getDirectoryFilesInOrder :: FilePath -> [FilePattern] -> Action [FilePath]
 getDirectoryFilesInOrder base patterns =
@@ -29,27 +29,46 @@ logAction log = do
   putNormal ""
   putNormal $ ">> " ++ log
 
+-- | Given the path to a compiler, parameters to the compiler, a list of
+-- paths of to-be-compiled files, the output file path, and a processing
+-- function, do the following:
+--
+-- * reads all the to-be-compiled files
+-- * calls the processor with the list of files to perform any
+--   pre-processing
+-- * concatenates all files
+-- * passes the concatenated string to the compiler
+-- * writes to the output file
+          -- The path to the compiler
 buildWith :: FilePath
-          -> Params
+          -- The parameters passed to the compiler
+          -> [String]
+          -- Files to be compiled
           -> [FilePath]
+          -- The output file
           -> FilePath
-          -> Processor
+          -- The processing lambda
+          -> ([File] -> [File])
+          -- We don't return anything
           -> Action ()
 buildWith compiler params paths out process = do
   -- Log to console what we're dealing with
   mapM (putNormal . ("Including " ++)) paths
 
-  -- Read 'em all
-  contents <- mapM readFile' paths
+  -- Construct files
+  files <- mapM readFile paths
 
   -- Pass to processor for specific manipulation
-  let processed = process contents
+  let processed = process files
+
+  -- We only care about the content from this point on
+  let contents = fmap getFilePath processed
 
   -- Trailing newline is significant in case of empty Stylus
-  let concatenated = (intercalate "\n" processed) ++ "\n"
+  let concatenated = (intercalate "\n" contents) ++ "\n"
 
   -- Pass it through the compiler
-  putNormal $ "Compiling with: " ++ compiler ++ " " ++ concat params
+  putNormal $ "Compiling with: " ++ compiler ++ " " ++ intercalate " " params
   Stdout compiled <- command [Stdin concatenated] compiler params
 
   -- Write output
@@ -58,6 +77,7 @@ buildWith compiler params paths out process = do
 
 expandPaths :: String -> [String] -> [String] -> Action [String]
 expandPaths cwd staticPaths dynamicPaths = do
-  staticExpanded <- filterM doesFileExist (map (cwd ++) staticPaths)
+  let expand = map (combine cwd)
+  staticExpanded <- filterM doesFileExist $ expand staticPaths
   dynamicExpanded <- getDirectoryFilesInOrder cwd dynamicPaths
-  return $ staticExpanded ++ dynamicExpanded
+  return $ staticExpanded ++ expand dynamicExpanded

@@ -13,6 +13,7 @@ import Development.Duplo.Utilities
 import Development.Shake
 import Development.Shake.FilePath (combine)
 import Data.Text (replace, pack, unpack)
+import Development.Duplo.Files (File)
 
 build :: FilePath -> FilePath -> String -> String -> String -> FilePath -> Action ()
 build cwd bin env mode input = \ out -> do
@@ -49,16 +50,21 @@ build cwd bin env mode input = \ out -> do
           "dev" -> [combine bin "echo.sh"]
           _     -> closureParams
 
-  -- Inject environment variables
+  -- Sanitize input
   let duploIn = unpack $
                   -- No newlines
                   replace (pack "\n") (pack "") $
                     -- Escape double-quotes
                     replace (pack "\"") (pack "\\\"") $
                       pack input
+  -- Inject environment variables
   let envVars = "var DUPLO_ENV = DUPLO_ENV || \"" ++ env ++ "\";\n"
              ++ "var DUPLO_IN = DUPLO_IN || \"" ++ duploIn ++ "\";\n"
 
   -- Build it
-  buildWith compiler params paths out $ \ contents ->
-    envVars : contents
+  buildWith compiler params paths out $ \ files ->
+    let
+      -- Create a pseudo file that contains the environment variables
+      envFile = File "" "" "" envVars
+    in
+      envFile : files

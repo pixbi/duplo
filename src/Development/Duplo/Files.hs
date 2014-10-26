@@ -1,32 +1,41 @@
-module Development.Duplo.Files (
-    File, FileDir, FileName, FileContent,
-    getFilePath, getFileDir, getFileName, getFileContent,
-    expandFile
+module Development.Duplo.Files
+  ( File(..)
+  , readFile
+  , getFilePath
   ) where
 
+import Prelude hiding (readFile)
+import Development.Shake hiding (readFile)
+import Data.Text (split, pack, unpack)
 {-import System.FilePath.Posix hiding (combine)-}
 {-import Development.Shake.FilePath-}
-import Control.Lens hiding (Action)
+{-import Control.Lens hiding (Action)-}
 {-import Development.Shake-}
 {-import Data.List.Split (splitOn)-}
-{-import Data.List (intercalate)-}
+import Data.List (intercalate)
 
 type FileDir     = String
 type FileName    = String
 type FileContent = String
-type File        = (FilePath, FileDir, FileName, FileContent)
+data File        = File FilePath FileDir FileName FileContent
 
-getFilePath    :: File -> String
-getFilePath    = view _1
-getFileDir     :: File -> String
-getFileDir     = view _2
-getFileName    :: File -> String
-getFileName    = view _3
-getFileContent :: File -> String
-getFileContent = view _4
+readFile :: FilePath -> Action File
+readFile path = do
+  let (fileDir, fileName) = parseFilePath path
+  fileContent <- readFile' path
+  return $ File path fileDir fileName fileContent
 
-expandFile :: FilePath -> FileDir -> Action File
-expandFile appRepo path = do
-  content <- readFile' path
-  let modId = moduleId $ parsePath appRepo path
-  return (path, content, modId)
+parseFilePath:: FilePath -> (FileDir, FileName)
+parseFilePath path =
+    (fileDir, fileName)
+  where
+    slash     = pack "/"
+    path'     = pack path
+    segments  = fmap unpack $ split (== '/') path'
+    segLength = length segments
+    dirLength = segLength - 1
+    fileDir   = intercalate "/" $ take dirLength segments
+    fileName  = segments !! dirLength
+
+getFilePath :: File -> FilePath
+getFilePath (File path _ _ _) = path

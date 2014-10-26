@@ -24,6 +24,7 @@ build cwd bin = \ out -> do
                     ]
 
   -- These paths need to be expanded by Shake
+  -- TODO: exclude dependencies not listed in the current mode
   let dynamicPaths = [ "app/modules//index.styl"
                      , "components/*/app/styl/variables.styl"
                      , "components/*/app/styl/keyframes.styl"
