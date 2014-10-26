@@ -21,13 +21,13 @@ main = do
   duploEnv <- fromMaybe "dev" <$> lookupEnv "DUPLO_ENV"
   -- Build mode, for dependency selection
   duploMode <- fromMaybe "" <$> lookupEnv "DUPLO_MODE"
+  -- Application parameter
+  duploIn <- fromMaybe "" <$> lookupEnv "DUPLO_IN"
   -- Current directory
   cwd <- getCurrentDirectory
   -- Duplo directory
   duploExecPath <- splitExecutablePath
   let (duploExecDir, _) = duploExecPath
-  -- Application parameter
-  duploIn <- getContents
 
   -- Paths to various relevant directories
   let duploDir        = combine duploExecDir "../.."
@@ -42,10 +42,11 @@ main = do
 
   -- Report back what's given for confirmation
   putStr $ ">> Parameters \n"
-        ++ "Environment (i.e. `DUPLO_ENV`):  " ++ duploEnv ++ "\n"
-        ++ "Build Mode (i.e. `DUPLO_MODE`):  " ++ duploMode ++ "\n"
-        ++ "Current working directory:       " ++ cwd ++ "\n"
-        ++ "duplo is installed at:           " ++ duploExecDir ++ "\n"
+        ++ "Current working directory:         " ++ cwd ++ "\n"
+        ++ "duplo is installed at:             " ++ duploExecDir ++ "\n"
+        ++ "Environment (i.e. `DUPLO_ENV`):    " ++ duploEnv ++ "\n"
+        ++ "Build Mode (i.e. `DUPLO_MODE`):    " ++ duploMode ++ "\n"
+        ++ "App Parameters (i.e. `DUPLO_IN`):  " ++ duploIn ++ "\n"
         ++ "\n"
 
   shakeArgs shakeOptions $ do

@@ -105,8 +105,8 @@ project.
 
 If you need some build-time customization of the app, such as customizing each
 build with a JSON object of unique IDs and metadata, you can pass any string
-via standard input to duplo. The input is stringified and store into the
-`DUPLO_IN` global variable.
+as the environment variable `DUPLO_IN`. The string is then turned into a
+JavaScript string and stored into a global variable.
 
 For example, say you need to pass in a random ID for each build, you would
 invoke:

@@ -1,10 +1,15 @@
-module Development.Duplo.Scripts (
-    build
+module Development.Duplo.Scripts
+  ( build
   ) where
 
 import Control.Monad (filterM)
 import Data.List (intercalate)
-import Development.Duplo.Utilities (getDirectoryFilesInOrder, logAction)
+import Development.Duplo.Utilities
+         ( getDirectoryFilesInOrder
+         , logAction
+         , expandPaths
+         , buildWith
+         )
 import Development.Shake
 import Development.Shake.FilePath (combine)
 import Data.Text (replace, pack, unpack)
@@ -14,31 +19,17 @@ build cwd bin env mode input = \ out -> do
   logAction "Building scripts"
 
   -- These paths don't need to be expanded
-  let staticPaths' = [ "app/index.js"
-                     ]
-  staticPaths <- filterM doesFileExist staticPaths'
+  let staticPaths = [ "app/index.js"
+                    ]
 
   -- These paths need to be expanded by Shake
   -- TODO: exclude dependencies not listed in the current mode
-  let dynamicPaths' = [ "app/modules//*.js"
-                      , "components/*/app/modules//*.js"
-                      ]
-  dynamicPaths <- getDirectoryFilesInOrder cwd dynamicPaths'
+  let dynamicPaths = [ "app/modules//*.js"
+                     , "components/*/app/modules//*.js"
+                     ]
 
   -- Merge both types of paths
-  let paths = staticPaths ++ dynamicPaths
-  mapM (putNormal . ("Including " ++)) paths
-
-  -- Inject environment variables
-  let duploIn = unpack $ replace (pack "\n") (pack "") (pack input)
-  let envVars = "var DUPLO_ENV = \"" ++ env ++ "\";\n"
-             ++ "var DUPLO_IN = \"" ++ duploIn ++ "\";\n"
-
-  -- Read 'em all
-  contents <- mapM readFile' paths
-
-  -- Trailing newline is significant in case of empty Stylus
-  let concatenated = (intercalate "\n" contents) ++ "\n"
+  paths <- expandPaths cwd staticPaths dynamicPaths
 
   -- Prepare Closure
   let closurePath = combine bin "compiler.jar"
@@ -58,10 +49,16 @@ build cwd bin env mode input = \ out -> do
           "dev" -> [combine bin "echo.sh"]
           _     -> closureParams
 
-  -- Pass it through the compiler
-  putNormal $ "Compiling with: " ++ compiler ++ " " ++ concat params
-  Stdout compiled <- command [Stdin concatenated] compiler params
+  -- Inject environment variables
+  let duploIn = unpack $
+                  -- No newlines
+                  replace (pack "\n") (pack "") $
+                    -- Escape double-quotes
+                    replace (pack "\"") (pack "\\\"") $
+                      pack input
+  let envVars = "var DUPLO_ENV = DUPLO_ENV || \"" ++ env ++ "\";\n"
+             ++ "var DUPLO_IN = DUPLO_IN || \"" ++ duploIn ++ "\";\n"
 
-  -- Write output
-  writeFileChanged out compiled
-  putNormal ""
+  -- Build it
+  buildWith compiler params paths out $ \ contents ->
+    envVars : contents
