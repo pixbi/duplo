@@ -8,15 +8,18 @@ import Development.Duplo.Utilities
          , expandPaths
          , buildWith
          )
-import Development.Shake hiding (readFile)
+import Development.Shake
 import Development.Shake.FilePath (combine)
 import Development.Duplo.Files
          ( File(..)
-         , readFile
-         , getFileContent
-         , getFilePath
+         , filePath
+         , fileDir
+         , fileName
+         , componentId
+         , fileContent
          )
 import System.FilePath.Posix (makeRelative)
+import Control.Lens hiding (Action)
 
 build :: FilePath -> FilePath -> FilePath -> Action ()
 build cwd bin = \ out -> do
@@ -44,7 +47,7 @@ build cwd bin = \ out -> do
                  ]
 
   -- Build it
-  buildWith compiler params paths out $ \ files ->
+  buildWith cwd compiler params paths out $ \ files ->
     fmap (rewriteIncludes cwd files) files
 
 -- | Rewrite paths to external files (i.e. include statements) because Jade
@@ -61,10 +64,10 @@ rewriteIncludes :: FilePath
                 -> File
 rewriteIncludes cwd files file =
   let
-    path    = getFilePath file
-    dir     = ""
-    name    = ""
-    id      = ""
-    content = getFileContent file
+    path    = file ^. filePath
+    dir     = file ^. fileDir
+    name    = file ^. fileName
+    id      = file ^. componentId
+    content = file ^. fileContent
   in
     File path dir name id $ path ++ "\n" ++ content

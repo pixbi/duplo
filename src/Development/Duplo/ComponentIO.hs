@@ -16,11 +16,10 @@ import qualified Data.ByteString.Lazy.Char8 as BSL
 manifestPath :: String
 manifestPath = "component.json"
 
-data AppInfo = AppInfo {
-  name    :: String,
-  repo    :: String,
-  version :: String
-  } deriving (Show)
+data AppInfo = AppInfo { name    :: String
+                       , repo    :: String
+                       , version :: String
+                       } deriving (Show)
 
 -- | Instance for Aeson
 instance AES.FromJSON AppInfo where

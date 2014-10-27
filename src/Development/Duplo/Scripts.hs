@@ -62,7 +62,7 @@ build cwd bin env mode input = \ out -> do
              ++ "var DUPLO_IN = DUPLO_IN || \"" ++ duploIn ++ "\";\n"
 
   -- Build it
-  buildWith compiler params paths out $ \ files ->
+  buildWith cwd compiler params paths out $ \ files ->
     let
       -- Create a pseudo file that contains the environment variables
       envFile = File "" "" "" "" envVars

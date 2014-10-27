@@ -41,4 +41,4 @@ build cwd bin = \ out -> do
   let compiler = combine bin "stylus"
 
   -- Build it
-  buildWith compiler [] paths out id
+  buildWith cwd compiler [] paths out id

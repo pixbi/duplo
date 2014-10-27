@@ -1,8 +1,13 @@
+{-# LANGUAGE TemplateHaskell #-}
+
 module Development.Duplo.Files
   ( File(..)
   , readFile
-  , getFilePath
-  , getFileContent
+  , filePath
+  , fileDir
+  , fileName
+  , componentId
+  , fileContent
   ) where
 
 import Prelude hiding (readFile)
@@ -10,41 +15,54 @@ import Development.Shake hiding (readFile)
 import Data.Text (split, pack, unpack)
 {-import System.FilePath.Posix hiding (combine)-}
 {-import Development.Shake.FilePath-}
-{-import Control.Lens hiding (Action)-}
+import Control.Lens hiding (Action)
+import Control.Lens.TH (makeLenses)
 {-import Development.Shake-}
 {-import Data.List.Split (splitOn)-}
 import Data.List (intercalate)
-import Development.Duplo.ComponentIO (appRepo)
+import Development.Duplo.ComponentIO (appId)
+import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)
 
-type FileDir       = String
-type FileName      = String
-type FileContent   = String
-type ComponentName = String
-data File          = File FilePath FileDir FileName ComponentName FileContent
+type FileName    = String
+type FileContent = String
+type ComponentId = String
+data File        = File { _filePath    :: FilePath
+                        , _fileDir     :: FilePath
+                        , _fileName    :: FileName
+                        , _componentId :: ComponentId
+                        , _fileContent :: String
+                        }
 
-readFile :: FilePath -> Action File
-readFile path = do
+makeLenses ''File
+
+readFile :: FilePath -> FilePath -> Action File
+readFile cwd path = do
   let (fileDir, fileName) = parseFilePath path
   fileContent <- readFile' path
-  return $ File path fileDir fileName "" fileContent
+  appId' <- liftIO appId
+  let componentId = parseComponentId cwd appId' fileDir
+  return $ File path fileDir fileName componentId fileContent
 
-parseFilePath:: FilePath -> (FileDir, FileName)
+parseFilePath :: FilePath -> (FilePath, FileName)
 parseFilePath path =
-    (fileDir, fileName)
-  where
-    slash     = pack "/"
-    path'     = pack path
-    segments  = fmap unpack $ split (== '/') path'
+  let
+    segments  = splitDirectories path
     segLength = length segments
     dirLength = segLength - 1
-    fileDir   = intercalate "/" $ take dirLength segments
+    fileDir   = joinPath $ take dirLength segments
     fileName  = segments !! dirLength
+  in
+    (fileDir, fileName)
 
-getFilePath :: File -> FilePath
-getFilePath (File path _ _ _ _) = path
-
-getFileContent :: File -> FilePath
-getFileContent (File _ _ _ _ content) = content
-
-getComponentId :: File -> String
-getComponentId (File _ _ _ id _) = id
+-- | Given a default component ID (usually the ID of the project on which
+-- duplo is run) and the file path, deduce the component ID of a particular
+-- file
+parseComponentId :: FilePath -> ComponentId -> FilePath -> ComponentId
+parseComponentId cwd defaultId path =
+  let
+    relPath  = makeRelative cwd path
+    segments = splitDirectories relPath
+  in
+    case segments of
+      ("components" : appId : xs) -> appId
+      _                           -> defaultId

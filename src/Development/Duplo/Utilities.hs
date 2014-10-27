@@ -9,8 +9,17 @@ import Prelude hiding (readFile)
 import Control.Monad (filterM)
 import Data.List (intercalate)
 import Development.Shake hiding (readFile)
-import Development.Duplo.Files (readFile, getFileContent, File)
+import Development.Duplo.Files
+         ( readFile
+         , File(..)
+         , filePath
+         , fileDir
+         , fileName
+         , componentId
+         , fileContent
+         )
 import Development.Shake.FilePath (combine)
+import Control.Lens hiding (Action)
 
 getDirectoryFilesInOrder :: FilePath -> [FilePattern] -> Action [FilePath]
 getDirectoryFilesInOrder base patterns =
@@ -39,8 +48,10 @@ logAction log = do
 -- * concatenates all files
 -- * passes the concatenated string to the compiler
 -- * writes to the output file
-          -- The path to the compiler
+          -- Current working directory
 buildWith :: FilePath
+          -- The path to the compiler
+          -> FilePath
           -- The parameters passed to the compiler
           -> [String]
           -- Files to be compiled
@@ -51,18 +62,18 @@ buildWith :: FilePath
           -> ([File] -> [File])
           -- We don't return anything
           -> Action ()
-buildWith compiler params paths out process = do
+buildWith cwd compiler params paths out process = do
   -- Log to console what we're dealing with
   mapM (putNormal . ("Including " ++)) paths
 
   -- Construct files
-  files <- mapM readFile paths
+  files <- mapM (readFile cwd) paths
 
   -- Pass to processor for specific manipulation
   let processed = process files
 
   -- We only care about the content from this point on
-  let contents = fmap getFileContent processed
+  let contents = fmap (^. fileContent) processed
 
   -- Trailing newline is significant in case of empty Stylus
   let concatenated = (intercalate "\n" contents) ++ "\n"
