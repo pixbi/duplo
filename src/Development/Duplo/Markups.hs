@@ -17,9 +17,14 @@ import Development.Duplo.Files
          , fileName
          , componentId
          , fileContent
+         , isRoot
+         , ComponentId
          )
-import System.FilePath.Posix (makeRelative)
+import Development.Duplo.ComponentIO (parseComponentId)
+import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)
 import Control.Lens hiding (Action)
+{-import Data.Text as T-}
+import qualified Data.Text.Lazy as TL
 
 build :: FilePath -> FilePath -> FilePath -> Action ()
 build cwd bin = \ out -> do
@@ -67,9 +72,44 @@ rewriteIncludes :: FilePath
 rewriteIncludes cwd files file =
     file & fileContent .~ rewritten
   where
-    path      = file ^. filePath
-    dir       = file ^. fileDir
-    name      = file ^. fileName
-    id        = file ^. componentId
-    content   = file ^. fileContent
-    rewritten = path ++ "\n" ++ content
+    path       = file ^. filePath
+    dir        = file ^. fileDir
+    name       = file ^. fileName
+    id         = file ^. componentId
+    content    = file ^. fileContent
+    isRoot'    = file ^. isRoot
+    defaultId  = if isRoot' then "" else id
+    content'   = Prelude.lines content
+    rewritten' = fmap (rewriteInclude defaultId) content'
+    rewritten  = Prelude.unlines rewritten'
+
+-- | Given a component ID and a content line, rewrite if it is an include
+-- statement to be relative to project root
+rewriteInclude :: ComponentId -> String -> String
+rewriteInclude defaultId line =
+  let
+    -- Find how many spaces precede the line
+    padLength  = length $ takeWhile (== ' ') line
+    padding    = replicate padLength ' '
+    -- The statement in tokens
+    tokens     = words line
+    -- Further tokenize the tokens as paths
+    tokenPaths = fmap splitDirectories tokens
+  in
+    case tokenPaths of
+      -- Deconstruct an include statement
+      (("include":_) : (depId:relPath) : _) ->
+          padding ++ "include " ++ combine compPath relPath'
+        where
+          relPath' = combine "app/modules" $ joinPath relPath
+          compName = case (parseComponentId depId) of
+                       -- There is a component ID
+                       Just (user, repo) -> depId
+                       -- Use default component ID
+                       Nothing -> defaultId
+          compPath = if   length compName > 0
+                     then combine "components" compName
+                     else ""
+
+      -- If it's not an include statement, just pass it thru
+      _ -> line

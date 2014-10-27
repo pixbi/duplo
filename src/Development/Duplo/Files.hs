@@ -8,6 +8,8 @@ module Development.Duplo.Files
   , fileName
   , componentId
   , fileContent
+  , isRoot
+  , ComponentId
   ) where
 
 import Prelude hiding (readFile)
@@ -31,6 +33,8 @@ data File        = File { _filePath    :: FilePath
                         , _fileName    :: FileName
                         , _componentId :: ComponentId
                         , _fileContent :: String
+                        -- Is this part of the root project?
+                        , _isRoot      :: Bool
                         }
 
 makeLenses ''File
@@ -39,9 +43,10 @@ readFile :: FilePath -> FilePath -> Action File
 readFile cwd path = do
   let (fileDir, fileName) = parseFilePath path
   fileContent <- readFile' path
-  appId' <- liftIO appId
+  appId'      <- liftIO appId
   let componentId = parseComponentId cwd appId' fileDir
-  return $ File path fileDir fileName componentId fileContent
+  let isRoot      = componentId == appId'
+  return $ File path fileDir fileName componentId fileContent isRoot
 
 parseFilePath :: FilePath -> (FilePath, FileName)
 parseFilePath path =

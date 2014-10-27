@@ -65,6 +65,6 @@ build cwd bin env mode input = \ out -> do
   buildWith cwd compiler params paths out $ \ files ->
     let
       -- Create a pseudo file that contains the environment variables
-      envFile = File "" "" "" "" envVars
+      envFile = File { _fileContent = envVars }
     in
       envFile : files

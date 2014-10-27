@@ -3,6 +3,7 @@ module Development.Duplo.ComponentIO
   , appVersion
   , appRepo
   , appId
+  , parseComponentId
   ) where
 
 import Control.Applicative ((<$>), (<*>), empty)
@@ -11,6 +12,7 @@ import Data.Aeson ((.:))
 import qualified Data.Aeson as AES
 import Data.Text (breakOn, unpack, pack)
 import qualified Data.ByteString.Lazy.Char8 as BSL
+import System.FilePath.Posix (splitDirectories)
 
 -- | Each application must have a `component.json`
 manifestPath :: String
@@ -54,8 +56,15 @@ appRepo = fmap repo appInfo
 appId :: IO String
 appId = do
   appRepo <- fmap repo appInfo
-  let appRepoT = pack appRepo
-  let (first, second) = breakOn (pack "/") appRepoT
-  let user = unpack first
-  let repo = tail $ unpack second
-  return $ user  ++ "-" ++ repo
+  let (user : repo : _) = splitDirectories appRepo
+  return $ user ++ "-" ++ repo
+
+-- | Given a possible component ID, return the user and the repo
+-- constituents
+parseComponentId :: String -> Maybe (String, String)
+parseComponentId id
+  | repoL > 0 = Just ((unpack user), (unpack repo))
+  | otherwise = Nothing
+  where
+    (user, repo) = breakOn (pack "-") (pack id)
+    repoL = length $ unpack repo
