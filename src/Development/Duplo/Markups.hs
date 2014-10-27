@@ -43,7 +43,9 @@ build cwd bin = \ out -> do
   let compiler = combine bin "jade"
   let params   = [ "--pretty"
                  , "--path"
-                 , cwd
+                 -- Jade takes a file and takes its directory as its
+                 -- current working directory
+                 , combine cwd "index.jade"
                  ]
 
   -- Build it
@@ -69,4 +71,5 @@ rewriteIncludes cwd files file =
     dir       = file ^. fileDir
     name      = file ^. fileName
     id        = file ^. componentId
+    content   = file ^. fileContent
     rewritten = path ++ "\n" ++ content
