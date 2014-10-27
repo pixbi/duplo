@@ -34,6 +34,9 @@ main = do
   duploExecPath <- splitExecutablePath
   let (duploExecDir, _) = duploExecPath
 
+  -- Run on port
+  port <- fromMaybe "8888" <$> lookupEnv "PORT"
+
   -- Paths to various relevant directories
   let duploDir        = combine duploExecDir "../.."
   let nodeModulesPath = combine duploDir "node_modules/.bin"
@@ -83,3 +86,7 @@ main = do
 
     "help" ~> do
       cmd "cat" [combine duploDir "etc/help.txt"]
+
+    "serve" ~> do
+      logAction $ "Running dev server on port " ++ port
+      cmd (combine nodeModulesPath "http-server") ["public", "-c-1", "-p", port]
