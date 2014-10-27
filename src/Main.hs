@@ -8,7 +8,7 @@ import System.Directory (getCurrentDirectory)
 import System.Environment (lookupEnv)
 import System.Environment.Executable (splitExecutablePath)
 {-import Data.String.Utils-}
-{-import Development.Duplo.ComponentIO (appRepo)-}
+import Development.Duplo.ComponentIO (appName, appVersion, appRepo)
 {-import Development.Duplo.Files-}
 import Development.Duplo.Markups as Markups
 import Development.Duplo.Scripts as Scripts
@@ -40,8 +40,16 @@ main = do
   let targetStyles  = combine target "index.css"
   let targetMarkups = combine target "index.html"
 
+  -- Gather information about this project
+  appName'    <- appName
+  appVersion' <- appVersion
+  appRepo'    <- appRepo
+
   -- Report back what's given for confirmation
   putStr $ ">> Parameters \n"
+        ++ "Application name and version:      "
+        ++ appName' ++ " v" ++ appVersion' ++ "\n"
+        ++ "Application GitHub repo:           " ++ appRepo' ++ "\n"
         ++ "Current working directory:         " ++ cwd ++ "\n"
         ++ "duplo is installed at:             " ++ duploExecDir ++ "\n"
         ++ "Environment (i.e. `DUPLO_ENV`):    " ++ duploEnv ++ "\n"

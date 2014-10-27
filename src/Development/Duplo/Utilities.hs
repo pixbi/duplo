@@ -9,7 +9,7 @@ import Prelude hiding (readFile)
 import Control.Monad (filterM)
 import Data.List (intercalate)
 import Development.Shake hiding (readFile)
-import Development.Duplo.Files (readFile, getFilePath, File)
+import Development.Duplo.Files (readFile, getFileContent, File)
 import Development.Shake.FilePath (combine)
 
 getDirectoryFilesInOrder :: FilePath -> [FilePattern] -> Action [FilePath]
@@ -62,7 +62,7 @@ buildWith compiler params paths out process = do
   let processed = process files
 
   -- We only care about the content from this point on
-  let contents = fmap getFilePath processed
+  let contents = fmap getFileContent processed
 
   -- Trailing newline is significant in case of empty Stylus
   let concatenated = (intercalate "\n" contents) ++ "\n"

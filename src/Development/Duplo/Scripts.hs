@@ -13,7 +13,7 @@ import Development.Duplo.Utilities
 import Development.Shake
 import Development.Shake.FilePath (combine)
 import Data.Text (replace, pack, unpack)
-import Development.Duplo.Files (File)
+import Development.Duplo.Files (File(..))
 
 build :: FilePath -> FilePath -> String -> String -> String -> FilePath -> Action ()
 build cwd bin env mode input = \ out -> do

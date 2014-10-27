@@ -10,10 +10,17 @@ import Development.Duplo.Utilities
          )
 import Development.Shake hiding (readFile)
 import Development.Shake.FilePath (combine)
-import Development.Duplo.Files (File, readFile)
+import Development.Duplo.Files
+         ( File(..)
+         , readFile
+         , getFileContent
+         , getFilePath
+         )
+import System.FilePath.Posix (makeRelative)
 
 build :: FilePath -> FilePath -> FilePath -> Action ()
 build cwd bin = \ out -> do
+  alwaysRerun
   logAction "Building markups"
 
   -- These paths don't need to be expanded
@@ -38,16 +45,25 @@ build cwd bin = \ out -> do
 
   -- Build it
   buildWith compiler params paths out $ \ files ->
-    fmap (rewriteIncludes files) files
+    fmap (rewriteIncludes cwd files) files
 
 -- | Rewrite paths to external files (i.e. include statements) because Jade
 -- doesn't accept more than one path to look up includes. It is passed all
 -- the files to be compiled and a file whose include statements are to be
 -- rewritten.
+                -- The current working directory
+rewriteIncludes :: FilePath
                 -- All the files to be compiled
-rewriteIncludes :: [File]
+                -> [File]
                 -- The current file
                 -> File
                 -- The same file with include statements rewritten
                 -> File
-rewriteIncludes files file = file
+rewriteIncludes cwd files file =
+  let
+    path    = getFilePath file
+    dir     = ""
+    name    = ""
+    content = getFileContent file
+  in
+    File path dir name $ path ++ "\n" ++ content

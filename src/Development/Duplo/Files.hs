@@ -2,6 +2,7 @@ module Development.Duplo.Files
   ( File(..)
   , readFile
   , getFilePath
+  , getFileContent
   ) where
 
 import Prelude hiding (readFile)
@@ -39,3 +40,6 @@ parseFilePath path =
 
 getFilePath :: File -> FilePath
 getFilePath (File path _ _ _) = path
+
+getFileContent :: File -> FilePath
+getFileContent (File _ _ _ content) = content

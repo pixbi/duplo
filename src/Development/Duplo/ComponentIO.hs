@@ -1,9 +1,11 @@
-module Development.Duplo.ComponentIO (
-  appName, appVersion, appRepo
+module Development.Duplo.ComponentIO
+  ( appName
+  , appVersion
+  , appRepo
   ) where
 
 import Control.Applicative ((<$>), (<*>), empty)
-import Development.Shake
+import Development.Shake hiding (readFile)
 import Data.Aeson ((.:))
 import qualified Data.Aeson as AES
 import Data.Text hiding (empty)
@@ -28,9 +30,9 @@ instance AES.FromJSON AppInfo where
   parseJSON _                = empty
 
 -- | Get application info
-appInfo :: Action AppInfo
+appInfo :: IO AppInfo
 appInfo = do
-  manifest <- readFile' manifestPath
+  manifest <- readFile manifestPath
   let parsed = AES.decode (BSL.pack manifest) :: Maybe AppInfo
   case parsed of
     Just info -> return info
@@ -40,11 +42,11 @@ appInfo = do
 ----------
 -- Accessors
 
-appName :: Action String
+appName :: IO String
 appName = fmap name appInfo
 
-appVersion :: Action String
+appVersion :: IO String
 appVersion = fmap version appInfo
 
-appRepo :: Action String
+appRepo :: IO String
 appRepo = fmap repo appInfo
