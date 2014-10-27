@@ -63,11 +63,10 @@ rewriteIncludes :: FilePath
                 -- The same file with include statements rewritten
                 -> File
 rewriteIncludes cwd files file =
-  let
-    path    = file ^. filePath
-    dir     = file ^. fileDir
-    name    = file ^. fileName
-    id      = file ^. componentId
-    content = file ^. fileContent
-  in
-    File path dir name id $ path ++ "\n" ++ content
+    file & fileContent .~ rewritten
+  where
+    path      = file ^. filePath
+    dir       = file ^. fileDir
+    name      = file ^. fileName
+    id        = file ^. componentId
+    rewritten = path ++ "\n" ++ content
