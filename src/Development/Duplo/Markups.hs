@@ -64,6 +64,7 @@ rewriteIncludes cwd files file =
     path    = getFilePath file
     dir     = ""
     name    = ""
+    id      = ""
     content = getFileContent file
   in
-    File path dir name $ path ++ "\n" ++ content
+    File path dir name id $ path ++ "\n" ++ content

@@ -2,13 +2,14 @@ module Development.Duplo.ComponentIO
   ( appName
   , appVersion
   , appRepo
+  , appId
   ) where
 
 import Control.Applicative ((<$>), (<*>), empty)
 import Development.Shake hiding (readFile)
 import Data.Aeson ((.:))
 import qualified Data.Aeson as AES
-import Data.Text hiding (empty)
+import Data.Text (breakOn, unpack, pack)
 import qualified Data.ByteString.Lazy.Char8 as BSL
 
 -- | Each application must have a `component.json`
@@ -50,3 +51,12 @@ appVersion = fmap version appInfo
 
 appRepo :: IO String
 appRepo = fmap repo appInfo
+
+appId :: IO String
+appId = do
+  appRepo <- fmap repo appInfo
+  let appRepoT = pack appRepo
+  let (first, second) = breakOn (pack "/") appRepoT
+  let user = unpack first
+  let repo = tail $ unpack second
+  return $ user  ++ "-" ++ repo

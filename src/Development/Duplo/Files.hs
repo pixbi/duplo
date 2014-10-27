@@ -14,17 +14,19 @@ import Data.Text (split, pack, unpack)
 {-import Development.Shake-}
 {-import Data.List.Split (splitOn)-}
 import Data.List (intercalate)
+import Development.Duplo.ComponentIO (appRepo)
 
-type FileDir     = String
-type FileName    = String
-type FileContent = String
-data File        = File FilePath FileDir FileName FileContent
+type FileDir       = String
+type FileName      = String
+type FileContent   = String
+type ComponentName = String
+data File          = File FilePath FileDir FileName ComponentName FileContent
 
 readFile :: FilePath -> Action File
 readFile path = do
   let (fileDir, fileName) = parseFilePath path
   fileContent <- readFile' path
-  return $ File path fileDir fileName fileContent
+  return $ File path fileDir fileName "" fileContent
 
 parseFilePath:: FilePath -> (FileDir, FileName)
 parseFilePath path =
@@ -39,7 +41,10 @@ parseFilePath path =
     fileName  = segments !! dirLength
 
 getFilePath :: File -> FilePath
-getFilePath (File path _ _ _) = path
+getFilePath (File path _ _ _ _) = path
 
 getFileContent :: File -> FilePath
-getFileContent (File _ _ _ content) = content
+getFileContent (File _ _ _ _ content) = content
+
+getComponentId :: File -> String
+getComponentId (File _ _ _ id _) = id

@@ -8,7 +8,12 @@ import System.Directory (getCurrentDirectory)
 import System.Environment (lookupEnv)
 import System.Environment.Executable (splitExecutablePath)
 {-import Data.String.Utils-}
-import Development.Duplo.ComponentIO (appName, appVersion, appRepo)
+import Development.Duplo.ComponentIO
+         ( appName
+         , appVersion
+         , appRepo
+         , appId
+         )
 {-import Development.Duplo.Files-}
 import Development.Duplo.Markups as Markups
 import Development.Duplo.Scripts as Scripts
@@ -43,18 +48,24 @@ main = do
   -- Gather information about this project
   appName'    <- appName
   appVersion' <- appVersion
-  appRepo'    <- appRepo
+  appId'      <- appId
 
   -- Report back what's given for confirmation
   putStr $ ">> Parameters \n"
         ++ "Application name and version:      "
         ++ appName' ++ " v" ++ appVersion' ++ "\n"
-        ++ "Application GitHub repo:           " ++ appRepo' ++ "\n"
-        ++ "Current working directory:         " ++ cwd ++ "\n"
-        ++ "duplo is installed at:             " ++ duploExecDir ++ "\n"
-        ++ "Environment (i.e. `DUPLO_ENV`):    " ++ duploEnv ++ "\n"
-        ++ "Build Mode (i.e. `DUPLO_MODE`):    " ++ duploMode ++ "\n"
-        ++ "App Parameters (i.e. `DUPLO_IN`):  " ++ duploIn ++ "\n"
+        ++ "Component.IO name:                 "
+        ++ appId' ++ "\n"
+        ++ "Current working directory:         "
+        ++ cwd ++ "\n"
+        ++ "duplo is installed at:             "
+        ++ duploExecDir ++ "\n"
+        ++ "Environment (i.e. `DUPLO_ENV`):    "
+        ++ duploEnv ++ "\n"
+        ++ "Build Mode (i.e. `DUPLO_MODE`):    "
+        ++ duploMode ++ "\n"
+        ++ "App Parameters (i.e. `DUPLO_IN`):  "
+        ++ duploIn ++ "\n"
         ++ "\n"
 
   shakeArgs shakeOptions $ do
