@@ -1,49 +1,35 @@
 #!/usr/bin/env bash
 
-# Paths
+# NOTE: the heavy-lifting should be handled by Shake. This is simply a tiny
+# entry point to handle actions that Shake does not excel in, such as starting
+# long-running tasks like a web server.
+
+# Arguments
+cmd=$1
+port=$PORT
+
+# Common paths
 cwd="$( pwd )"
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 root="$( cd "$dir""/../" && pwd )"
 
-# Arguments
-cmd=$1
-shift
-appParams=$1
-shift
-builderParams=$@
+# Command to invoke duplo
+duplo="env CWD="$cwd" DUPLO_PATH="$root" .cabal-sandbox/bin/duplo"
 
 
-display_help() {
-  cat <<-EOF
-
-  Usage: duplo [commands] [args]
-
-  Commands:
-
-    duplo new <name> <repo-url>   scaffolds a new duplo repo
-    duplo dev                     starts a local server and re-compiles on file
-                                  change
-    duplo build                   runs a build. This could be used for checking
-                                  the code against Closure Compiler.
-    duplo patch                   builds the project and bump the patch version
-    duplo minor                   builds the project and bump the minor version
-    duplo major                   builds the project and bump the major version
-
-EOF
-  exit 0
-}
-
+# TODO: to be refactored into Shake
 commit() {
-  # TODO: to fix
+  local level=$1
+  local version=$2
+
   git stash
   git checkout develop
 
-  ver='0.0.0'
-  set_version $cwd component ver
+  # TODO: set version to component.json
 
   # Commit
   git add component.json
-  git commit -m 'Bump version'
+  git commit -m "Bump version"
   # Merge into master
   git checkout master
   # Always force the new changes
@@ -58,10 +44,15 @@ commit() {
   git checkout develop
 }
 
+# TODO: to be refactored into Shake
 display_version() {
-  echo 'duplo v'$version
+  # TODO: get version from component.json
+  local version=$1
+
+  echo "duplo v"$version
 }
 
+# TODO: to be refactored into Shake, or to be removed?
 run_duplo() {
   mode=$1
 
@@ -72,29 +63,49 @@ run_duplo() {
 }
 
 
+# Perform any setup and actions that Shake is not good at.
 case "$cmd" in
+
+  # Normalize
   version|ver|-v|--ver|--version)
-    display_version
+    cmd=version
     ;;
 
-  dev|test|build)
-    if [ $cmd = build ]; then
-      cmd=live
-    fi
-
-    run_duplo $cmd $appParams
+  # Patch by default
+  bump|release)
+    DUPLO_BUMP_LEVEL=patch
+    cmd=bump
     ;;
 
-  patch|minor|major|release)
-    if [ $cmd = release ]; then
-      cmd=patch
-    fi
-
-    # TODO: implement
+  # Specified bump
+  patch|minor|major)
+    DUPLO_BUMP_LEVEL=$cmd
+    cmd=bump
     ;;
 
+  # Require a web server
+  serve|dev|staging|live)
+    DUPLO_ENV=$cmd
+    cmd=build
+
+    # The server
+    node_modules/.bin/http-server public -c-1 -p $port
+
+    # The watcher
+    node_modules/.bin/watch "\""$duplo" build\"" app
+    ;;
+
+  # Other allowed commands are passed through
+  new|help|build|clean)
+    ;;
+
+  # Default to help
   *)
-    display_help
+    cmd="help"
     ;;
 
 esac
+
+
+# Run build system
+$( $duplo $cmd )

@@ -19,6 +19,11 @@ import Development.Duplo.Markups as Markups
 import Development.Duplo.Scripts as Scripts
 {-import Development.Shake.Command-}
 {-import Development.Shake.Util-}
+import System.FSNotify (withManager, watchTree)
+import Filesystem (getWorkingDirectory)
+import Filesystem.Path (append)
+import Filesystem.Path.CurrentOS (decodeString)
+import Control.Concurrent (forkIO)
 
 main :: IO ()
 main = do
@@ -34,10 +39,8 @@ main = do
   duploExecPath <- splitExecutablePath
   let (duploExecDir, _) = duploExecPath
 
-  -- Run on port
-  port <- fromMaybe "8888" <$> lookupEnv "PORT"
-
   -- Paths to various relevant directories
+  let duplo           = combine duploExecDir "duplo"
   let duploDir        = combine duploExecDir "../.."
   let nodeModulesPath = combine duploDir "node_modules/.bin"
   let utilPath        = combine duploDir "util"
@@ -87,6 +90,8 @@ main = do
     "help" ~> do
       cmd "cat" [combine duploDir "etc/help.txt"]
 
-    "serve" ~> do
-      logAction $ "Running dev server on port " ++ port
-      cmd (combine nodeModulesPath "http-server") ["public", "-c-1", "-p", port]
+    "version" ~> do
+      return ()
+
+    "bump" ~> do
+      return ()
