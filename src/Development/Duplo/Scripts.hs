@@ -57,8 +57,8 @@ build config = \ out -> do
              ++ "var DUPLO_IN = DUPLO_IN || \"" ++ duploIn ++ "\";\n"
 
   -- Just pass through without compilation
-  let compiler = combine bin "echo"
-  let params   = []
+  let compiler = "bash"
+  let params   = [combine bin "echo.sh"]
 
   -- Build it
   buildWith cwd compiler params paths out $ \ files ->

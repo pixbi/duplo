@@ -21,6 +21,9 @@ cwd="$( pwd )"
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 root="$( cd "$dir""/../" && pwd )"
 
+# Do we quit after running this script?
+quit=true
+
 
 # TODO: to be refactored into Shake
 commit() {
@@ -91,7 +94,7 @@ case "$cmd" in
     ;;
 
   # Require a web server
-  dev|staging|live)
+  dev|live)
     DUPLO_ENV=$cmd
     cmd=build
 
@@ -100,6 +103,9 @@ case "$cmd" in
 
     # The watcher
     $root/node_modules/.bin/watch "$( make_duplo_cmd )" app &
+
+    # Hang the process to keep the server and the watcher running
+    quit=false
     ;;
 
   # Testing forces an environment change
@@ -108,12 +114,8 @@ case "$cmd" in
     cmd=build
     ;;
 
-  build)
-    DUPLO_ENV="build"
-    ;;
-
   # Other allowed commands are passed through
-  new|clean)
+  new|build|clean)
     ;;
 
   # Default to help
@@ -127,6 +129,10 @@ esac
 
 # Run build system
 eval "$( make_duplo_cmd )"
+
+if $quit; then
+  exit 0;
+fi
 
 function cleanup() {
   kill $(jobs -p)
