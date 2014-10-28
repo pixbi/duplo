@@ -4,9 +4,9 @@ import Development.Duplo.Styles as Styles
 import Development.Duplo.Utilities (logAction)
 import Development.Shake
 import Development.Shake.FilePath (combine)
-import System.Directory (getCurrentDirectory)
+{-import System.Directory (getCurrentDirectory)-}
 import System.Environment (lookupEnv)
-import System.Environment.Executable (splitExecutablePath)
+{-import System.Environment.Executable (splitExecutablePath)-}
 {-import Data.String.Utils-}
 import Development.Duplo.ComponentIO
          ( appName
@@ -19,31 +19,28 @@ import Development.Duplo.Markups as Markups
 import Development.Duplo.Scripts as Scripts
 {-import Development.Shake.Command-}
 {-import Development.Shake.Util-}
-import System.FSNotify (withManager, watchTree)
-import Filesystem (getWorkingDirectory)
-import Filesystem.Path (append)
-import Filesystem.Path.CurrentOS (decodeString)
-import Control.Concurrent (forkIO)
+{-import System.FSNotify (withManager, watchTree)-}
+{-import Filesystem (getWorkingDirectory)-}
+{-import Filesystem.Path (append)-}
+{-import Filesystem.Path.CurrentOS (decodeString)-}
+{-import Control.Concurrent (forkIO)-}
 
 main :: IO ()
 main = do
   -- Environment - e.g. dev, staging, live
-  duploEnv <- fromMaybe "dev" <$> lookupEnv "DUPLO_ENV"
+  duploEnv  <- fromMaybe "dev" <$> lookupEnv "DUPLO_ENV"
   -- Build mode, for dependency selection
   duploMode <- fromMaybe "" <$> lookupEnv "DUPLO_MODE"
   -- Application parameter
-  duploIn <- fromMaybe "" <$> lookupEnv "DUPLO_IN"
+  duploIn   <- fromMaybe "" <$> lookupEnv "DUPLO_IN"
   -- Current directory
-  cwd <- getCurrentDirectory
+  cwd       <- fromMaybe "" <$> lookupEnv "CWD"
   -- Duplo directory
-  duploExecPath <- splitExecutablePath
-  let (duploExecDir, _) = duploExecPath
+  duploPath <- fromMaybe "" <$> lookupEnv "DUPLO_PATH"
 
   -- Paths to various relevant directories
-  let duplo           = combine duploExecDir "duplo"
-  let duploDir        = combine duploExecDir "../.."
-  let nodeModulesPath = combine duploDir "node_modules/.bin"
-  let utilPath        = combine duploDir "util"
+  let nodeModulesPath = combine duploPath "node_modules/.bin"
+  let utilPath        = combine duploPath "util"
 
   -- What to build
   let target        = combine cwd "public/"
@@ -58,26 +55,25 @@ main = do
 
   -- Report back what's given for confirmation
   putStr $ ">> Parameters \n"
-        ++ "Application name and version:      "
-        ++ appName' ++ " v" ++ appVersion' ++ "\n"
-        ++ "Component.IO name:                 "
+        ++ "Application name                 : "
+        ++ appName' ++ "\n"
+        ++ "Application version              : "
+        ++ appVersion' ++ "\n"
+        ++ "Component ID (for ComponentIO)   : "
         ++ appId' ++ "\n"
-        ++ "Current working directory:         "
+        ++ "Current working directory        : "
         ++ cwd ++ "\n"
-        ++ "duplo is installed at:             "
-        ++ duploExecDir ++ "\n"
-        ++ "Environment (i.e. `DUPLO_ENV`):    "
+        ++ "duplo is installed at            : "
+        ++ duploPath ++ "\n"
+        ++ "Environment (i.e. `DUPLO_ENV`)   : "
         ++ duploEnv ++ "\n"
-        ++ "Build Mode (i.e. `DUPLO_MODE`):    "
+        ++ "Build Mode (i.e. `DUPLO_MODE`)   : "
         ++ duploMode ++ "\n"
-        ++ "App Parameters (i.e. `DUPLO_IN`):  "
+        ++ "App Parameters (i.e. `DUPLO_IN`) : "
         ++ duploIn ++ "\n"
         ++ "\n"
 
   shakeArgs shakeOptions $ do
-    -- Dependencies
-    want [targetScripts, targetStyles, targetMarkups]
-
     -- Actions
     targetScripts *> Scripts.build cwd utilPath duploEnv duploMode duploIn
     targetStyles *> Styles.build cwd nodeModulesPath
@@ -87,11 +83,12 @@ main = do
       logAction "Cleaning built files"
       cmd "rm" ["-r", "public/"]
 
-    "help" ~> do
-      cmd "cat" [combine duploDir "etc/help.txt"]
-
     "version" ~> do
       return ()
 
     "bump" ~> do
+      return ()
+
+    "build" ~> do
+      need [targetScripts, targetStyles, targetMarkups]
       return ()

@@ -14,7 +14,7 @@ dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 root="$( cd "$dir""/../" && pwd )"
 
 # Command to invoke duplo
-duplo="env CWD="$cwd" DUPLO_PATH="$root" .cabal-sandbox/bin/duplo"
+duplo="env CWD="$cwd" DUPLO_PATH="$root" "$root"/.cabal-sandbox/bin/duplo"
 
 
 # TODO: to be refactored into Shake
@@ -96,16 +96,17 @@ case "$cmd" in
     ;;
 
   # Other allowed commands are passed through
-  new|help|build|clean)
+  new|build|clean)
     ;;
 
   # Default to help
   *)
-    cmd="help"
+    cat $root"/etc/help.txt"
+    exit 0
     ;;
 
 esac
 
 
 # Run build system
-$( $duplo $cmd )
+eval "$duplo $cmd"
