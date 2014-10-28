@@ -16,11 +16,10 @@ A opinionated, framework-less build tool for web applications
   handle and a repo name. The repo is assumed to already exist.
 * `duplo build` builds the project. Pass in `dev` to `DUPLO_ENV` environment
   variable to build in development mode.
-* `duplo serve` runs `duplo build`, starts a server, and rebuilds on file
-  change.
-* `duplo dev`: short-hand for `DUPLO_ENV=dev duplo serve`.
-* `duplo staging`: short-hand for `DUPLO_ENV=staging duplo serve`.
-* `duplo live`: short-hand for `DUPLO_ENV=live duplo serve`.
+* `duplo dev`: starts a webserver, watches for file changes, and builds in
+  development environment.
+* `duplo staging`: like `duplo dev` but builds in staging environment
+* `duplo live`: like `duplo dev` but builds in production environment
 * `duplo patch` bumps the patch version.
 * `duplo minor` bumps the minor version.
 * `duplo major` bumps the major version.

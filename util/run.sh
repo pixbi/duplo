@@ -91,7 +91,7 @@ case "$cmd" in
     ;;
 
   # Require a web server
-  serve|dev|staging|live)
+  dev|staging|live)
     DUPLO_ENV=$cmd
     cmd=build
 
