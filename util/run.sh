@@ -6,9 +6,12 @@
 
 # Arguments
 cmd=$1
-port=$PORT
 
 # Defaults
+if [ -z "$PORT" ]; then
+  PORT=8888
+fi
+
 if [ -z "$DUPLO_ENV" ]; then
   DUPLO_ENV=dev
 fi
@@ -93,10 +96,10 @@ case "$cmd" in
     cmd=build
 
     # The server
-    node_modules/.bin/http-server public -c-1 -p $port
+    $root/node_modules/.bin/http-server public -c-1 -p $PORT &
 
     # The watcher
-    node_modules/.bin/watch "$( make_duplo_cmd )" app
+    $root/node_modules/.bin/watch "$( make_duplo_cmd )" app &
     ;;
 
   # Testing forces an environment change
@@ -124,3 +127,14 @@ esac
 
 # Run build system
 eval "$( make_duplo_cmd )"
+
+function cleanup() {
+  kill $(jobs -p)
+  exit $?
+}
+
+# Trap Ctrl-C
+trap cleanup SIGINT
+
+# Infinite loop
+while true; do read _; done

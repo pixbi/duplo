@@ -83,7 +83,6 @@ buildWith cwd compiler params paths out process = do
 
   -- Write output
   writeFileChanged out compiled
-  putNormal ""
 
 expandPaths :: String -> [String] -> [String] -> Action [String]
 expandPaths cwd staticPaths dynamicPaths = do

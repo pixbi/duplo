@@ -96,7 +96,7 @@ main = do
 
     "clean" ~> do
       logAction "Cleaning built files"
-      cmd "rm" ["-r", "public/"]
+      cmd "rm" ["-rf", "public/"]
 
     "version" ~> do
       return ()
@@ -105,4 +105,4 @@ main = do
       logAction "Bumping version"
 
     "build" ~> do
-      return ()
+      need [targetScript, targetStyle, targetMarkup]
