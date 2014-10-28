@@ -130,6 +130,7 @@ esac
 # Run build system
 eval "$( make_duplo_cmd )"
 
+# Do we need an infinite loop?
 if $quit; then
   exit 0;
 fi
