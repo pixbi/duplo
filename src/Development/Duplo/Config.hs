@@ -1,0 +1,30 @@
+{-# LANGUAGE TemplateHaskell #-}
+
+module Development.Duplo.Config
+  ( BuildConfig(..)
+  , appName
+  , appVersion
+  , appId
+  , cwd
+  , duploPath
+  , env
+  , mode
+  , bin
+  , input
+  ) where
+
+import Development.Shake
+import Control.Lens.TH (makeLenses)
+
+data BuildConfig = BuildConfig { _appName    :: String
+                               , _appVersion :: String
+                               , _appId      :: String
+                               , _cwd        :: String
+                               , _duploPath  :: FilePath
+                               , _env        :: String
+                               , _mode       :: String
+                               , _bin        :: FilePath
+                               , _input      :: String
+                               }
+
+makeLenses ''BuildConfig

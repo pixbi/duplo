@@ -14,10 +14,22 @@ import Development.Shake
 import Development.Shake.FilePath (combine)
 import Data.Text (replace, pack, unpack)
 import Development.Duplo.Files (File(..))
+import qualified Development.Duplo.Config as C
+import Control.Lens hiding (Action)
 
-build :: FilePath -> FilePath -> String -> String -> String -> FilePath -> Action ()
-build cwd bin env mode input = \ out -> do
+      -- The environment
+build :: C.BuildConfig
+      -- The output file
+      -> FilePath
+      -- Doesn't need anything in return
+      -> Action ()
+build config = \ out -> do
   logAction "Building scripts"
+
+  let cwd   = config ^. C.cwd
+  let bin   = config ^. C.bin
+  let env   = config ^. C.env
+  let input = config ^. C.input
 
   -- These paths don't need to be expanded
   let staticPaths = [ "app/index.js"
@@ -32,24 +44,6 @@ build cwd bin env mode input = \ out -> do
   -- Merge both types of paths
   paths <- expandPaths cwd staticPaths dynamicPaths
 
-  -- Prepare Closure
-  let closurePath = combine bin "compiler.jar"
-  let closureParams = [ "-jar"
-                      , closurePath
-                      , "--compilation_level"
-                      , "SIMPLE_OPTIMIZATIONS"
-                      ]
-
-  -- Pick the right compiler and parameters to build
-  let compiler =
-        case env of
-          "dev" -> "bash"
-          _     -> "java"
-  let params =
-        case env of
-          "dev" -> [combine bin "echo.sh"]
-          _     -> closureParams
-
   -- Sanitize input
   let duploIn = unpack $
                   -- No newlines
@@ -57,14 +51,32 @@ build cwd bin env mode input = \ out -> do
                     -- Escape double-quotes
                     replace (pack "\"") (pack "\\\"") $
                       pack input
+
   -- Inject environment variables
   let envVars = "var DUPLO_ENV = DUPLO_ENV || \"" ++ env ++ "\";\n"
              ++ "var DUPLO_IN = DUPLO_IN || \"" ++ duploIn ++ "\";\n"
 
+  -- Just pass through without compilation
+  let compiler = combine bin "echo"
+  let params   = []
+
   -- Build it
   buildWith cwd compiler params paths out $ \ files ->
-    let
-      -- Create a pseudo file that contains the environment variables
-      envFile = File { _fileContent = envVars }
-    in
-      envFile : files
+    -- Create a pseudo file that contains the environment variables
+    let envFile = File { _fileContent = envVars }
+    -- Prepend the environment variables
+    in  envFile : files
+
+{--- | Optimize code by passing the entire code output-}
+{-optimize :: FilePath -> FilePath -> String -> String -> Action String-}
+{-optimize cwd bin env mode inputCode = do-}
+{-  -- Run it through Closure-}
+{-  let closurePath = combine bin "compiler.jar"-}
+{-  let closureParams = [ "-jar"-}
+{-                      , closurePath-}
+{-                      , "--compilation_level"-}
+{-                      , "SIMPLE_OPTIMIZATIONS"-}
+{-                      ]-}
+{-  Stdout optimized <- command [Stdin inputCode] "java" closureParams-}
+
+{-  return optimized-}

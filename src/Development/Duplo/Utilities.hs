@@ -3,6 +3,7 @@ module Development.Duplo.Utilities
   , logAction
   , expandPaths
   , buildWith
+  , FileProcessor
   ) where
 
 import Prelude hiding (readFile)
@@ -12,14 +13,12 @@ import Development.Shake hiding (readFile)
 import Development.Duplo.Files
          ( readFile
          , File(..)
-         , filePath
-         , fileDir
-         , fileName
-         , componentId
          , fileContent
          )
 import Development.Shake.FilePath (combine)
 import Control.Lens hiding (Action)
+
+type FileProcessor = [File] -> [File]
 
 getDirectoryFilesInOrder :: FilePath -> [FilePattern] -> Action [FilePath]
 getDirectoryFilesInOrder base patterns =
@@ -59,7 +58,7 @@ buildWith :: FilePath
           -- The output file
           -> FilePath
           -- The processing lambda
-          -> ([File] -> [File])
+          -> FileProcessor
           -- We don't return anything
           -> Action ()
 buildWith cwd compiler params paths out process = do

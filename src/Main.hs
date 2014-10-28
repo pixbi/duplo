@@ -24,11 +24,12 @@ import Development.Duplo.Scripts as Scripts
 {-import Filesystem.Path (append)-}
 {-import Filesystem.Path.CurrentOS (decodeString)-}
 {-import Control.Concurrent (forkIO)-}
+import qualified Development.Duplo.Config as C
 
 main :: IO ()
 main = do
   -- Environment - e.g. dev, staging, live
-  duploEnv  <- fromMaybe "dev" <$> lookupEnv "DUPLO_ENV"
+  duploEnv  <- fromMaybe "" <$> lookupEnv "DUPLO_ENV"
   -- Build mode, for dependency selection
   duploMode <- fromMaybe "" <$> lookupEnv "DUPLO_MODE"
   -- Application parameter
@@ -43,10 +44,10 @@ main = do
   let utilPath        = combine duploPath "util"
 
   -- What to build
-  let target        = combine cwd "public/"
-  let targetScripts = combine target "index.js"
-  let targetStyles  = combine target "index.css"
-  let targetMarkups = combine target "index.html"
+  let target       = combine cwd "public/"
+  let targetScript = combine target "index.js"
+  let targetStyle  = combine target "index.css"
+  let targetMarkup = combine target "index.html"
 
   -- Gather information about this project
   appName'    <- appName
@@ -73,11 +74,25 @@ main = do
         ++ duploIn ++ "\n"
         ++ "\n"
 
+  -- Construct environment
+  let buildConfig = C.BuildConfig { C._appName    = appName'
+                                  , C._appVersion = appVersion'
+                                  , C._appId      = appId'
+                                  , C._cwd        = cwd
+                                  , C._duploPath  = duploPath
+                                  , C._env        = duploEnv
+                                  , C._mode       = duploMode
+                                  , C._bin        = utilPath
+                                  , C._input      = duploIn
+                                  }
+
   shakeArgs shakeOptions $ do
+    want [targetScript, targetStyle, targetMarkup]
+
     -- Actions
-    targetScripts *> Scripts.build cwd utilPath duploEnv duploMode duploIn
-    targetStyles *> Styles.build cwd nodeModulesPath
-    targetMarkups *> Markups.build cwd nodeModulesPath
+    targetScript *> Scripts.build buildConfig
+    targetStyle  *> Styles.build cwd nodeModulesPath
+    targetMarkup *> Markups.build cwd nodeModulesPath
 
     "clean" ~> do
       logAction "Cleaning built files"
@@ -87,8 +102,7 @@ main = do
       return ()
 
     "bump" ~> do
-      return ()
+      logAction "Bumping version"
 
     "build" ~> do
-      need [targetScripts, targetStyles, targetMarkups]
       return ()

@@ -8,13 +8,15 @@
 cmd=$1
 port=$PORT
 
+# Defaults
+if [ -z "$DUPLO_ENV" ]; then
+  DUPLO_ENV=dev
+fi
+
 # Common paths
 cwd="$( pwd )"
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 root="$( cd "$dir""/../" && pwd )"
-
-# Command to invoke duplo
-duplo="env CWD="$cwd" DUPLO_PATH="$root" "$root"/.cabal-sandbox/bin/duplo"
 
 
 # TODO: to be refactored into Shake
@@ -52,14 +54,16 @@ display_version() {
   echo "duplo v"$version
 }
 
-# TODO: to be refactored into Shake, or to be removed?
-run_duplo() {
-  mode=$1
-
-  # Pass control to compiler with path to duplo root directory, mode, and
-  # application paramters. Forward all arguments
-  DUPLO_PATH="$root" PROJ_PATH="$cwd" DUPLO_MODE="$mode" APP_PARAMS="$appParams" \
-    "$root"/dist/build/duplo/duplo $builderParams
+# Construct the command to invoke duplo
+function make_duplo_cmd() {
+  echo env \
+       CWD="$cwd" \
+       DUPLO_PATH="$root" \
+       DUPLO_ENV="$DUPLO_ENV" \
+       DUPLO_MODE="$DUPLO_MODE" \
+       DUPLO_IN="$DUPLO_IN" \
+       DUPLO_BUMP_LEVEL="$DUPLO_BUMP_LEVEL" \
+       "$root"/.cabal-sandbox/bin/duplo "$cmd"
 }
 
 
@@ -92,11 +96,21 @@ case "$cmd" in
     node_modules/.bin/http-server public -c-1 -p $port
 
     # The watcher
-    node_modules/.bin/watch "\""$duplo" build\"" app
+    node_modules/.bin/watch "$( make_duplo_cmd )" app
+    ;;
+
+  # Testing forces an environment change
+  test)
+    DUPLO_ENV="test"
+    cmd=build
+    ;;
+
+  build)
+    DUPLO_ENV="build"
     ;;
 
   # Other allowed commands are passed through
-  new|build|clean)
+  new|clean)
     ;;
 
   # Default to help
@@ -109,4 +123,4 @@ esac
 
 
 # Run build system
-eval "$duplo $cmd"
+eval "$( make_duplo_cmd )"
