@@ -6,7 +6,7 @@ import Development.Shake
 import Development.Shake.FilePath ((</>))
 import System.FilePath.Posix (makeRelative)
 {-import System.Directory (getCurrentDirectory)-}
-import System.Environment (lookupEnv)
+import System.Environment (lookupEnv, getArgs)
 {-import System.Environment.Executable (splitExecutablePath)-}
 {-import Data.String.Utils-}
 import Development.Duplo.ComponentIO
@@ -18,6 +18,7 @@ import Development.Duplo.ComponentIO
 {-import Development.Duplo.Files-}
 import Development.Duplo.Markups as Markups
 import Development.Duplo.Scripts as Scripts
+import Development.Duplo.Assets as Assets
 {-import Development.Shake.Command-}
 {-import Development.Shake.Util-}
 {-import System.FSNotify (withManager, watchTree)-}
@@ -27,9 +28,15 @@ import Development.Duplo.Scripts as Scripts
 {-import Control.Concurrent (forkIO)-}
 import qualified Development.Duplo.Config as C
 import Control.Monad (zipWithM_, filterM, liftM)
+import System.FilePath.Posix (splitExtension, splitDirectories)
+import Control.Applicative ((<$>), (<*>))
 
 main :: IO ()
 main = do
+  -- Command-line arguments
+  args <- getArgs
+  let shakeCommand = head args
+
   -- Environment - e.g. dev, staging, live
   duploEnv  <- fromMaybe "" <$> lookupEnv "DUPLO_ENV"
   -- Build mode, for dependency selection
@@ -52,7 +59,6 @@ main = do
   let targetScript = targetPath </> "index.js"
   let targetStyle  = targetPath </> "index.css"
   let targetMarkup = targetPath </> "index.html"
-  let targetAssets = targetPath
 
   -- Gather information about this project
   appName'    <- appName
@@ -91,34 +97,51 @@ main = do
                                   , C._mode       = duploMode
                                   , C._bin        = utilPath
                                   , C._input      = duploIn
+                                  , C._utilPath   = utilPath
+                                  , C._appPath    = appPath
+                                  , C._assetsPath = assetsPath
+                                  , C._targetPath = targetPath
                                   }
 
-  shakeArgs shakeOptions $ do
-    want [ targetScript
-         , targetStyle
-         , targetMarkup
-         , targetAssets
-         ]
-
+  shake shakeOptions $ do
     targetScript *> Scripts.build buildConfig
     targetStyle  *> Styles.build cwd nodeModulesPath
     targetMarkup *> Markups.build cwd nodeModulesPath
 
-    targetAssets *> \ assets -> do
-      alwaysRerun
-      logAction "Copying assets"
+    -- Manually bootstrap Shake
+    action $ do
+      need [shakeCommand]
+
+    -- Handling static assets
+    (Assets.qualify buildConfig) &?> \ outs -> do
+      -- Convert to relative paths for copying
+      let filesRel = fmap (makeRelative targetPath) outs
+      -- Look in assets directory
+      let assets = fmap (assetsPath ++) filesRel
+      -- Copy all files
+      mapM_ (putNormal . ("Copying " ++)) outs
+      zipWithM_ copyFileChanged assets outs
+
+    -- Build dependency list for dynamic files
+    "static" ~> do
+      logAction "Copying static files"
 
       -- We want all asset files
       files <- getDirectoryFiles assetsPath ["//*"]
-      let filesAbs = fmap (assetsPath ++) files
-      -- We only want *files* that *exist*
-      goodFiles <- filterM doesFileExist filesAbs
+
+      -- Anything other than the usual JS/CSS/HTML
+      let exclude     = [".js", ".css", ".html"]
+      let isCode      = flip elem exclude
+      let getExt      = snd . splitExtension
+      let getFilename = last . splitDirectories
+      let onlyNonCode = filter $ not . isCode . getExt
+      let onlyVisible = filter $ \ x ->
+                          '.' /= (head . getFilename) x
+      let staticFiles = onlyNonCode $ onlyVisible files
+      -- Map to output equivalents
+      let filesOut = fmap (targetPath ++) staticFiles
       -- Don't forget to declare dependencies
-      need goodFiles
-      -- Convert to relative paths for copying
-      let filesRel = fmap (makeRelative assetsPath) goodFiles
-      -- Action!
-      cmd "cp" ["-R", assetsPath, targetPath]
+      need filesOut
 
     "clean" ~> do
       logAction "Cleaning built files"
@@ -131,8 +154,9 @@ main = do
       logAction "Bumping version"
 
     "build" ~> do
+      logAction "Building"
       need [ targetScript
            , targetStyle
            , targetMarkup
-           , targetAssets
+           , "static"
            ]

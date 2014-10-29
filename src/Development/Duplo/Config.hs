@@ -11,6 +11,10 @@ module Development.Duplo.Config
   , mode
   , bin
   , input
+  , utilPath
+  , appPath
+  , assetsPath
+  , targetPath
   ) where
 
 import Development.Shake
@@ -25,6 +29,10 @@ data BuildConfig = BuildConfig { _appName    :: String
                                , _mode       :: String
                                , _bin        :: FilePath
                                , _input      :: String
+                               , _utilPath   :: FilePath
+                               , _appPath    :: FilePath
+                               , _assetsPath :: FilePath
+                               , _targetPath :: FilePath
                                }
 
 makeLenses ''BuildConfig
