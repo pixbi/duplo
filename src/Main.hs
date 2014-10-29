@@ -66,7 +66,8 @@ main = do
   appId'      <- appId
 
   -- Report back what's given for confirmation
-  putStr $ ">> Parameters\n"
+  putStr $ "\n"
+        ++ ">> Parameters\n"
         ++ "Application name                   : "
         ++ appName' ++ "\n"
         ++ "Application version                : "
@@ -85,7 +86,6 @@ main = do
         ++ duploMode ++ "\n"
         ++ "App parameters      - `DUPLO_IN`   : "
         ++ duploIn ++ "\n"
-        ++ "\n"
 
   -- Construct environment
   let buildConfig = C.BuildConfig { C._appName    = appName'
@@ -135,8 +135,13 @@ main = do
     "static" ~> Static.build buildConfig
 
     "clean" ~> do
-      logAction "Cleaning built files"
-      cmd "rm" ["-rf", targetPath]
+      -- Clean only when the target is there
+      needCleaning <- doesDirectoryExist targetPath
+      if   needCleaning
+      then removeFilesAfter targetPath ["//*"]
+      else return ()
+
+      logAction "Clean completed"
 
     "version" ~> do
       return ()

@@ -57,11 +57,10 @@ build config = \ out -> do
              ++ "var DUPLO_IN = DUPLO_IN || \"" ++ duploIn ++ "\";\n"
 
   -- Just pass through without compilation
-  let compiler = "bash"
-  let params   = [bin </> "echo.sh"]
+  let compiler = bin </> "passthru"
 
   -- Build it
-  buildWith cwd compiler params paths out $ \ files ->
+  buildWith cwd compiler [] paths out $ \ files ->
     -- Create a pseudo file that contains the environment variables
     let envFile = File { _fileContent = envVars }
     -- Prepend the environment variables
