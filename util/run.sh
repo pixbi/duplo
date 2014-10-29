@@ -21,9 +21,6 @@ cwd="$( pwd )"
 dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
 root="$( cd "$dir""/../" && pwd )"
 
-# Do we quit after running this script?
-quit=true
-
 
 # TODO: to be refactored into Shake
 commit() {
@@ -93,9 +90,13 @@ case "$cmd" in
     cmd=bump
     ;;
 
-  # Require a web server
+  # A server is needed
   dev|live)
-    DUPLO_ENV=$cmd
+    # Only when environment isn't provided.
+    if [ -z "$DUPLO_ENV" ]; then
+      DUPLO_ENV=$cmd
+    fi
+
     cmd=build
 
     # The server
@@ -104,8 +105,17 @@ case "$cmd" in
     # The watcher
     $root/node_modules/.bin/watch "$( make_duplo_cmd )" app &
 
-    # Hang the process to keep the server and the watcher running
-    quit=false
+    # Kill all child processes
+    function cleanup() {
+      kill $(jobs -p)
+      exit $?
+    }
+
+    # Trap Ctrl-C
+    trap cleanup SIGINT
+
+    # Infinite loop
+    while true; do read _; done
     ;;
 
   # Testing forces an environment change
@@ -129,19 +139,3 @@ esac
 
 # Run build system
 eval "$( make_duplo_cmd )"
-
-# Do we need an infinite loop?
-if $quit; then
-  exit 0;
-fi
-
-function cleanup() {
-  kill $(jobs -p)
-  exit $?
-}
-
-# Trap Ctrl-C
-trap cleanup SIGINT
-
-# Infinite loop
-while true; do read _; done
