@@ -49,9 +49,9 @@ logAction log = do
 -- * writes to the output file
           -- Current working directory
 buildWith :: FilePath
-          -- The path to the compiler
+          -- The path to the compilation command
           -> FilePath
-          -- The parameters passed to the compiler
+          -- The parameters passed to the compilation command
           -> [String]
           -- Files to be compiled
           -> [FilePath]

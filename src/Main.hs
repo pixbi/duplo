@@ -4,6 +4,7 @@ import Development.Duplo.Styles as Styles
 import Development.Duplo.Utilities (logAction)
 import Development.Shake
 import Development.Shake.FilePath (combine)
+import System.FilePath.Posix (makeRelative)
 {-import System.Directory (getCurrentDirectory)-}
 import System.Environment (lookupEnv)
 {-import System.Environment.Executable (splitExecutablePath)-}
@@ -25,6 +26,7 @@ import Development.Duplo.Scripts as Scripts
 {-import Filesystem.Path.CurrentOS (decodeString)-}
 {-import Control.Concurrent (forkIO)-}
 import qualified Development.Duplo.Config as C
+import Control.Monad (zipWithM_, filterM, liftM)
 
 main :: IO ()
 main = do
@@ -40,14 +42,17 @@ main = do
   duploPath <- fromMaybe "" <$> lookupEnv "DUPLO_PATH"
 
   -- Paths to various relevant directories
-  let nodeModulesPath = combine duploPath "node_modules/.bin"
-  let utilPath        = combine duploPath "util"
+  let nodeModulesPath = combine duploPath "node_modules/.bin/"
+  let utilPath        = combine duploPath "util/"
+  let appPath         = combine cwd "app/"
+  let assetsPath      = combine appPath "assets/"
+  let targetPath      = combine cwd "public/"
 
   -- What to build
-  let target       = combine cwd "public/"
-  let targetScript = combine target "index.js"
-  let targetStyle  = combine target "index.css"
-  let targetMarkup = combine target "index.html"
+  let targetScript = combine targetPath "index.js"
+  let targetStyle  = combine targetPath "index.css"
+  let targetMarkup = combine targetPath "index.html"
+  let targetAssets = targetPath
 
   -- Gather information about this project
   appName'    <- appName
@@ -89,16 +94,35 @@ main = do
                                   }
 
   shakeArgs shakeOptions $ do
-    want [targetScript, targetStyle, targetMarkup]
+    want [ targetScript
+         , targetStyle
+         , targetMarkup
+         , targetAssets
+         ]
 
-    -- Actions
     targetScript *> Scripts.build buildConfig
     targetStyle  *> Styles.build cwd nodeModulesPath
     targetMarkup *> Markups.build cwd nodeModulesPath
 
+    targetAssets *> \ assets -> do
+      alwaysRerun
+      logAction "Copying assets"
+
+      -- We want all asset files
+      files <- getDirectoryFiles assetsPath ["//*"]
+      let filesAbs = fmap (assetsPath ++) files
+      -- We only want *files* that *exist*
+      goodFiles <- filterM doesFileExist filesAbs
+      -- Don't forget to declare dependencies
+      need goodFiles
+      -- Convert to relative paths for copying
+      let filesRel = fmap (makeRelative assetsPath) goodFiles
+      -- Action!
+      cmd "cp" ["-R", assetsPath, targetPath]
+
     "clean" ~> do
       logAction "Cleaning built files"
-      cmd "rm" ["-rf", "public/"]
+      cmd "rm" ["-rf", targetPath]
 
     "version" ~> do
       return ()
@@ -107,4 +131,8 @@ main = do
       logAction "Bumping version"
 
     "build" ~> do
-      need [targetScript, targetStyle, targetMarkup]
+      need [ targetScript
+           , targetStyle
+           , targetMarkup
+           , targetAssets
+           ]
