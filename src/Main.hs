@@ -18,7 +18,7 @@ import Development.Duplo.ComponentIO
 {-import Development.Duplo.Files-}
 import Development.Duplo.Markups as Markups
 import Development.Duplo.Scripts as Scripts
-import Development.Duplo.Assets as Assets
+import Development.Duplo.Static as Static
 {-import Development.Shake.Command-}
 {-import Development.Shake.Util-}
 {-import System.FSNotify (withManager, watchTree)-}
@@ -28,8 +28,8 @@ import Development.Duplo.Assets as Assets
 {-import Control.Concurrent (forkIO)-}
 import qualified Development.Duplo.Config as C
 import Control.Monad (zipWithM_, filterM, liftM)
-import System.FilePath.Posix (splitExtension, splitDirectories)
 import Control.Applicative ((<$>), (<*>))
+import Data.List (transpose)
 
 main :: IO ()
 main = do
@@ -113,35 +113,26 @@ main = do
       need [shakeCommand]
 
     -- Handling static assets
-    (Assets.qualify buildConfig) &?> \ outs -> do
+    (Static.qualify buildConfig) &?> \ outs -> do
       -- Convert to relative paths for copying
       let filesRel = fmap (makeRelative targetPath) outs
+
       -- Look in assets directory
       let assets = fmap (assetsPath ++) filesRel
+
+      -- Log
+      let repeat'  = replicate $ length assets
+      let messages = transpose [ (repeat' "Copying ")
+                               , assets
+                               , (repeat' " to ")
+                               , outs
+                               ]
+      mapM_ (putNormal . concat) messages
+
       -- Copy all files
-      mapM_ (putNormal . ("Copying " ++)) outs
       zipWithM_ copyFileChanged assets outs
 
-    -- Build dependency list for dynamic files
-    "static" ~> do
-      logAction "Copying static files"
-
-      -- We want all asset files
-      files <- getDirectoryFiles assetsPath ["//*"]
-
-      -- Anything other than the usual JS/CSS/HTML
-      let exclude     = [".js", ".css", ".html"]
-      let isCode      = flip elem exclude
-      let getExt      = snd . splitExtension
-      let getFilename = last . splitDirectories
-      let onlyNonCode = filter $ not . isCode . getExt
-      let onlyVisible = filter $ \ x ->
-                          '.' /= (head . getFilename) x
-      let staticFiles = onlyNonCode $ onlyVisible files
-      -- Map to output equivalents
-      let filesOut = fmap (targetPath ++) staticFiles
-      -- Don't forget to declare dependencies
-      need filesOut
+    "static" ~> Static.build buildConfig
 
     "clean" ~> do
       logAction "Cleaning built files"
@@ -154,9 +145,10 @@ main = do
       logAction "Bumping version"
 
     "build" ~> do
-      logAction "Building"
       need [ targetScript
            , targetStyle
            , targetMarkup
            , "static"
            ]
+
+      logAction "Build completed"

@@ -28,7 +28,6 @@ import qualified Data.Text.Lazy as TL
 
 build :: FilePath -> FilePath -> FilePath -> Action ()
 build cwd bin = \ out -> do
-  alwaysRerun
   logAction "Building markups"
 
   -- These paths don't need to be expanded
