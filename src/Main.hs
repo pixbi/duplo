@@ -3,7 +3,7 @@ import Data.Maybe (fromMaybe)
 import Development.Duplo.Styles as Styles
 import Development.Duplo.Utilities (logAction)
 import Development.Shake
-import Development.Shake.FilePath (combine)
+import Development.Shake.FilePath ((</>))
 import System.FilePath.Posix (makeRelative)
 {-import System.Directory (getCurrentDirectory)-}
 import System.Environment (lookupEnv)
@@ -42,16 +42,16 @@ main = do
   duploPath <- fromMaybe "" <$> lookupEnv "DUPLO_PATH"
 
   -- Paths to various relevant directories
-  let nodeModulesPath = combine duploPath "node_modules/.bin/"
-  let utilPath        = combine duploPath "util/"
-  let appPath         = combine cwd "app/"
-  let assetsPath      = combine appPath "assets/"
-  let targetPath      = combine cwd "public/"
+  let nodeModulesPath = duploPath </> "node_modules/.bin/"
+  let utilPath        = duploPath </> "util/"
+  let appPath         = cwd </> "app/"
+  let assetsPath      = appPath </> "assets/"
+  let targetPath      = cwd </> "public/"
 
   -- What to build
-  let targetScript = combine targetPath "index.js"
-  let targetStyle  = combine targetPath "index.css"
-  let targetMarkup = combine targetPath "index.html"
+  let targetScript = targetPath </> "index.js"
+  let targetStyle  = targetPath </> "index.css"
+  let targetMarkup = targetPath </> "index.html"
   let targetAssets = targetPath
 
   -- Gather information about this project

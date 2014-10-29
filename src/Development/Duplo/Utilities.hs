@@ -15,7 +15,7 @@ import Development.Duplo.Files
          , File(..)
          , fileContent
          )
-import Development.Shake.FilePath (combine)
+import Development.Shake.FilePath ((</>))
 import Control.Lens hiding (Action)
 
 type FileProcessor = [File] -> [File]
@@ -86,7 +86,7 @@ buildWith cwd compiler params paths out process = do
 
 expandPaths :: String -> [String] -> [String] -> Action [String]
 expandPaths cwd staticPaths dynamicPaths = do
-  let expand = map (combine cwd)
+  let expand = map (cwd </>)
   staticExpanded <- filterM doesFileExist $ expand staticPaths
   dynamicExpanded <- getDirectoryFilesInOrder cwd dynamicPaths
   return $ staticExpanded ++ expand dynamicExpanded

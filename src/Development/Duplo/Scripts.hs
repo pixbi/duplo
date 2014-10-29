@@ -11,7 +11,7 @@ import Development.Duplo.Utilities
          , buildWith
          )
 import Development.Shake
-import Development.Shake.FilePath (combine)
+import Development.Shake.FilePath ((</>))
 import Data.Text (replace, pack, unpack)
 import Development.Duplo.Files (File(..))
 import qualified Development.Duplo.Config as C
@@ -58,7 +58,7 @@ build config = \ out -> do
 
   -- Just pass through without compilation
   let compiler = "bash"
-  let params   = [combine bin "echo.sh"]
+  let params   = [bin </> "echo.sh"]
 
   -- Build it
   buildWith cwd compiler params paths out $ \ files ->
@@ -71,7 +71,7 @@ build config = \ out -> do
 {-optimize :: FilePath -> FilePath -> String -> String -> Action String-}
 {-optimize cwd bin env mode inputCode = do-}
 {-  -- Run it through Closure-}
-{-  let closurePath = combine bin "compiler.jar"-}
+{-  let closurePath = bin </> "compiler.jar"-}
 {-  let closureParams = [ "-jar"-}
 {-                      , closurePath-}
 {-                      , "--compilation_level"-}

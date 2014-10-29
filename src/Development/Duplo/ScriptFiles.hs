@@ -3,7 +3,6 @@ module Development.Duplo.Files (
   expandFile, getFilePath, getFileContent, getModuleId
   ) where
 
-{-import System.FilePath.Posix hiding (combine)-}
 {-import Development.Shake.FilePath-}
 import Control.Lens hiding (Action)
 import Development.Shake

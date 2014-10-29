@@ -9,7 +9,7 @@ import Development.Duplo.Utilities
          , buildWith
          )
 import Development.Shake
-import Development.Shake.FilePath (combine)
+import Development.Shake.FilePath ((</>))
 
 build :: FilePath -> FilePath -> FilePath -> Action ()
 build cwd bin = \ out -> do
@@ -38,7 +38,7 @@ build cwd bin = \ out -> do
   paths <- expandPaths cwd staticPaths dynamicPaths
 
   -- Path to the compiler
-  let compiler = combine bin "stylus"
+  let compiler = bin </> "stylus"
 
   -- Build it
   buildWith cwd compiler [] paths out id

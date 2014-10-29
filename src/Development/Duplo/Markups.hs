@@ -9,7 +9,7 @@ import Development.Duplo.Utilities
          , buildWith
          )
 import Development.Shake
-import Development.Shake.FilePath (combine)
+import Development.Shake.FilePath ((</>))
 import Development.Duplo.Files
          ( File(..)
          , filePath
@@ -45,12 +45,12 @@ build cwd bin = \ out -> do
   paths <- expandPaths cwd staticPaths dynamicPaths
 
   -- Path to the compiler
-  let compiler = combine bin "jade"
+  let compiler = bin </> "jade"
   let params   = [ "--pretty"
                  , "--path"
                  -- Jade takes a file and takes its directory as its
                  -- current working directory
-                 , combine cwd "index.jade"
+                 , cwd </> "index.jade"
                  ]
 
   -- Build it
@@ -99,16 +99,16 @@ rewriteInclude defaultId line =
     case tokenPaths of
       -- Deconstruct an include statement
       (("include":_) : (depId:relPath) : _) ->
-          padding ++ "include " ++ combine compPath relPath'
+          padding ++ "include " ++ compPath </> relPath'
         where
-          relPath' = combine "app/modules" $ joinPath relPath
+          relPath' = (</>) "app/modules" $ joinPath relPath
           compName = case (parseComponentId depId) of
                        -- There is a component ID
                        Just (user, repo) -> depId
                        -- Use default component ID
                        Nothing -> defaultId
           compPath = if   length compName > 0
-                     then combine "components" compName
+                     then "components" </> compName
                      else ""
 
       -- If it's not an include statement, just pass it thru
