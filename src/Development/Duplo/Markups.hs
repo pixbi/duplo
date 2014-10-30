@@ -25,6 +25,11 @@ import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)
 import Control.Lens hiding (Action)
 import qualified Development.Duplo.Config as C
 import Control.Lens hiding (Action)
+import Development.Duplo.FileList (collapseFileList, makeFile)
+import qualified Development.Duplo.FileList as FileList (filePath)
+import Data.String.Utils (replace)
+import Data.Maybe (fromMaybe)
+import Control.Applicative ((<$>))
 
 build :: C.BuildConfig
       -> FilePath
@@ -32,8 +37,12 @@ build :: C.BuildConfig
 build config = \ out -> do
   logAction "Building markups"
 
-  let cwd   = config ^. C.cwd
-  let bin   = config ^. C.bin
+  let cwd          = config ^. C.cwd
+  let bin          = config ^. C.bin
+  let devPath      = config ^. C.devPath
+  let assetsPath   = config ^. C.assetsPath
+  let defaultsPath = config ^. C.defaultsPath
+  let targetPath   = config ^. C.targetPath
 
   -- These paths don't need to be expanded
   let staticPaths = [ "app/index.jade"
@@ -60,8 +69,18 @@ build config = \ out -> do
   compiled <- compile config compiler params paths $ \ files ->
     fmap (rewriteIncludes cwd files) files
 
+  -- Pull index page from dev, assets, then default otherwise, in that order
+  let defaultIndex    = makeFile defaultsPath "index.html"
+  let possibleSources = [devPath, assetsPath]
+  let possibleIndexes = fmap (flip makeFile "index.html") possibleSources
+  fromIndex <- fromMaybe defaultIndex <$> collapseFileList possibleIndexes
+  indexContent <- readFile' $ fromIndex ^. FileList.filePath
+
+  -- Inject compiled code into the index
+  let index = replace "<body>" ("<body>" ++ compiled) indexContent
+
   -- Write it to disk
-  writeFileChanged out compiled
+  writeFileChanged out index
 
 -- | Rewrite paths to external files (i.e. include statements) because Jade
 -- doesn't accept more than one path to look up includes. It is passed all

@@ -2,9 +2,13 @@
 
 module Development.Duplo.FileList
   ( Copy
+  , makeFile
   , makeFiles
   , toCopies
   , collapseFileLists
+  , collapseFileList
+  , filePath
+  , fileBase
   ) where
 
 import Development.Shake
@@ -24,11 +28,14 @@ makeLenses ''File
 
 -- | Given a base and a list of relative paths, transform into file objects
 makeFiles :: FilePath -> [FilePath] -> [File]
-makeFiles base relPaths =
-    fmap setPath absPaths
+makeFiles base = fmap (makeFile base)
+
+makeFile :: FilePath -> FilePath -> File
+makeFile base relPath =
+    setPath absPath
   where
     constructor = File { _fileBase = base }
-    absPaths    = fmap (base ++) relPaths
+    absPath     = base ++ relPath
     setPath     = (constructor &) . (filePath .~)
 
 -- | Collapse lists of possible files and return the first file that exists

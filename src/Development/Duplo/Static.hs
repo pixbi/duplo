@@ -12,6 +12,8 @@ import System.FilePath.Posix (splitExtension, splitDirectories, makeRelative)
 import Data.List (transpose, nub)
 import Control.Monad (zipWithM_)
 import Development.Duplo.FileList (makeFiles, toCopies, collapseFileLists, Copy)
+import qualified Development.Duplo.FileList as FileList (filePath)
+import Development.Shake.FilePath ((</>))
 
 build :: C.BuildConfig
       -> [FilePath]
@@ -33,8 +35,16 @@ build config = \ outs -> do
   let possibleFiles = transpose [devFiles, assetFiles]
   -- Each file list collapses into a path that exists
   cleanedFiles <- collapseFileLists possibleFiles
+
+  -- Path to output index
+  let targetIndex    = targetPath </> "index.html"
+  -- Is it index in the target output directory?
+  let isTargetIndex  = \ file -> targetIndex /= file ^. FileList.filePath
+  -- Ignore index as it's handling by the markup action
+  let filesLessIndex = filter isTargetIndex cleanedFiles
+
   -- We need to take the files and turn it into from/to pair
-  let (froms, tos) = unzip $ toCopies targetPath cleanedFiles
+  let (froms, tos) = unzip $ toCopies targetPath filesLessIndex
 
   -- Log
   let repeat'  = replicate $ length froms
@@ -61,12 +71,13 @@ deps config = do
   -- We want all asset files
   assetFiles <- getDirectoryFiles assetsPath ["//*"]
   -- Add dev files to the mix, if we're in dev mode
-  devFiles' <- getDirectoryFiles devPath ["//*"]
+  devFiles'  <- getDirectoryFiles devPath ["//*"]
   let devFiles = if C.isInDev config then devFiles' else []
   -- Mix them together
-  let files = nub $ concat [assetFiles, devFiles]
+  let allFiles = nub $ concat [assetFiles, devFiles]
+  -- We do NOT want index
+  let files    = filter ("index.html" /=) allFiles
 
-  -- Anything other than the usual JS/CSS/HTML
   let getExt      = snd . splitExtension
   let getFilename = last . splitDirectories
   let firstFilenameChar = head . getFilename

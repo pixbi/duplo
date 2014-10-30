@@ -5,12 +5,7 @@ import Development.Duplo.Utilities (logAction)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
 import System.Environment (lookupEnv, getArgs)
-import Development.Duplo.ComponentIO
-         ( appName
-         , appVersion
-         , appRepo
-         , appId
-         )
+import Development.Duplo.ComponentIO (appName, appVersion, appRepo, appId)
 import Development.Duplo.Markups as Markups
 import Development.Duplo.Scripts as Scripts
 import Development.Duplo.Static as Static
@@ -37,7 +32,7 @@ main = do
   -- Paths to various relevant directories
   let nodeModulesPath = duploPath </> "node_modules/.bin/"
   let utilPath        = duploPath </> "util/"
-  let defaultPath     = utilPath </> "static/"
+  let defaultsPath    = utilPath </> "static/"
   let appPath         = cwd </> "app/"
   let devPath         = cwd </> "dev/"
   let assetsPath      = appPath </> "assets/"
@@ -76,21 +71,21 @@ main = do
         ++ duploIn ++ "\n"
 
   -- Construct environment
-  let buildConfig = C.BuildConfig { C._appName     = appName'
-                                  , C._appVersion  = appVersion'
-                                  , C._appId       = appId'
-                                  , C._cwd         = cwd
-                                  , C._duploPath   = duploPath
-                                  , C._env         = duploEnv
-                                  , C._mode        = duploMode
-                                  , C._bin         = utilPath
-                                  , C._input       = duploIn
-                                  , C._utilPath    = utilPath
-                                  , C._defaultPath = defaultPath
-                                  , C._appPath     = appPath
-                                  , C._devPath     = devPath
-                                  , C._assetsPath  = assetsPath
-                                  , C._targetPath  = targetPath
+  let buildConfig = C.BuildConfig { C._appName      = appName'
+                                  , C._appVersion   = appVersion'
+                                  , C._appId        = appId'
+                                  , C._cwd          = cwd
+                                  , C._duploPath    = duploPath
+                                  , C._env          = duploEnv
+                                  , C._mode         = duploMode
+                                  , C._bin          = utilPath
+                                  , C._input        = duploIn
+                                  , C._utilPath     = utilPath
+                                  , C._defaultsPath = defaultsPath
+                                  , C._appPath      = appPath
+                                  , C._devPath      = devPath
+                                  , C._assetsPath   = assetsPath
+                                  , C._targetPath   = targetPath
                                   }
   -- Environment when node modules are used
   let buildConfigWithNode = buildConfig & C.bin .~ nodeModulesPath
