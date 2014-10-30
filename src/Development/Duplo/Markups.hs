@@ -23,8 +23,6 @@ import Development.Duplo.Files
 import Development.Duplo.ComponentIO (parseComponentId)
 import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)
 import Control.Lens hiding (Action)
-{-import Data.Text as T-}
-import qualified Data.Text.Lazy as TL
 
 build :: FilePath -> FilePath -> FilePath -> Action ()
 build cwd bin = \ out -> do

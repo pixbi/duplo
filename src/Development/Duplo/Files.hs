@@ -15,11 +15,8 @@ module Development.Duplo.Files
 import Prelude hiding (readFile)
 import Development.Shake hiding (readFile)
 import Data.Text (split, pack, unpack)
-{-import Development.Shake.FilePath-}
 import Control.Lens hiding (Action)
 import Control.Lens.TH (makeLenses)
-{-import Development.Shake-}
-{-import Data.List.Split (splitOn)-}
 import Data.List (intercalate)
 import Development.Duplo.ComponentIO (appId)
 import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)

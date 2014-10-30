@@ -4,29 +4,17 @@ import Development.Duplo.Styles as Styles
 import Development.Duplo.Utilities (logAction)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
-{-import System.Directory (getCurrentDirectory)-}
 import System.Environment (lookupEnv, getArgs)
-{-import System.Environment.Executable (splitExecutablePath)-}
-{-import Data.String.Utils-}
 import Development.Duplo.ComponentIO
          ( appName
          , appVersion
          , appRepo
          , appId
          )
-{-import Development.Duplo.Files-}
 import Development.Duplo.Markups as Markups
 import Development.Duplo.Scripts as Scripts
 import Development.Duplo.Static as Static
-{-import Development.Shake.Command-}
-{-import Development.Shake.Util-}
-{-import System.FSNotify (withManager, watchTree)-}
-{-import Filesystem (getWorkingDirectory)-}
-{-import Filesystem.Path (append)-}
-{-import Filesystem.Path.CurrentOS (decodeString)-}
-{-import Control.Concurrent (forkIO)-}
 import qualified Development.Duplo.Config as C
-import Control.Applicative ((<$>), (<*>))
 
 main :: IO ()
 main = do
