@@ -1,8 +1,13 @@
 src/
 .cabal-sandbox/
-dist/
-!dist/build/duplo/duplo
 
 cabal.sandbox.config
 *.cabal
 Setup.hs
+
+*.hi
+*.o
+*.hs
+*.h
+*.inplace
+setup-config
