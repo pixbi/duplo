@@ -6,7 +6,7 @@ import Development.Duplo.Utilities
          ( getDirectoryFilesInOrder
          , logAction
          , expandPaths
-         , buildWith
+         , compile
          )
 import Development.Shake
 import Development.Shake.FilePath ((</>))
@@ -46,5 +46,8 @@ build config = \ out -> do
   -- Path to the compiler
   let compiler = bin </> "stylus"
 
-  -- Build it
-  buildWith config compiler [] paths out id
+  -- Compile it
+  compiled <- compile config compiler [] paths id
+
+  -- Write it to disk
+  writeFileChanged out compiled

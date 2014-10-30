@@ -8,7 +8,7 @@ import Development.Duplo.Utilities
          ( getDirectoryFilesInOrder
          , logAction
          , expandPaths
-         , buildWith
+         , compile
          )
 import Development.Shake
 import Development.Shake.FilePath ((</>))
@@ -59,11 +59,14 @@ build config = \ out -> do
   let compiler = bin </> "echo.sh"
 
   -- Build it
-  buildWith config compiler [] paths out $ \ files ->
+  compiled <- compile config compiler [] paths $ \ files ->
     -- Create a pseudo file that contains the environment variables
     let envFile = File { _fileContent = envVars }
     -- Prepend the environment variables
     in  envFile : files
+
+  -- Write it to disk
+  writeFileChanged out compiled
 
 {--- | Optimize code by passing the entire code output-}
 {-optimize :: FilePath -> FilePath -> String -> String -> Action String-}

@@ -2,7 +2,7 @@ module Development.Duplo.Utilities
   ( getDirectoryFilesInOrder
   , logAction
   , expandPaths
-  , buildWith
+  , compile
   , FileProcessor
   ) where
 
@@ -47,21 +47,19 @@ logAction log = do
 --   pre-processing
 -- * concatenates all files
 -- * passes the concatenated string to the compiler
--- * writes to the output file
-buildWith :: C.BuildConfig
-          -- The path to the compilation command
-          -> FilePath
-          -- The parameters passed to the compilation command
-          -> [String]
-          -- Files to be compiled
-          -> [FilePath]
-          -- The output file
-          -> FilePath
-          -- The processing lambda
-          -> FileProcessor
-          -- We don't return anything
-          -> Action ()
-buildWith config compiler params paths out process = do
+-- * returns the compiled content
+compile :: C.BuildConfig
+        -- The path to the compilation command
+        -> FilePath
+        -- The parameters passed to the compilation command
+        -> [String]
+        -- Files to be compiled
+        -> [FilePath]
+        -- The processing lambda
+        -> FileProcessor
+        -- The compiled content
+        -> Action String
+compile config compiler params paths preprocess = do
   mapM (putNormal . ("Including " ++)) paths
 
   let cwd = config ^. C.cwd
@@ -70,7 +68,7 @@ buildWith config compiler params paths out process = do
   files <- mapM (readFile cwd) paths
 
   -- Pass to processor for specific manipulation
-  let processed = process files
+  let processed = preprocess files
 
   -- We only care about the content from this point on
   let contents = fmap (^. fileContent) processed
@@ -82,8 +80,8 @@ buildWith config compiler params paths out process = do
   putNormal $ "Compiling with: " ++ compiler ++ " " ++ intercalate " " params
   Stdout compiled <- command [Stdin concatenated] compiler params
 
-  -- Write output
-  writeFileChanged out compiled
+  -- The output
+  return compiled
 
 expandPaths :: String -> [String] -> [String] -> Action [String]
 expandPaths cwd staticPaths dynamicPaths = do

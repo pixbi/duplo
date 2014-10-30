@@ -6,7 +6,7 @@ import Development.Duplo.Utilities
          ( getDirectoryFilesInOrder
          , logAction
          , expandPaths
-         , buildWith
+         , compile
          )
 import Development.Shake
 import Development.Shake.FilePath ((</>))
@@ -56,9 +56,12 @@ build config = \ out -> do
                  , cwd </> "index.jade"
                  ]
 
-  -- Build it
-  buildWith config compiler params paths out $ \ files ->
+  -- Compile it
+  compiled <- compile config compiler params paths $ \ files ->
     fmap (rewriteIncludes cwd files) files
+
+  -- Write it to disk
+  writeFileChanged out compiled
 
 -- | Rewrite paths to external files (i.e. include statements) because Jade
 -- doesn't accept more than one path to look up includes. It is passed all
