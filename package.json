@@ -1,6 +1,6 @@
 {
   "name": "duplo",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "homepage": "https://github.com/pixbi/duplo",
   "scripts": {
     "prepublish": "cabal install"
