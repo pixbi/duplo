@@ -18,7 +18,7 @@ fi
 
 # Common paths
 cwd="$( pwd )"
-dir="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+dir="$( cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/"$(dirname "$(test -L "$0" && readlink "$0" || echo "$0")")" && pwd )"
 root="$( cd "$dir""/../" && pwd )"
 
 
