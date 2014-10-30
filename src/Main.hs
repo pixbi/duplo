@@ -4,7 +4,6 @@ import Development.Duplo.Styles as Styles
 import Development.Duplo.Utilities (logAction)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
-import System.FilePath.Posix (makeRelative)
 {-import System.Directory (getCurrentDirectory)-}
 import System.Environment (lookupEnv, getArgs)
 {-import System.Environment.Executable (splitExecutablePath)-}
@@ -27,9 +26,7 @@ import Development.Duplo.Static as Static
 {-import Filesystem.Path.CurrentOS (decodeString)-}
 {-import Control.Concurrent (forkIO)-}
 import qualified Development.Duplo.Config as C
-import Control.Monad (zipWithM_, filterM, liftM)
 import Control.Applicative ((<$>), (<*>))
-import Data.List (transpose)
 
 main :: IO ()
 main = do
@@ -52,6 +49,7 @@ main = do
   let nodeModulesPath = duploPath </> "node_modules/.bin/"
   let utilPath        = duploPath </> "util/"
   let appPath         = cwd </> "app/"
+  let devPath         = cwd </> "dev/"
   let assetsPath      = appPath </> "assets/"
   let targetPath      = cwd </> "public/"
 
@@ -99,6 +97,7 @@ main = do
                                   , C._input      = duploIn
                                   , C._utilPath   = utilPath
                                   , C._appPath    = appPath
+                                  , C._devPath    = devPath
                                   , C._assetsPath = assetsPath
                                   , C._targetPath = targetPath
                                   }
@@ -113,26 +112,9 @@ main = do
       need [shakeCommand]
 
     -- Handling static assets
-    (Static.qualify buildConfig) &?> \ outs -> do
-      -- Convert to relative paths for copying
-      let filesRel = fmap (makeRelative targetPath) outs
+    (Static.qualify buildConfig) &?> Static.build buildConfig
 
-      -- Look in assets directory
-      let assets = fmap (assetsPath ++) filesRel
-
-      -- Log
-      let repeat'  = replicate $ length assets
-      let messages = transpose [ (repeat' "Copying ")
-                               , assets
-                               , (repeat' " to ")
-                               , outs
-                               ]
-      mapM_ (putNormal . concat) messages
-
-      -- Copy all files
-      zipWithM_ copyFileChanged assets outs
-
-    "static" ~> Static.build buildConfig
+    "static" ~> Static.deps buildConfig
 
     "clean" ~> do
       -- Clean only when the target is there
@@ -153,7 +135,10 @@ main = do
       need [ targetScript
            , targetStyle
            , targetMarkup
-           , "static"
+           ]
+      -- Static files need to run after code compilation because they
+      -- take precedence
+      need [ "static"
            ]
 
       logAction "Build completed"
