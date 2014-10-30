@@ -17,6 +17,7 @@ import Development.Duplo.Files
          )
 import Development.Shake.FilePath ((</>))
 import Control.Lens hiding (Action)
+import qualified Development.Duplo.Config as C
 
 type FileProcessor = [File] -> [File]
 
@@ -47,8 +48,7 @@ logAction log = do
 -- * concatenates all files
 -- * passes the concatenated string to the compiler
 -- * writes to the output file
-          -- Current working directory
-buildWith :: FilePath
+buildWith :: C.BuildConfig
           -- The path to the compilation command
           -> FilePath
           -- The parameters passed to the compilation command
@@ -61,9 +61,10 @@ buildWith :: FilePath
           -> FileProcessor
           -- We don't return anything
           -> Action ()
-buildWith cwd compiler params paths out process = do
-  -- Log to console what we're dealing with
+buildWith config compiler params paths out process = do
   mapM (putNormal . ("Including " ++)) paths
+
+  let cwd = config ^. C.cwd
 
   -- Construct files
   files <- mapM (readFile cwd) paths

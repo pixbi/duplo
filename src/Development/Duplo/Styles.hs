@@ -10,10 +10,17 @@ import Development.Duplo.Utilities
          )
 import Development.Shake
 import Development.Shake.FilePath ((</>))
+import qualified Development.Duplo.Config as C
+import Control.Lens hiding (Action)
 
-build :: FilePath -> FilePath -> FilePath -> Action ()
-build cwd bin = \ out -> do
+build :: C.BuildConfig
+      -> FilePath
+      -> Action ()
+build config = \ out -> do
   logAction "Building styles"
+
+  let cwd   = config ^. C.cwd
+  let bin   = config ^. C.bin
 
   -- These paths don't need to be expanded
   let staticPaths = [ "app/styl/variables.styl"
@@ -24,7 +31,6 @@ build cwd bin = \ out -> do
                     ]
 
   -- These paths need to be expanded by Shake
-  -- TODO: exclude dependencies not listed in the current mode
   let dynamicPaths = [ "app/modules//index.styl"
                      , "components/*/app/styl/variables.styl"
                      , "components/*/app/styl/keyframes.styl"
@@ -41,4 +47,4 @@ build cwd bin = \ out -> do
   let compiler = bin </> "stylus"
 
   -- Build it
-  buildWith cwd compiler [] paths out id
+  buildWith config compiler [] paths out id

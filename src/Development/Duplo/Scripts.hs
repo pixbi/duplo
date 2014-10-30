@@ -36,7 +36,6 @@ build config = \ out -> do
                     ]
 
   -- These paths need to be expanded by Shake
-  -- TODO: exclude dependencies not listed in the current mode
   let dynamicPaths = [ "app/modules//*.js"
                      , "components/*/app/modules//*.js"
                      ]
@@ -60,7 +59,7 @@ build config = \ out -> do
   let compiler = bin </> "echo.sh"
 
   -- Build it
-  buildWith cwd compiler [] paths out $ \ files ->
+  buildWith config compiler [] paths out $ \ files ->
     -- Create a pseudo file that contains the environment variables
     let envFile = File { _fileContent = envVars }
     -- Prepend the environment variables

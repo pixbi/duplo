@@ -23,17 +23,23 @@ import Development.Duplo.Files
 import Development.Duplo.ComponentIO (parseComponentId)
 import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)
 import Control.Lens hiding (Action)
+import qualified Development.Duplo.Config as C
+import Control.Lens hiding (Action)
 
-build :: FilePath -> FilePath -> FilePath -> Action ()
-build cwd bin = \ out -> do
+build :: C.BuildConfig
+      -> FilePath
+      -> Action ()
+build config = \ out -> do
   logAction "Building markups"
+
+  let cwd   = config ^. C.cwd
+  let bin   = config ^. C.bin
 
   -- These paths don't need to be expanded
   let staticPaths = [ "app/index.jade"
                     ]
 
   -- These paths need to be expanded by Shake
-  -- TODO: exclude dependencies not listed in the current mode
   let dynamicPaths = [ "app/*//*.jade"
                      , "components/*/app/*//*.jade"
                      ]
@@ -51,7 +57,7 @@ build cwd bin = \ out -> do
                  ]
 
   -- Build it
-  buildWith cwd compiler params paths out $ \ files ->
+  buildWith config compiler params paths out $ \ files ->
     fmap (rewriteIncludes cwd files) files
 
 -- | Rewrite paths to external files (i.e. include statements) because Jade

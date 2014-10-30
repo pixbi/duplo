@@ -15,6 +15,7 @@ import Development.Duplo.Markups as Markups
 import Development.Duplo.Scripts as Scripts
 import Development.Duplo.Static as Static
 import qualified Development.Duplo.Config as C
+import Control.Lens hiding (Action)
 
 main :: IO ()
 main = do
@@ -89,11 +90,13 @@ main = do
                                   , C._assetsPath = assetsPath
                                   , C._targetPath = targetPath
                                   }
+  -- Environment when node modules are used
+  let buildConfigWithNode = buildConfig & C.bin .~ nodeModulesPath
 
   shake shakeOptions $ do
     targetScript *> Scripts.build buildConfig
-    targetStyle  *> Styles.build cwd nodeModulesPath
-    targetMarkup *> Markups.build cwd nodeModulesPath
+    targetStyle  *> Styles.build buildConfigWithNode
+    targetMarkup *> Markups.build buildConfigWithNode
 
     -- Manually bootstrap Shake
     action $ do
