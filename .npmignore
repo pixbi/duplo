@@ -1,0 +1,5 @@
+src/
+
+cabal.sandbox.config
+*.cabal
+Setup.hs
