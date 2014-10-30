@@ -6,7 +6,6 @@ module Development.Duplo.Static
   , qualify
   ) where
 
-{-import Control.Monad (filterM)-}
 {-import Data.List (intercalate)-}
 import Development.Duplo.Utilities (logAction)
 {-import Development.Duplo.Utilities-}
@@ -16,7 +15,6 @@ import Development.Duplo.Utilities (logAction)
 {-         , buildWith-}
 {-         )-}
 import Development.Shake
-import Development.Shake.FilePath ((</>))
 {-import Data.Text (replace, pack, unpack)-}
 {-import Development.Duplo.Files (File(..))-}
 import qualified Development.Duplo.Config as C
@@ -25,9 +23,10 @@ import System.FilePath.Posix (splitExtension)
 import System.FilePath.Posix (splitExtension, splitDirectories)
 import System.FilePath.Posix (makeRelative)
 import Data.List (transpose, nub)
-import Control.Monad (zipWithM_, filterM, liftM, mplus, msum)
-import Data.Maybe (Maybe(..), fromMaybe, catMaybes)
+import Control.Monad (zipWithM_)
 import Control.Applicative ((<$>))
+import Development.Duplo.FileList (File, makeFiles, handleFileList, toCopyPair)
+import Data.Maybe (catMaybes)
 
 build :: C.BuildConfig
       -> [FilePath]
@@ -112,33 +111,3 @@ qualify config path =
     targetPath = config ^. C.targetPath ++ "/*"
     exclude    = [".js", ".css", ".html"]
     extension  = (snd . splitExtension) path
-
-type File     = (FilePath, FilePath)
-type CopyPair = (FilePath, FilePath)
-
-makeFiles :: FilePath -> [FilePath] -> [File]
-makeFiles base = fmap (makeFile base)
-
-makeFile :: FilePath -> FilePath -> File
-makeFile base path = (path, base)
-
-handleFileList :: [File] -> Action (Maybe File)
-handleFileList paths = do
-    (paths' :: [Maybe File]) <- mapM handleFile paths
-    return $ msum paths'
-
-handleFile :: File -> Action (Maybe File)
-handleFile file@(path, base) = do
-    doesExist <- doesFileExist path
-
-    if   doesExist
-    then return $ Just file
-    else return Nothing
-
-toCopyPair :: FilePath -> File -> CopyPair
-toCopyPair targetPath file@(path, base) =
-    (from, to)
-  where
-    relPath = makeRelative base path
-    from    = path
-    to      = targetPath </> relPath
