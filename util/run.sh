@@ -66,7 +66,7 @@ function make_duplo_cmd() {
        DUPLO_MODE="$DUPLO_MODE" \
        DUPLO_IN="$DUPLO_IN" \
        DUPLO_BUMP_LEVEL="$DUPLO_BUMP_LEVEL" \
-       "$root"/.cabal-sandbox/bin/duplo "$cmd"
+       "$root"/dist/build/duplo/duplo "$cmd"
 }
 
 

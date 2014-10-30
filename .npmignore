@@ -1,4 +1,7 @@
 src/
+.cabal-sandbox/
+dist/
+!dist/build/duplo/duplo
 
 cabal.sandbox.config
 *.cabal
