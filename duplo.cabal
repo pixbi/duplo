@@ -1,5 +1,5 @@
 name:                duplo
-version:             0.1.0.0
+version:             0.1.0.1
 synopsis:            Frontend development build tool
 description:         Intuitive, simple building blocks for building composable, completely self-managed web applications
 license:             MIT
