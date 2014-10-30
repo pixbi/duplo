@@ -6,7 +6,7 @@
     "prepublish": "cabal install"
   },
   "bin": {
-    "duplo": ".cabal-sandbox/bin/duplo"
+    "duplo": "util/run.sh"
   },
   "dependencies": {
     "http-server": "^0.7.2",
