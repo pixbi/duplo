@@ -18,6 +18,7 @@ fi
 
 # Common paths
 cwd="$( pwd )"
+# We need to take into account relative paths and symbolic links
 dir="$( cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/"$(dirname "$(test -L "$0" && readlink "$0" || echo "$0")")" && pwd )"
 root="$( cd "$dir""/../" && pwd )"
 
