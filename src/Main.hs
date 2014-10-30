@@ -32,7 +32,7 @@ main = do
   -- Paths to various relevant directories
   let nodeModulesPath = duploPath </> "node_modules/.bin/"
   let utilPath        = duploPath </> "util/"
-  let defaultsPath    = utilPath </> "static/"
+  let defaultsPath    = duploPath </> "etc/static/"
   let appPath         = cwd </> "app/"
   let devPath         = cwd </> "dev/"
   let assetsPath      = appPath </> "assets/"

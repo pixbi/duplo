@@ -43,6 +43,7 @@ build config = \ out -> do
   let assetsPath   = config ^. C.assetsPath
   let defaultsPath = config ^. C.defaultsPath
   let targetPath   = config ^. C.targetPath
+  let refTagsPath  = defaultsPath </> "head.html"
 
   -- These paths don't need to be expanded
   let staticPaths = [ "app/index.jade"
@@ -77,10 +78,14 @@ build config = \ out -> do
   indexContent <- readFile' $ fromIndex ^. FileList.filePath
 
   -- Inject compiled code into the index
-  let index = replace "<body>" ("<body>" ++ compiled) indexContent
+  let indexWithMarkup = replace "<body>" ("<body>" ++ compiled) indexContent
+
+  -- Inject CSS/JS references
+  refTags <- readFile' refTagsPath
+  let indexWithRefs   = replace "</head>" (refTags ++ "</head>") indexWithMarkup
 
   -- Write it to disk
-  writeFileChanged out index
+  writeFileChanged out indexWithRefs
 
 -- | Rewrite paths to external files (i.e. include statements) because Jade
 -- doesn't accept more than one path to look up includes. It is passed all
