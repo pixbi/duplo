@@ -1,22 +1,11 @@
-{-# LANGUAGE ScopedTypeVariables #-}
-
 module Development.Duplo.Static
   ( build
   , deps
   , qualify
   ) where
 
-{-import Data.List (intercalate)-}
 import Development.Duplo.Utilities (logAction)
-{-import Development.Duplo.Utilities-}
-{-         ( getDirectoryFilesInOrder-}
-{-         , logAction-}
-{-         , expandPaths-}
-{-         , buildWith-}
-{-         )-}
 import Development.Shake
-{-import Data.Text (replace, pack, unpack)-}
-{-import Development.Duplo.Files (File(..))-}
 import qualified Development.Duplo.Config as C
 import Control.Lens hiding (Action)
 import System.FilePath.Posix (splitExtension)
@@ -25,7 +14,7 @@ import System.FilePath.Posix (makeRelative)
 import Data.List (transpose, nub)
 import Control.Monad (zipWithM_)
 import Control.Applicative ((<$>))
-import Development.Duplo.FileList (File, makeFiles, handleFileList, toCopyPair)
+import Development.Duplo.FileList (makeFiles, toCopies, collapseFileLists)
 import Data.Maybe (catMaybes)
 
 build :: C.BuildConfig
@@ -38,20 +27,18 @@ build config = \ outs -> do
 
   -- Convert to relative paths for copying
   let filesRel = fmap (makeRelative targetPath) outs
-
   -- Look in assets directory
-  let assetFiles = makeFiles assetsPath $ fmap (assetsPath ++) filesRel
+  let assetFiles = makeFiles assetsPath filesRel
   -- Look in the dev directory as well
-  let devFiles = makeFiles devPath $ fmap (devPath ++) filesRel
+  let devFiles = makeFiles devPath filesRel
 
   -- Combine matching files into lists each pointing to its corresponding
   -- output file. Note that `devFiles` are *first*.
-  let (possibleFiles :: [[File]]) = transpose [devFiles, assetFiles]
+  let possibleFiles = transpose [devFiles, assetFiles]
   -- Each file list collapses into a path that exists
-  (maybeFiles :: [Maybe File]) <- mapM handleFileList possibleFiles
-  let cleanedFiles = catMaybes maybeFiles
+  cleanedFiles <- collapseFileLists possibleFiles
   -- We need to take the files and turn it into from/to pair
-  let (froms, tos) = unzip $ fmap (toCopyPair targetPath) cleanedFiles
+  let (froms, tos) = unzip $ toCopies targetPath cleanedFiles
 
   -- Log
   let repeat'  = replicate $ length froms
