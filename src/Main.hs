@@ -123,13 +123,12 @@ main = do
       logAction "Bumping version"
 
     "build" ~> do
+      -- Copy over static files first, then compile
+      need [ "static"
+           ]
       need [ targetScript
            , targetStyle
            , targetMarkup
-           ]
-      -- Static files need to run after code compilation because they
-      -- take precedence
-      need [ "static"
            ]
 
       logAction "Build completed"
