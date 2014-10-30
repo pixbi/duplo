@@ -13,6 +13,7 @@ module Development.Duplo.Config
   , bin
   , input
   , utilPath
+  , defaultPath
   , appPath
   , devPath
   , assetsPath
@@ -23,20 +24,21 @@ import Development.Shake
 import Control.Lens hiding (Action)
 import Control.Lens.TH (makeLenses)
 
-data BuildConfig = BuildConfig { _appName    :: String
-                               , _appVersion :: String
-                               , _appId      :: String
-                               , _cwd        :: String
-                               , _duploPath  :: FilePath
-                               , _env        :: String
-                               , _mode       :: String
-                               , _bin        :: FilePath
-                               , _input      :: String
-                               , _utilPath   :: FilePath
-                               , _appPath    :: FilePath
-                               , _devPath    :: FilePath
-                               , _assetsPath :: FilePath
-                               , _targetPath :: FilePath
+data BuildConfig = BuildConfig { _appName     :: String
+                               , _appVersion  :: String
+                               , _appId       :: String
+                               , _cwd         :: String
+                               , _duploPath   :: FilePath
+                               , _env         :: String
+                               , _mode        :: String
+                               , _bin         :: FilePath
+                               , _input       :: String
+                               , _utilPath    :: FilePath
+                               , _defaultPath :: FilePath
+                               , _appPath     :: FilePath
+                               , _devPath     :: FilePath
+                               , _assetsPath  :: FilePath
+                               , _targetPath  :: FilePath
                                }
 
 makeLenses ''BuildConfig

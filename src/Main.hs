@@ -37,6 +37,7 @@ main = do
   -- Paths to various relevant directories
   let nodeModulesPath = duploPath </> "node_modules/.bin/"
   let utilPath        = duploPath </> "util/"
+  let defaultPath     = utilPath </> "static/"
   let appPath         = cwd </> "app/"
   let devPath         = cwd </> "dev/"
   let assetsPath      = appPath </> "assets/"
@@ -75,20 +76,21 @@ main = do
         ++ duploIn ++ "\n"
 
   -- Construct environment
-  let buildConfig = C.BuildConfig { C._appName    = appName'
-                                  , C._appVersion = appVersion'
-                                  , C._appId      = appId'
-                                  , C._cwd        = cwd
-                                  , C._duploPath  = duploPath
-                                  , C._env        = duploEnv
-                                  , C._mode       = duploMode
-                                  , C._bin        = utilPath
-                                  , C._input      = duploIn
-                                  , C._utilPath   = utilPath
-                                  , C._appPath    = appPath
-                                  , C._devPath    = devPath
-                                  , C._assetsPath = assetsPath
-                                  , C._targetPath = targetPath
+  let buildConfig = C.BuildConfig { C._appName     = appName'
+                                  , C._appVersion  = appVersion'
+                                  , C._appId       = appId'
+                                  , C._cwd         = cwd
+                                  , C._duploPath   = duploPath
+                                  , C._env         = duploEnv
+                                  , C._mode        = duploMode
+                                  , C._bin         = utilPath
+                                  , C._input       = duploIn
+                                  , C._utilPath    = utilPath
+                                  , C._defaultPath = defaultPath
+                                  , C._appPath     = appPath
+                                  , C._devPath     = devPath
+                                  , C._assetsPath  = assetsPath
+                                  , C._targetPath  = targetPath
                                   }
   -- Environment when node modules are used
   let buildConfigWithNode = buildConfig & C.bin .~ nodeModulesPath
@@ -123,12 +125,9 @@ main = do
       logAction "Bumping version"
 
     "build" ~> do
-      -- Copy over static files first, then compile
-      need [ "static"
-           ]
-      need [ targetScript
-           , targetStyle
-           , targetMarkup
-           ]
+      -- Copy over static files first
+      need ["static"]
+      -- Then compile
+      need [targetScript, targetStyle, targetMarkup]
 
       logAction "Build completed"

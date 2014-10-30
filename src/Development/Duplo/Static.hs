@@ -48,7 +48,7 @@ build config = \ outs -> do
   -- Copy all files
   zipWithM_ copyFileChanged froms tos
 
--- Build dependency list for static files
+-- | Build dependency list for static files
 deps :: C.BuildConfig
      -> Action ()
 deps config = do
@@ -67,17 +67,14 @@ deps config = do
   let files = nub $ concat [assetFiles, devFiles]
 
   -- Anything other than the usual JS/CSS/HTML
-  let exclude     = [".js", ".css", ".html"]
-  let isCode      = flip elem exclude
   let getExt      = snd . splitExtension
   let getFilename = last . splitDirectories
-  let onlyNonCode = filter $ not . isCode . getExt
   let firstFilenameChar = head . getFilename
   -- Only visible files (UNIX-style with leading dot)
   let onlyVisible = filter $ \ x -> '.' /= firstFilenameChar x
-  let staticFiles = onlyNonCode $ onlyVisible files
+  let staticFiles = onlyVisible files
   -- Map to output equivalents
-  let filesOut = fmap (targetPath ++) staticFiles
+  let filesOut    = fmap (targetPath ++) staticFiles
 
   -- Declare dependencies
   need filesOut
@@ -86,11 +83,8 @@ qualify :: C.BuildConfig
         -> FilePath
         -> Maybe [FilePath]
 qualify config path =
-    -- Anything in target directory other than the usual JS/CSS/HTML
-    if   targetPath ?== path && not (extension `elem` exclude)
+    if   targetPath ?== path
     then Just [path]
     else Nothing
   where
     targetPath = config ^. C.targetPath ++ "/*"
-    exclude    = [".js", ".css", ".html"]
-    extension  = (snd . splitExtension) path
