@@ -8,14 +8,10 @@ import Development.Duplo.Utilities (logAction)
 import Development.Shake
 import qualified Development.Duplo.Config as C
 import Control.Lens hiding (Action)
-import System.FilePath.Posix (splitExtension)
-import System.FilePath.Posix (splitExtension, splitDirectories)
-import System.FilePath.Posix (makeRelative)
+import System.FilePath.Posix (splitExtension, splitDirectories, makeRelative)
 import Data.List (transpose, nub)
 import Control.Monad (zipWithM_)
-import Control.Applicative ((<$>))
-import Development.Duplo.FileList (makeFiles, toCopies, collapseFileLists)
-import Data.Maybe (catMaybes)
+import Development.Duplo.FileList (makeFiles, toCopies, collapseFileLists, Copy)
 
 build :: C.BuildConfig
       -> [FilePath]
@@ -42,9 +38,9 @@ build config = \ outs -> do
 
   -- Log
   let repeat'  = replicate $ length froms
-  let messages = transpose [ (repeat' "Copying ")
+  let messages = transpose [ repeat' "Copying "
                            , froms
-                           , (repeat' " to ")
+                           , repeat' " to "
                            , tos
                            ]
   mapM_ (putNormal . concat) messages
@@ -76,9 +72,9 @@ deps config = do
   let getExt      = snd . splitExtension
   let getFilename = last . splitDirectories
   let onlyNonCode = filter $ not . isCode . getExt
+  let firstFilenameChar = head . getFilename
   -- Only visible files (UNIX-style with leading dot)
-  let onlyVisible = filter $ \ x ->
-                      '.' /= (head . getFilename) x
+  let onlyVisible = filter $ \ x -> '.' /= firstFilenameChar x
   let staticFiles = onlyNonCode $ onlyVisible files
   -- Map to output equivalents
   let filesOut = fmap (targetPath ++) staticFiles

@@ -1,7 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 
 module Development.Duplo.FileList
-  ( makeFiles
+  ( Copy
+  , makeFiles
   , toCopies
   , collapseFileLists
   ) where
