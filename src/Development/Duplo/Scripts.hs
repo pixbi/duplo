@@ -67,17 +67,3 @@ build config = \ out -> do
 
   -- Write it to disk
   writeFileChanged out compiled
-
-{--- | Optimize code by passing the entire code output-}
-{-optimize :: FilePath -> FilePath -> String -> String -> Action String-}
-{-optimize cwd bin env mode inputCode = do-}
-{-  -- Run it through Closure-}
-{-  let closurePath = bin </> "compiler.jar"-}
-{-  let closureParams = [ "-jar"-}
-{-                      , closurePath-}
-{-                      , "--compilation_level"-}
-{-                      , "SIMPLE_OPTIMIZATIONS"-}
-{-                      ]-}
-{-  Stdout optimized <- command [Stdin inputCode] "java" closureParams-}
-
-{-  return optimized-}
