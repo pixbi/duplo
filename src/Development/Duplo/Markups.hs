@@ -50,8 +50,7 @@ build config = \ out -> do
                     ]
 
   -- These paths need to be expanded by Shake
-  let dynamicPaths = [ "app/*//*.jade"
-                     , "components/*/app/*//*.jade"
+  let dynamicPaths = [ "components/*/app/index.jade"
                      ]
 
   -- Merge both types of paths

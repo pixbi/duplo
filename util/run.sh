@@ -18,10 +18,14 @@ fi
 
 # Common paths
 cwd="$( pwd )"
-# We need to take into account relative paths and symbolic links
-dir="$( cd "$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"/"$(dirname "$(test -L "$0" && readlink "$0" || echo "$0")")" && pwd )"
-root="$( cd "$dir""/../" && pwd )"
 
+# Get the full path, even if the file is run a symlink and/or with a relative
+# path
+path=`perl -e 'use Cwd "abs_path"; print abs_path(shift)' $0`
+# Take the directory of that
+dir="$( dirname "$path" )"
+# Get the project's root
+root="$( cd "$dir"/../ && pwd )"
 
 # TODO: to be refactored into Shake
 commit() {
@@ -104,7 +108,7 @@ case "$cmd" in
     $root/node_modules/.bin/http-server public -c-1 -p $PORT &
 
     # The watcher
-    $root/node_modules/.bin/watch "$( make_duplo_cmd )" app &
+    $root/bin/spy run "$( make_duplo_cmd )" $cwd/app/ -n &
 
     # Kill all child processes
     function cleanup() {
