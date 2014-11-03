@@ -86,14 +86,3 @@ resetSubversion version index max
 
 updateVersion :: I.AppInfo -> Version -> I.AppInfo
 updateVersion manifest version = manifest { I.version = version }
-
-{--- | Get the current project's version-}
-{-version :: String-}
-{-version = do-}
-{-    let defaultVersion = "0.0.0"-}
-{-    let defaultInfo = I.AppInfo { I.version = defaultVersion }-}
-{-    let appInfo     = fromMaybe defaultInfo <$> I.readManifest-}
-
-{-    case appInfo of-}
-{-      Just info -> I.version info-}
-{-      Nothing   -> defaultVersion-}

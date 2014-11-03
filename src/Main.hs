@@ -121,7 +121,8 @@ main = do
       logAction "Clean completed"
 
     "version" ~> do
-      return ()
+      -- By default it already outputs version information
+      putNormal ""
 
     "build" ~> do
       -- Copy over static files first
