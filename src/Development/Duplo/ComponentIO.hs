@@ -11,9 +11,8 @@ module Development.Duplo.ComponentIO
   , writeManifest
   ) where
 
-import Control.Applicative ((<$>), (<*>), empty)
+import Control.Applicative ((<$>), (<*>))
 import Development.Shake
-{-import Development.Shake hiding (readFile, writeFile)-}
 import Data.Aeson ((.:), encode, decode, FromJSON, ToJSON, Object)
 import GHC.Generics (Generic)
 import Data.Text (breakOn)
@@ -22,14 +21,21 @@ import Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as BS (unpack, pack)
 import System.FilePath.Posix (splitDirectories)
 import Control.Monad.IO.Class (MonadIO)
+import Data.HashMap.Strict (HashMap, empty)
 
 -- | Each application must have a `component.json`
 manifestPath :: String
 manifestPath = "component.json"
 
-data AppInfo = AppInfo { name    :: String
-                       , repo    :: String
-                       , version :: String
+data AppInfo = AppInfo { name         :: String
+                       , repo         :: String
+                       , version      :: String
+                       , dependencies :: HashMap String String
+                       , images       :: [String]
+                       , scripts      :: [String]
+                       , styles       :: [String]
+                       , templates    :: [String]
+                       , fonts        :: [String]
                        } deriving (Show, Generic)
 
 -- | Instances for handling the manifest file
@@ -46,7 +52,17 @@ readManifest = do
 
     case appInfo of
       Just info -> return info
-      Nothing   -> return AppInfo {}
+      -- TODO: use MaybeT
+      Nothing   -> return $ AppInfo { name    = ""
+                                    , version = ""
+                                    , repo    = "owner/repo"
+                                    , dependencies = empty
+                                    , images  = []
+                                    , scripts = []
+                                    , styles  = []
+                                    , templates = []
+                                    , fonts = []
+                                    }
 
 writeManifest :: AppInfo -> IO ()
 writeManifest = (writeFile manifestPath) . BS.unpack . encode
