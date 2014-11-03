@@ -9,8 +9,8 @@ git commit -m "Bump version to v"$version
 git checkout -b live
 # Always force the new changes
 git merge master -X theirs
-# Apply tag
-git tag $version
+## Apply tag
+#git tag $version
 ## Sync with Github
 #git push origin live:live
 #git push origin master:master

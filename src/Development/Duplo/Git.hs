@@ -38,14 +38,12 @@ commit config level = do
     command_ [] "git" ["checkout", "master"]
 
     -- Increment version according to level
-    putNormal "---bbb"
     let newVersion = incrementVersion level version
     -- Update manifest
     let newManifest = updateVersion manifest newVersion
     -- Commit manifest
     liftIO $ I.writeManifest newManifest
 
-    putNormal "---aaa"
     -- Commit with the version
     command_ [] (utilPath </> "commit.sh") [newVersion]
 
