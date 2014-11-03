@@ -136,3 +136,7 @@ main = do
       logAction "Bumping version"
 
       Git.commit buildConfig bumpLevel
+
+    "new" ~> do
+      logAction "TODO: this needs to be implemented"
+      putNormal ""
