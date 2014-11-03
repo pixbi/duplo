@@ -20,6 +20,8 @@ import Control.Lens.TH (makeLenses)
 import Data.List (intercalate)
 import Development.Duplo.ComponentIO (appId)
 import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)
+import Control.Monad.Trans.Class (lift)
+import qualified Development.Duplo.ComponentIO as I
 
 type FileName    = String
 type FileContent = String
@@ -39,7 +41,8 @@ readFile :: FilePath -> FilePath -> Action File
 readFile cwd path = do
   let (fileDir, fileName) = parseFilePath path
   fileContent <- readFile' path
-  appId'      <- liftIO appId
+  appInfo <- liftIO I.readManifest
+  let appId' = appId appInfo
   let componentId = parseComponentId cwd appId' fileDir
   let isRoot      = componentId == appId'
   return $ File path fileDir fileName componentId fileContent isRoot

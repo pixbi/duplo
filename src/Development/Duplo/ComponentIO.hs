@@ -1,18 +1,27 @@
+{-# LANGUAGE TemplateHaskell, DeriveGeneric #-}
+
 module Development.Duplo.ComponentIO
-  ( appName
-  , appVersion
-  , appRepo
+  ( AppInfo(..)
+  , name
+  , repo
+  , version
   , appId
   , parseComponentId
+  , readManifest
+  , writeManifest
   ) where
 
 import Control.Applicative ((<$>), (<*>), empty)
-import Development.Shake hiding (readFile)
-import Data.Aeson ((.:))
-import qualified Data.Aeson as AES
-import Data.Text (breakOn, unpack, pack)
-import qualified Data.ByteString.Lazy.Char8 as BSL
+import Development.Shake
+{-import Development.Shake hiding (readFile, writeFile)-}
+import Data.Aeson ((.:), encode, decode, FromJSON, ToJSON, Object)
+import GHC.Generics (Generic)
+import Data.Text (breakOn)
+import qualified Data.Text as T (unpack, pack)
+import Data.ByteString.Lazy.Char8 (ByteString)
+import qualified Data.ByteString.Lazy.Char8 as BS (unpack, pack)
 import System.FilePath.Posix (splitDirectories)
+import Control.Monad.IO.Class (MonadIO)
 
 -- | Each application must have a `component.json`
 manifestPath :: String
@@ -21,50 +30,41 @@ manifestPath = "component.json"
 data AppInfo = AppInfo { name    :: String
                        , repo    :: String
                        , version :: String
-                       } deriving (Show)
+                       } deriving (Show, Generic)
 
--- | Instance for Aeson
-instance AES.FromJSON AppInfo where
-  parseJSON (AES.Object obj) = AppInfo
-                           <$> obj .: pack "name"
-                           <*> obj .: pack "repo"
-                           <*> obj .: pack "version"
-  parseJSON _                = empty
+-- | Instances for handling the manifest file
+instance FromJSON AppInfo
+instance ToJSON AppInfo
 
--- | Get application info
-appInfo :: IO AppInfo
-appInfo = do
-  manifest <- readFile manifestPath
-  let parsed = AES.decode (BSL.pack manifest) :: Maybe AppInfo
-  case parsed of
-    Just info -> return info
-    -- TODO: This needs to be handled as an exception
-    Nothing   -> return AppInfo {name = "", repo = "", version = ""}
+-- | Need an IO for Maybe type to lift
+instance MonadIO Maybe
 
-----------
--- Accessors
+readManifest :: IO AppInfo
+readManifest = do
+    manifest <- readFile manifestPath
+    let appInfo = decode (BS.pack manifest) :: Maybe AppInfo
 
-appName :: IO String
-appName = fmap name appInfo
+    case appInfo of
+      Just info -> return info
+      Nothing   -> return AppInfo {}
 
-appVersion :: IO String
-appVersion = fmap version appInfo
+writeManifest :: AppInfo -> IO ()
+writeManifest = (writeFile manifestPath) . BS.unpack . encode
 
-appRepo :: IO String
-appRepo = fmap repo appInfo
-
-appId :: IO String
-appId = do
-  appRepo <- fmap repo appInfo
-  let (user : repo : _) = splitDirectories appRepo
-  return $ user ++ "-" ++ repo
+-- | Get the app's Component.IO ID
+appId :: AppInfo -> String
+appId appInfo =
+    owner ++ "-" ++ appRepo'
+  where
+    appRepo           = repo appInfo
+    (owner : appRepo' : _) = splitDirectories appRepo
 
 -- | Given a possible component ID, return the user and the repo
 -- constituents
 parseComponentId :: String -> Maybe (String, String)
-parseComponentId id
-  | repoL > 0 = Just ((unpack user), (unpack repo))
+parseComponentId cId
+  | repoL > 0 = Just ((T.unpack user), (T.unpack repo))
   | otherwise = Nothing
   where
-    (user, repo) = breakOn (pack "-") (pack id)
-    repoL = length $ unpack repo
+    (user, repo) = breakOn (T.pack "-") (T.pack cId)
+    repoL = length $ T.unpack repo

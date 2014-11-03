@@ -5,10 +5,11 @@ import Development.Duplo.Utilities (logAction)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
 import System.Environment (lookupEnv, getArgs)
-import Development.Duplo.ComponentIO (appName, appVersion, appRepo, appId)
+import qualified Development.Duplo.ComponentIO as I
 import Development.Duplo.Markups as Markups
 import Development.Duplo.Scripts as Scripts
 import Development.Duplo.Static as Static
+import Development.Duplo.Git as Git
 import qualified Development.Duplo.Config as C
 import Control.Lens hiding (Action)
 
@@ -19,15 +20,20 @@ main = do
   let shakeCommand = head args
 
   -- Environment - e.g. dev, staging, live
-  duploEnv  <- fromMaybe "" <$> lookupEnv "DUPLO_ENV"
+  duploEnv   <- fromMaybe "" <$> lookupEnv "DUPLO_ENV"
   -- Build mode, for dependency selection
-  duploMode <- fromMaybe "" <$> lookupEnv "DUPLO_MODE"
+  duploMode  <- fromMaybe "" <$> lookupEnv "DUPLO_MODE"
   -- Application parameter
-  duploIn   <- fromMaybe "" <$> lookupEnv "DUPLO_IN"
+  duploIn    <- fromMaybe "" <$> lookupEnv "DUPLO_IN"
   -- Current directory
-  cwd       <- fromMaybe "" <$> lookupEnv "CWD"
+  cwd        <- fromMaybe "" <$> lookupEnv "CWD"
   -- Duplo directory
-  duploPath <- fromMaybe "" <$> lookupEnv "DUPLO_PATH"
+  duploPath  <- fromMaybe "" <$> lookupEnv "DUPLO_PATH"
+  -- Semantic version bump level: patch, minor, or major
+  bumpLevel' <- fromMaybe "" <$> lookupEnv "DUPLO_BUMP_LEVEL"
+  let bumpLevel = if   bumpLevel' `elem` ["patch", "minor", "major"]
+                  then bumpLevel'
+                  else "patch"
 
   -- Paths to various relevant directories
   let nodeModulesPath = duploPath </> "node_modules/.bin/"
@@ -44,9 +50,10 @@ main = do
   let targetMarkup = targetPath </> "index.html"
 
   -- Gather information about this project
-  appName'    <- appName
-  appVersion' <- appVersion
-  appId'      <- appId
+  let getProperty = flip fmap I.readManifest
+  appName'    <- getProperty I.name
+  appVersion' <- getProperty I.version
+  appId'      <- getProperty I.appId
 
   -- Report back what's given for confirmation
   putStr $ "\n"
@@ -116,9 +123,6 @@ main = do
     "version" ~> do
       return ()
 
-    "bump" ~> do
-      logAction "Bumping version"
-
     "build" ~> do
       -- Copy over static files first
       need ["static"]
@@ -126,3 +130,8 @@ main = do
       need [targetScript, targetStyle, targetMarkup]
 
       logAction "Build completed"
+
+    "bump" ~> do
+      logAction "Bumping version"
+
+      Git.commit buildConfig bumpLevel

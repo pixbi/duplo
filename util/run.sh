@@ -27,40 +27,6 @@ dir="$( dirname "$path" )"
 # Get the project's root
 root="$( cd "$dir"/../ && pwd )"
 
-# TODO: to be refactored into Shake
-commit() {
-  local level=$1
-  local version=$2
-
-  git stash
-  git checkout develop
-
-  # TODO: set version to component.json
-
-  # Commit
-  git add component.json
-  git commit -m "Bump version"
-  # Merge into master
-  git checkout master
-  # Always force the new changes
-  git merge develop -X theirs
-  # Apply tag
-  git tag $version
-  ## Sync with Github
-  git push origin develop:develop
-  git push origin master:master
-  git push origin --tags
-  # Go back to develop
-  git checkout develop
-}
-
-# TODO: to be refactored into Shake
-display_version() {
-  # TODO: get version from component.json
-  local version=$1
-
-  echo "duplo v"$version
-}
 
 # Construct the command to invoke duplo
 function make_duplo_cmd() {
