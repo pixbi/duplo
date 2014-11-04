@@ -8,6 +8,7 @@
 cmd=$1
 
 # Defaults
+
 if [ -z "$PORT" ]; then
   PORT=8888
 fi
@@ -26,6 +27,9 @@ path=`perl -e 'use Cwd "abs_path"; print abs_path(shift)' $0`
 dir="$( dirname "$path" )"
 # Get the project's root
 root="$( cd "$dir"/../ && pwd )"
+
+# Should we go into infinite loop?
+forever=false
 
 
 # Construct the command to invoke duplo
@@ -85,11 +89,8 @@ case "$cmd" in
     # Trap Ctrl-C
     trap cleanup SIGINT
 
-    # Run build system
-    eval "$( make_duplo_cmd )"
-
     # Infinite loop
-    while true; do read _; done
+    forever=true
     ;;
 
   # Testing forces an environment change
@@ -112,3 +113,8 @@ esac
 
 # Run build system
 eval "$( make_duplo_cmd )"
+
+# Infinite loop
+if [ $forever ]; then
+  while true; do read _; done
+fi
