@@ -38,7 +38,7 @@ build config = \ out -> do
   -- These paths need to be expanded by Shake
   let dynamicPaths = [ "app/modules//*.js"
                      -- TODO: for now we hardwire bootloader in
-                     , "components/bootloader/app/*.js"
+                     , "components/pixbi-bootloader/app/*.js"
                      , "components/*/app/*.js"
                      , "components/*/app/modules//*.js"
                      ]
