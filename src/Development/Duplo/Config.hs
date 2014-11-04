@@ -17,6 +17,7 @@ module Development.Duplo.Config
   , appPath
   , devPath
   , assetsPath
+  , depsPath
   , targetPath
   ) where
 
@@ -38,6 +39,7 @@ data BuildConfig = BuildConfig { _appName      :: String
                                , _appPath      :: FilePath
                                , _devPath      :: FilePath
                                , _assetsPath   :: FilePath
+                               , _depsPath     :: FilePath
                                , _targetPath   :: FilePath
                                }
 

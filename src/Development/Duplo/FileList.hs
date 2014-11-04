@@ -21,21 +21,23 @@ import Control.Lens.TH (makeLenses)
 
 data File = File { _filePath :: FilePath
                  , _fileBase :: FilePath
-                 }
+                 } deriving (Show)
 type Copy = (FilePath, FilePath)
 
 makeLenses ''File
 
 -- | Given a base and a list of relative paths, transform into file objects
 makeFiles :: FilePath -> [FilePath] -> [File]
-makeFiles base = fmap (makeFile base)
+makeFiles = fmap . makeFile
 
+-- | Given a base and a relative path, return a file record containing the
+-- absolute path with the base
 makeFile :: FilePath -> FilePath -> File
 makeFile base relPath =
     setPath absPath
   where
     constructor = File { _fileBase = base }
-    absPath     = base ++ relPath
+    absPath     = base </> relPath
     setPath     = (constructor &) . (filePath .~)
 
 -- | Collapse lists of possible files and return the first file that exists

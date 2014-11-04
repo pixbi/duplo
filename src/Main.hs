@@ -42,6 +42,7 @@ main = do
   let appPath         = cwd </> "app/"
   let devPath         = cwd </> "dev/"
   let assetsPath      = appPath </> "assets/"
+  let depsPath        = cwd </> "components/"
   let targetPath      = cwd </> "public/"
 
   -- What to build
@@ -92,6 +93,7 @@ main = do
                                   , C._appPath      = appPath
                                   , C._devPath      = devPath
                                   , C._assetsPath   = assetsPath
+                                  , C._depsPath     = depsPath
                                   , C._targetPath   = targetPath
                                   }
   -- Environment when node modules are used

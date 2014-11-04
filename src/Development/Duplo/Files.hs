@@ -33,7 +33,7 @@ data File        = File { _filePath    :: FilePath
                         , _fileContent :: String
                         -- Is this part of the root project?
                         , _isRoot      :: Bool
-                        }
+                        } deriving (Show)
 
 makeLenses ''File
 
