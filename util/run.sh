@@ -115,6 +115,6 @@ esac
 eval "$( make_duplo_cmd )"
 
 # Infinite loop
-if [ $forever ]; then
+if $forever; then
   while true; do read _; done
 fi
