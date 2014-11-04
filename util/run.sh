@@ -85,6 +85,9 @@ case "$cmd" in
     # Trap Ctrl-C
     trap cleanup SIGINT
 
+    # Run build system
+    eval "$( make_duplo_cmd )"
+
     # Infinite loop
     while true; do read _; done
     ;;
@@ -106,7 +109,6 @@ case "$cmd" in
     ;;
 
 esac
-
 
 # Run build system
 eval "$( make_duplo_cmd )"
