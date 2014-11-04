@@ -77,8 +77,10 @@ case "$cmd" in
     # The server
     $root/node_modules/.bin/http-server public -c-1 -p $PORT &
 
-    # The watcher
+    # The watchers
     $root/bin/spy run "$( make_duplo_cmd )" $cwd/app/ -n &
+    $root/bin/spy run "$( make_duplo_cmd )" $cwd/dev/ -n &
+    $root/bin/spy run "$( make_duplo_cmd )" $cwd/components/ -n &
 
     # Kill all child processes
     function cleanup() {
