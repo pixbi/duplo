@@ -36,6 +36,11 @@ build :: C.BuildConfig
       -> Action ()
 build config = \ out -> do
   logAction "Building markups"
+  -- TODO: using Jade's include system means that all files are loaded by
+  -- the Jade compiler and Shake has no visibility into file state. We
+  -- cannot cache anything that is Jade. Perhaps we could compile the Jade
+  -- ourselves?
+  alwaysRerun
 
   let cwd          = config ^. C.cwd
   let bin          = config ^. C.bin
