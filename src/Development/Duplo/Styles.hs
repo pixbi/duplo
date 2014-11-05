@@ -38,6 +38,7 @@ build config = \ out -> do
                      , "components/*/app/styl/reset.styl"
                      , "components/*/app/styl/main.styl"
                      , "components/*/app/modules//index.styl"
+                     , "app/modules//*.styl"
                      , "components/*/app/modules//*.styl"
                      ]
 
