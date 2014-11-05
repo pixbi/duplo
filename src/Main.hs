@@ -12,6 +12,8 @@ import Development.Duplo.Static as Static
 import Development.Duplo.Git as Git
 import qualified Development.Duplo.Config as C
 import Control.Lens hiding (Action)
+import Data.ByteString.Base64 (decode)
+import Data.ByteString.Char8 (pack, unpack)
 
 main :: IO ()
 main = do
@@ -24,7 +26,7 @@ main = do
   -- Build mode, for dependency selection
   duploMode  <- fromMaybe "" <$> lookupEnv "DUPLO_MODE"
   -- Application parameter
-  duploIn    <- fromMaybe "" <$> lookupEnv "DUPLO_IN"
+  duploIn'   <- fromMaybe "" <$> lookupEnv "DUPLO_IN"
   -- Current directory
   cwd        <- fromMaybe "" <$> lookupEnv "CWD"
   -- Duplo directory
@@ -34,6 +36,12 @@ main = do
   let bumpLevel = if   bumpLevel' `elem` ["patch", "minor", "major"]
                   then bumpLevel'
                   else "patch"
+
+  -- Decode
+  let duploIn'' = decode $ pack duploIn'
+  let duploIn   = case duploIn'' of
+                    Left _      -> ""
+                    Right input -> unpack input
 
   -- Paths to various relevant directories
   let nodeModulesPath = duploPath </> "node_modules/.bin/"

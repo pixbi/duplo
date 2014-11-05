@@ -41,7 +41,7 @@ data BuildConfig = BuildConfig { _appName      :: String
                                , _assetsPath   :: FilePath
                                , _depsPath     :: FilePath
                                , _targetPath   :: FilePath
-                               }
+                               } deriving (Show)
 
 makeLenses ''BuildConfig
 

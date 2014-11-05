@@ -48,13 +48,15 @@ build config = \ out -> do
   let duploIn = unpack $
                   -- No newlines
                   replace (pack "\n") (pack "") $
-                    -- Escape double-quotes
-                    replace (pack "\"") (pack "\\\"") $
-                      pack input
+                    -- Single-quotes
+                    replace (pack "'") (pack "\\'") $
+                      -- Double-quotes
+                      replace (pack "\\") (pack "\\\\") $
+                        pack input
 
   -- Inject environment variables
-  let envVars = "var DUPLO_ENV = DUPLO_ENV || \"" ++ env ++ "\";\n"
-             ++ "var DUPLO_IN = DUPLO_IN || \"" ++ duploIn ++ "\";\n"
+  let envVars = "var DUPLO_ENV = \"" ++ env ++ "\";\n"
+             ++ "var DUPLO_IN = JSON.parse('" ++ duploIn ++ "' || '{}');\n"
 
   -- Just pass through without compilation
   let compiler = bin </> "echo.sh"
