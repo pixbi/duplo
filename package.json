@@ -6,7 +6,7 @@
     "prepublish": "cabal sandbox init; cabal configure; cabal install --only-dependencies -j8 --reinstall --force-reinstall; cabal build"
   },
   "bin": {
-    "duplo": "util/run.sh"
+    "duplo": "util/duplo.sh"
   },
   "dependencies": {
     "http-server": "^0.7.2",
