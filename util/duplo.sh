@@ -75,7 +75,7 @@ case "$cmd" in
     cmd=build
 
     # The server
-    $root/node_modules/.bin/http-server public -c-1 -p $PORT &
+    $root/dist/build/server/server $PORT &
 
     # The watchers
     $root/bin/spy run "$( make_duplo_cmd )" $cwd/app/ -n &

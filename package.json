@@ -9,7 +9,6 @@
     "duplo": "util/duplo.sh"
   },
   "dependencies": {
-    "http-server": "^0.7.2",
     "jade": "^1.7.0",
     "stylus": "^0.49.1"
   },
