@@ -17,8 +17,6 @@ import Data.ByteString.Char8 (pack, unpack)
 import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
 import Control.Monad (void)
 
-import Data.HashMap.Strict (empty)
-
 main :: IO ()
 main = do
   -- Command-line arguments
@@ -75,7 +73,7 @@ main = do
 
   -- Report back what's given for confirmation
   let appInfo = "\n"
-             ++ ">> Parameters\n"
+             ++ ">> Configuration\n"
              ++ "Application name                   : "
              ++ appName' ++ "\n"
              ++ "Application version                : "
@@ -88,11 +86,11 @@ main = do
              ++ duploPath ++ "\n"
   let envInfo = "\n"
              ++ ">> Environment Variables\n"
-             ++ "Runtime environment - `DUPLO_ENV`  : "
+             ++ "DUPLO_ENV (runtime environment)    : "
              ++ duploEnv ++ "\n"
-             ++ "Build mode          - `DUPLO_MODE` : "
+             ++ "DUPLO_MODE (build mode)            : "
              ++ duploMode ++ "\n"
-             ++ "App parameters      - `DUPLO_IN`   : "
+             ++ "DUPLO_IN (app parameters)          : "
              ++ duploIn ++ "\n"
 
   -- We don't always show the environment info, or the app info, depending

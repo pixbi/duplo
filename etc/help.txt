@@ -1,15 +1,15 @@
 
-
 Usage: duplo [command]
 
 Commands:
 
-    duplo version     Displays the version for this duplo installation.
+    duplo info        Displays various info for this duplo installation.
+    duplo version     Just like `duplo info`
     duplo help        Displays all commands.
+
     duplo new <name>  Scaffolds a new duplo repo in the current directory.
 
     duplo build       Builds the project. `DUPLO_ENV` defaults to `dev`.
-
     duplo dev         starts a webserver, watches for file changes, and builds
                       in development environment.
     duplo live        like `duplo dev` but builds in production environment
@@ -17,5 +17,4 @@ Commands:
     duplo patch       Bumps the patch version.
     duplo minor       Bumps the minor version.
     duplo major       Bumps the major version.
-
 

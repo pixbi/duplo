@@ -54,25 +54,31 @@ function make_duplo_cmd() {
        "$root"/dist/build/duplo/duplo "$cmd"
 }
 
+# Display duplo's version
+function display_version() {
+  echo ""
+  # Love Cabal's manifest format!
+  cat $root"/duplo.cabal" |
+    # Get the version line
+    grep "^version:" |
+    # Extract the version
+    awk -F":" '{print $2}' |
+    # Remove spaces
+    tr -d ' ' |
+    # Proper display
+    awk '{ print "duplo v" $0; }'
+  echo ""
+}
+
+# Always display duplo version
+display_version
 
 # Perform any setup and actions that Shake is not good at.
 case "$cmd" in
 
   # Normalize
-  version|ver|-v|--ver|--version)
+  info|version|ver|-v|--ver|--version)
     cmd=version
-
-    echo ""
-    # Love Cabal's manifest format!
-    cat $root"/duplo.cabal" |
-      # Get the version line
-      grep "^version:" |
-      # Extract the version
-      awk -F":" '{print $2}' |
-      # Remove spaces
-      tr -d ' ' |
-      # Proper display
-      awk '{ print "duplo v" $0; }'
     ;;
 
   # Patch by default
@@ -129,7 +135,9 @@ case "$cmd" in
 
   # Default to help
   *)
+    # Then the help text
     cat $root"/etc/help.txt"
+
     exit 0
     ;;
 
