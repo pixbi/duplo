@@ -7,7 +7,9 @@
 
 # Arguments
 cmd=$1
-verbose=$2
+arg1=$2
+arg2=$3
+arg3=$4
 
 # Defaults
 
@@ -34,7 +36,7 @@ root="$( cd "$dir"/../ && pwd )"
 forever=false
 
 # Do we want extra info?
-if [ "$verbose" = "--verbose" ]; then
+if [ "$2" = "--verbose" ]; then
   verbose="true"
 else
   verbose="false"
@@ -51,7 +53,7 @@ function make_duplo_cmd() {
        DUPLO_IN="$DUPLO_IN" \
        DUPLO_VERBOSE="$verbose" \
        DUPLO_BUMP_LEVEL="$DUPLO_BUMP_LEVEL" \
-       "$root"/dist/build/duplo/duplo "$cmd"
+       "$root"/dist/build/duplo/duplo "$cmd" "$arg1" "$arg2" "$arg3"
 }
 
 # Display duplo's version
@@ -132,6 +134,12 @@ case "$cmd" in
   # Create a new project
   new|init)
     cmd=init
+
+    if [ -z "$arg1" -o -z "$arg2" ]; then
+      echo "There must be a name and a repo."
+      echo ""
+      exit 1
+    fi
     ;;
 
   # Other allowed commands are passed through

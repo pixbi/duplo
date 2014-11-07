@@ -3,19 +3,24 @@ Usage: duplo [command]
 
 Commands:
 
-    duplo info         Displays various info for this duplo installation.
-    duplo version      Just like `duplo info`
-    duplo help         Displays all commands.
+    duplo info                Displays various info for this duplo installation.
+    duplo version             Just like `duplo info`
+    duplo help                Displays all commands.
 
-    duplo init         Scaffolds a new duplo repo in the current directory.
-    duplo new          Just like `duplo init`
+    duplo init <user> <repo>  Scaffolds a new duplo repo in the current
+                              directory. `user` is a GitHub user handle and
+                              `repo` is the repo name.  `<user>/<repo>` MUST
+                              conform to Github-format (e.g. `pixbi/duplo`) as
+                              it is used to set up the Git remote endpoint.
+    duplo new <user> <repo>   Just like `duplo init`
 
-    duplo build        Builds the project. `DUPLO_ENV` defaults to `dev`.
-    duplo dev          starts a webserver, watches for file changes, and builds
-                       in development environment.
-    duplo live         like `duplo dev` but builds in production environment
+    duplo build               Builds the project. `DUPLO_ENV` defaults to `dev`.
+    duplo dev                 starts a webserver, watches for file changes,
+                              and builds in development environment.
+    duplo live                like `duplo dev` but builds in production
+                              environment
 
-    duplo patch        Bumps the patch version.
-    duplo minor        Bumps the minor version.
-    duplo major        Bumps the major version.
+    duplo patch               Bumps the patch version.
+    duplo minor               Bumps the minor version.
+    duplo major               Bumps the major version.
 

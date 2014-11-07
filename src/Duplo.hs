@@ -163,14 +163,27 @@ main = do
       Git.commit buildConfig bumpLevel
 
     "init" ~> do
-      let name = cmdArgs ^. element 0
+      let user = cmdArgs ^. element 0
+      let repo = cmdArgs ^. element 1
+      let name = user ++ "/" ++ repo
+      let src  = miscPath </> "template/"
+      let dest = cwd ++ "/"
 
       logAction $ "Creating new duplo project " ++ name
 
-      -- Copy the starting template
-      let src  = miscPath </> "template/*"
-      let dest = (cwd </> name) ++ "/"
-      command_ [] (utilPath </> "init.sh") [src, dest]
+      -- Initialize with template
+      command_ [] (utilPath </> "template.sh") [src, dest]
+
+      -- Update fields
+      Just appInfo <- liftIO $ runMaybeT $ I.readManifest
+      let newAppInfo = appInfo { I.name = repo
+                               , I.repo = name
+                               }
+      -- Commit app info
+      liftIO $ I.writeManifest newAppInfo
+
+      -- Initalize git
+      command_ [] (utilPath </> "gitinit.sh") [name]
 
       logAction $ "Project created at " ++ dest
 
