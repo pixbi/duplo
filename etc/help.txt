@@ -4,23 +4,18 @@ Usage: duplo [command]
 
 Commands:
 
-    duplo version           Displays the version for this duplo installation.
-    duplo help              Displays all commands.
-    duplo new [user] [repo] Scaffolds a new duplo repo with a GitHub user
-                            handle and a repo name. The repo is assumed to
-                            already exist.
+    duplo version     Displays the version for this duplo installation.
+    duplo help        Displays all commands.
+    duplo new <name>  Scaffolds a new duplo repo in the current directory.
 
-    duplo build             Builds the project. Pass in `dev` to `DUPLO_ENV`
-                            environment variable to build in development mode.
-    duplo serve             Runs `duplo build`, starts a server, and rebuilds
-                            on file change.
+    duplo build       Builds the project. `DUPLO_ENV` defaults to `dev`.
 
-    duplo dev               Short-hand for `env DUPLO_ENV=dev duplo serve`.
-    duplo staging           Short-hand for `env DUPLO_ENV=staging duplo serve`.
-    duplo live              Short-hand for `env DUPLO_ENV=live duplo serve`.
+    duplo dev         starts a webserver, watches for file changes, and builds
+                      in development environment.
+    duplo live        like `duplo dev` but builds in production environment
 
-    duplo patch             Bumps the patch version.
-    duplo minor             Bumps the minor version.
-    duplo major             Bumps the major version.
+    duplo patch       Bumps the patch version.
+    duplo minor       Bumps the minor version.
+    duplo major       Bumps the major version.
 
 

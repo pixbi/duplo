@@ -16,8 +16,7 @@ A opinionated, framework-less build tool for web applications
 
 * `duplo version` displays the version for this duplo installation.
 * `duplo help` displays all commands.
-* `duplo new <user> <repo>` scaffolds a new duplo repo with a GitHub user
-  handle and a repo name. The repo is assumed to already exist.
+* `duplo new <name>` scaffolds a new duplo repo in the current directory.
 * `duplo build` builds the project. `DUPLO_ENV` defaults to `dev`.
 * `duplo dev`: starts a webserver, watches for file changes, and builds in
   development environment.

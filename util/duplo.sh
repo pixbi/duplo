@@ -35,10 +35,8 @@ forever=false
 
 # Do we want extra info?
 if [ "$verbose" = "--verbose" ]; then
-  echo "true"
   verbose="true"
 else
-  echo "false"
   verbose="false"
 fi
 
@@ -64,8 +62,9 @@ case "$cmd" in
   version|ver|-v|--ver|--version)
     cmd=version
 
-    # This is why we love Cabal
-    cat duplo.cabal |
+    echo ""
+    # Love Cabal's manifest format!
+    cat $root"/duplo.cabal" |
       # Get the version line
       grep "^version:" |
       # Extract the version
