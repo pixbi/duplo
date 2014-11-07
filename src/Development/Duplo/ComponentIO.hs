@@ -12,7 +12,7 @@ module Development.Duplo.ComponentIO
   ) where
 
 import Control.Applicative ((<$>), (<*>))
-import Development.Shake
+import Development.Shake hiding (doesFileExist)
 import Data.Aeson ((.:), encode, decode, FromJSON, ToJSON, Object)
 import GHC.Generics (Generic)
 import Data.Text (breakOn)
@@ -20,11 +20,12 @@ import qualified Data.Text as T (unpack, pack)
 import Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as BS (unpack, pack)
 import System.FilePath.Posix (splitDirectories)
-import Control.Monad.IO.Class (MonadIO)
 import Data.HashMap.Strict (HashMap, empty)
+import Control.Monad.Trans.Maybe (MaybeT(..))
+import Control.Monad.Trans.Class (lift)
+import System.Directory (doesFileExist)
 
 -- | Each application must have a `component.json`
-manifestPath :: String
 manifestPath = "component.json"
 
 data AppInfo = AppInfo { name         :: String
@@ -42,38 +43,34 @@ data AppInfo = AppInfo { name         :: String
 instance FromJSON AppInfo
 instance ToJSON AppInfo
 
--- | Need an IO for Maybe type to lift
-instance MonadIO Maybe
-
-readManifest :: IO AppInfo
+readManifest :: MaybeT IO AppInfo
 readManifest = do
-    manifest <- readFile manifestPath
-    let appInfo = decode (BS.pack manifest) :: Maybe AppInfo
+    exists <- liftIO $ doesFileExist manifestPath
 
-    case appInfo of
-      Just info -> return info
-      -- TODO: use MaybeT
-      Nothing   -> return $ AppInfo { name    = ""
-                                    , version = ""
-                                    , repo    = "owner/repo"
-                                    , dependencies = empty
-                                    , images  = []
-                                    , scripts = []
-                                    , styles  = []
-                                    , templates = []
-                                    , fonts = []
-                                    }
+    if   exists
+    then readManifest' manifestPath
+    else MaybeT $ return Nothing
+
+readManifest' :: FilePath -> MaybeT IO AppInfo
+readManifest' path = do
+    manifest <- liftIO $ readFile path
+    let maybeAppInfo = decode (BS.pack manifest) :: Maybe AppInfo
+
+    case maybeAppInfo of
+      Nothing -> MaybeT $ return Nothing
+      Just a  -> MaybeT $ return $ Just a
 
 writeManifest :: AppInfo -> IO ()
 writeManifest = (writeFile manifestPath) . BS.unpack . encode
 
 -- | Get the app's Component.IO ID
 appId :: AppInfo -> String
-appId appInfo =
-    owner ++ "-" ++ appRepo'
-  where
-    appRepo           = repo appInfo
-    (owner : appRepo' : _) = splitDirectories appRepo
+appId appInfo = parseRepoInfo $ splitDirectories $ repo appInfo
+
+-- | Parse the repo info into an app ID
+parseRepoInfo :: [String] -> String
+parseRepoInfo (owner : appRepo : _) = owner ++ "-" ++ appRepo
+parseRepoInfo _ = ""
 
 -- | Given a possible component ID, return the user and the repo
 -- constituents

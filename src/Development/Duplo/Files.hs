@@ -22,6 +22,7 @@ import Development.Duplo.ComponentIO (appId)
 import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)
 import Control.Monad.Trans.Class (lift)
 import qualified Development.Duplo.ComponentIO as I
+import Control.Monad.Trans.Maybe (MaybeT(..))
 
 type FileName    = String
 type FileContent = String
@@ -37,12 +38,12 @@ data File        = File { _filePath    :: FilePath
 
 makeLenses ''File
 
-readFile :: FilePath -> FilePath -> Action File
+readFile :: FilePath -> FilePath -> MaybeT Action File
 readFile cwd path = do
   let (fileDir, fileName) = parseFilePath path
-  fileContent <- readFile' path
-  appInfo <- liftIO I.readManifest
-  let appId' = appId appInfo
+  fileContent    <- lift $ readFile' path
+  Just appInfo   <- liftIO $ runMaybeT $ I.readManifest
+  let appId'      = appId appInfo
   let componentId = parseComponentId cwd appId' fileDir
   let isRoot      = componentId == appId'
   return $ File path fileDir fileName componentId fileContent isRoot

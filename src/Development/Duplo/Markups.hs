@@ -30,17 +30,19 @@ import qualified Development.Duplo.FileList as FileList (filePath)
 import Data.String.Utils (replace)
 import Data.Maybe (fromMaybe)
 import Control.Applicative ((<$>))
+import Control.Monad.Trans.Maybe (MaybeT(..))
+import Control.Monad.Trans.Class (lift)
 
 build :: C.BuildConfig
       -> FilePath
-      -> Action ()
+      -> MaybeT Action ()
 build config = \ out -> do
-  logAction "Building markups"
+  lift $ logAction "Building markups"
   -- TODO: using Jade's include system means that all files are loaded by
   -- the Jade compiler and Shake has no visibility into file state. We
   -- cannot cache anything that is Jade. Perhaps we could compile the Jade
   -- ourselves?
-  alwaysRerun
+  lift $ alwaysRerun
 
   let cwd          = config ^. C.cwd
   let bin          = config ^. C.bin
@@ -59,7 +61,7 @@ build config = \ out -> do
                      ]
 
   -- Merge both types of paths
-  paths <- expandPaths cwd staticPaths dynamicPaths
+  paths <- lift $ expandPaths cwd staticPaths dynamicPaths
 
   -- Path to the compiler
   let compiler = bin </> "jade"
@@ -78,18 +80,18 @@ build config = \ out -> do
   let defaultIndex    = makeFile defaultsPath "index.html"
   let possibleSources = [devPath, assetsPath]
   let possibleIndexes = fmap (flip makeFile "index.html") possibleSources
-  fromIndex <- fromMaybe defaultIndex <$> collapseFileList possibleIndexes
-  indexContent <- readFile' $ fromIndex ^. FileList.filePath
+  fromIndex <- lift $ fromMaybe defaultIndex <$> collapseFileList possibleIndexes
+  indexContent <- lift $ readFile' $ fromIndex ^. FileList.filePath
 
   -- Inject compiled code into the index
   let indexWithMarkup = replace "<body>" ("<body>" ++ compiled) indexContent
 
   -- Inject CSS/JS references
-  refTags <- readFile' refTagsPath
+  refTags <- lift $ readFile' refTagsPath
   let indexWithRefs   = replace "</head>" (refTags ++ "</head>") indexWithMarkup
 
   -- Write it to disk
-  writeFileChanged out indexWithRefs
+  lift $ writeFileChanged out indexWithRefs
 
 -- | Rewrite paths to external files (i.e. include statements) because Jade
 -- doesn't accept more than one path to look up includes. It is passed all

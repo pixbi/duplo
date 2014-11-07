@@ -14,6 +14,7 @@ import Data.Text (unpack, pack, splitOn)
 import Data.Maybe (fromMaybe)
 import Control.Applicative ((<$>))
 import Debug.Trace (trace)
+import Control.Monad.Trans.Maybe (MaybeT(..))
 
 type Level      = String
 type Version    = String
@@ -29,8 +30,8 @@ commit :: C.BuildConfig
        -> Action ()
 commit config level = do
     let utilPath = config ^. C.utilPath
-    manifest <- liftIO I.readManifest
-    let version = I.version manifest
+    Just appInfo <- liftIO $ runMaybeT $ I.readManifest
+    let version = I.version appInfo
 
     -- First stash any outstanding change
     command_ [] "git" ["stash"]
@@ -39,10 +40,10 @@ commit config level = do
 
     -- Increment version according to level
     let newVersion = incrementVersion level version
-    -- Update manifest
-    let newManifest = updateVersion manifest newVersion
-    -- Commit manifest
-    liftIO $ I.writeManifest newManifest
+    -- Update app info
+    let newAppInfo = updateVersion appInfo newVersion
+    -- Commit app info
+    liftIO $ I.writeManifest newAppInfo
 
     -- Commit with the version
     command_ [] (utilPath </> "commit.sh") [newVersion]

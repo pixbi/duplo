@@ -1,12 +1,12 @@
 import Control.Applicative ((<$>))
 import Data.Maybe (fromMaybe)
-import Development.Duplo.Styles as Styles
 import Development.Duplo.Utilities (logAction)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
 import System.Environment (lookupEnv, getArgs)
 import qualified Development.Duplo.ComponentIO as I
 import Development.Duplo.Markups as Markups
+import Development.Duplo.Styles as Styles
 import Development.Duplo.Scripts as Scripts
 import Development.Duplo.Static as Static
 import Development.Duplo.Git as Git
@@ -14,12 +14,16 @@ import qualified Development.Duplo.Config as C
 import Control.Lens hiding (Action)
 import Data.ByteString.Base64 (decode)
 import Data.ByteString.Char8 (pack, unpack)
+import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
+import Control.Monad (void)
+
+import Data.HashMap.Strict (empty)
 
 main :: IO ()
 main = do
   -- Command-line arguments
   args <- getArgs
-  let shakeCommand = head args
+  let (cmd:cmdArgs) = args
 
   -- Environment - e.g. dev, staging, live
   duploEnv   <- fromMaybe "" <$> lookupEnv "DUPLO_ENV"
@@ -48,7 +52,8 @@ main = do
   -- Paths to various relevant directories
   let nodeModulesPath = duploPath </> "node_modules/.bin/"
   let utilPath        = duploPath </> "util/"
-  let defaultsPath    = duploPath </> "etc/static/"
+  let miscPath        = duploPath </> "etc/"
+  let defaultsPath    = miscPath </> "static/"
   let appPath         = cwd </> "app/"
   let devPath         = cwd </> "dev/"
   let assetsPath      = appPath </> "assets/"
@@ -61,10 +66,12 @@ main = do
   let targetMarkup = targetPath </> "index.html"
 
   -- Gather information about this project
-  let getProperty = flip fmap I.readManifest
-  appName'    <- getProperty I.name
-  appVersion' <- getProperty I.version
-  appId'      <- getProperty I.appId
+  appNameMaybe    <- runMaybeT $ getProperty I.name
+  appVersionMaybe <- runMaybeT $ getProperty I.version
+  appIdMaybe      <- runMaybeT $ getProperty I.appId
+  let appName'     = maybe "" id appNameMaybe
+  let appVersion'  = maybe "" id appVersionMaybe
+  let appId'       = maybe "" id appIdMaybe
 
   -- Report back what's given for confirmation
   let appInfo = "\n"
@@ -88,8 +95,9 @@ main = do
              ++ "App parameters      - `DUPLO_IN`   : "
              ++ duploIn ++ "\n"
 
-  -- We're displaying the version or we're in verbose mode
-  if   shakeCommand == "version"
+  -- We don't always show the environment info, or the app info, depending
+  -- on the mode.
+  if   cmd == "version"
   then putStrLn appInfo
   else if   verbose == "true"
        then putStrLn $ appInfo ++ envInfo
@@ -117,13 +125,13 @@ main = do
   let buildConfigWithNode = buildConfig & C.bin .~ nodeModulesPath
 
   shake shakeOptions $ do
-    targetScript *> Scripts.build buildConfig
-    targetStyle  *> Styles.build buildConfigWithNode
-    targetMarkup *> Markups.build buildConfigWithNode
+    targetScript *> (void . runMaybeT . Scripts.build buildConfig)
+    targetStyle  *> (void . runMaybeT . Styles.build buildConfigWithNode)
+    targetMarkup *> (void . runMaybeT . Markups.build buildConfigWithNode)
 
     -- Manually bootstrap Shake
     action $ do
-      need [shakeCommand]
+      need [cmd]
 
     -- Handling static assets
     (Static.qualify buildConfig) &?> Static.build buildConfig
@@ -141,7 +149,7 @@ main = do
 
     "version" ~> do
       -- Version information should already have
-      putNormal ""
+      return ()
 
     "build" ~> do
       -- Copy over static files first
@@ -157,5 +165,21 @@ main = do
       Git.commit buildConfig bumpLevel
 
     "new" ~> do
-      logAction "TODO: this needs to be implemented"
-      putNormal ""
+      let name = cmdArgs ^. element 0
+
+      logAction $ "Creating new duplo project " ++ name
+
+      -- Copy the starting template
+      let src  = miscPath </> "template"
+      let dest = cwd </> name
+      putNormal $ src ++ " -> " ++ dest
+      command_ [] "cp" ["-r", src, dest]
+
+      logAction $ "Project created at " ++ dest
+
+-- | Get a particular manifest property property
+-- | TODO: use Lens?
+getProperty :: (I.AppInfo -> a) -> MaybeT IO a
+getProperty accessor = do
+    appInfo <- I.readManifest
+    return $ accessor appInfo

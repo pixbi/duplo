@@ -18,6 +18,8 @@ import Development.Duplo.Files
 import Development.Shake.FilePath ((</>))
 import Control.Lens hiding (Action)
 import qualified Development.Duplo.Config as C
+import Control.Monad.Trans.Maybe (MaybeT(..))
+import Control.Monad.Trans.Class (lift)
 
 type FileProcessor = [File] -> [File]
 
@@ -58,9 +60,9 @@ compile :: C.BuildConfig
         -- The processing lambda
         -> FileProcessor
         -- The compiled content
-        -> Action String
+        -> MaybeT Action String
 compile config compiler params paths preprocess = do
-  mapM (putNormal . ("Including " ++)) paths
+  mapM (lift . putNormal . ("Including " ++)) paths
 
   let cwd = config ^. C.cwd
 
@@ -77,8 +79,8 @@ compile config compiler params paths preprocess = do
   let concatenated = (intercalate "\n" contents) ++ "\n"
 
   -- Pass it through the compiler
-  putNormal $ "Compiling with: " ++ compiler ++ " " ++ intercalate " " params
-  Stdout compiled <- command [Stdin concatenated] compiler params
+  lift $ putNormal $ "Compiling with: " ++ compiler ++ " " ++ intercalate " " params
+  Stdout compiled <- lift $ command [Stdin concatenated] compiler params
 
   -- The output
   return compiled

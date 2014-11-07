@@ -16,15 +16,17 @@ import Data.Text (replace, pack, unpack)
 import Development.Duplo.Files (File(..))
 import qualified Development.Duplo.Config as C
 import Control.Lens hiding (Action)
+import Control.Monad.Trans.Maybe (MaybeT(..))
+import Control.Monad.Trans.Class (lift)
 
       -- The environment
 build :: C.BuildConfig
       -- The output file
       -> FilePath
       -- Doesn't need anything in return
-      -> Action ()
+      -> MaybeT Action ()
 build config = \ out -> do
-  logAction "Building scripts"
+  lift $ logAction "Building scripts"
 
   let cwd   = config ^. C.cwd
   let bin   = config ^. C.bin
@@ -42,7 +44,7 @@ build config = \ out -> do
                      ]
 
   -- Merge both types of paths
-  paths <- expandPaths cwd staticPaths dynamicPaths
+  paths <- lift $ expandPaths cwd staticPaths dynamicPaths
 
   -- Sanitize input
   let duploIn = unpack $
@@ -69,4 +71,4 @@ build config = \ out -> do
     in  envFile : files
 
   -- Write it to disk
-  writeFileChanged out compiled
+  lift $ writeFileChanged out compiled
