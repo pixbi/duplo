@@ -2,10 +2,12 @@
 
 # NOTE: the heavy-lifting should be handled by Shake. This is simply a tiny
 # entry point to handle actions that Shake does not excel in, such as starting
-# long-running tasks like a web server.
+# long-running tasks like a web server. Ultimately we want this to be in
+# Haskell as well. This is just easier to get started.
 
 # Arguments
 cmd=$1
+verbose=$2
 
 # Defaults
 
@@ -31,6 +33,15 @@ root="$( cd "$dir"/../ && pwd )"
 # Should we go into infinite loop?
 forever=false
 
+# Do we want extra info?
+if [ "$verbose" = "--verbose" ]; then
+  echo "true"
+  verbose="true"
+else
+  echo "false"
+  verbose="false"
+fi
+
 
 # Construct the command to invoke duplo
 function make_duplo_cmd() {
@@ -40,6 +51,7 @@ function make_duplo_cmd() {
        DUPLO_ENV="$DUPLO_ENV" \
        DUPLO_MODE="$DUPLO_MODE" \
        DUPLO_IN="$DUPLO_IN" \
+       DUPLO_VERBOSE="$verbose" \
        DUPLO_BUMP_LEVEL="$DUPLO_BUMP_LEVEL" \
        "$root"/dist/build/duplo/duplo "$cmd"
 }
@@ -50,6 +62,8 @@ case "$cmd" in
 
   # Normalize
   version|ver|-v|--ver|--version)
+    cmd=version
+
     # This is why we love Cabal
     cat duplo.cabal |
       # Get the version line
@@ -60,8 +74,6 @@ case "$cmd" in
       tr -d ' ' |
       # Proper display
       awk '{ print "duplo v" $0; }'
-
-    exit 0
     ;;
 
   # Patch by default

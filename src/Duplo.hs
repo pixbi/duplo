@@ -27,6 +27,8 @@ main = do
   duploMode  <- fromMaybe "" <$> lookupEnv "DUPLO_MODE"
   -- Application parameter
   duploIn'   <- fromMaybe "" <$> lookupEnv "DUPLO_IN"
+  -- Print extra info?
+  verbose    <- fromMaybe "" <$> lookupEnv "DUPLO_VERBOSE"
   -- Current directory
   cwd        <- fromMaybe "" <$> lookupEnv "CWD"
   -- Duplo directory
@@ -65,26 +67,33 @@ main = do
   appId'      <- getProperty I.appId
 
   -- Report back what's given for confirmation
-  putStr $ "\n"
-        ++ ">> Parameters\n"
-        ++ "Application name                   : "
-        ++ appName' ++ "\n"
-        ++ "Application version                : "
-        ++ appVersion' ++ "\n"
-        ++ "Component.IO repo ID               : "
-        ++ appId' ++ "\n"
-        ++ "Current working directory          : "
-        ++ cwd ++ "\n"
-        ++ "duplo is installed at              : "
-        ++ duploPath ++ "\n"
-        ++ "\n"
-        ++ ">> Environment Variables\n"
-        ++ "Runtime environment - `DUPLO_ENV`  : "
-        ++ duploEnv ++ "\n"
-        ++ "Build mode          - `DUPLO_MODE` : "
-        ++ duploMode ++ "\n"
-        ++ "App parameters      - `DUPLO_IN`   : "
-        ++ duploIn ++ "\n"
+  let appInfo = "\n"
+             ++ ">> Parameters\n"
+             ++ "Application name                   : "
+             ++ appName' ++ "\n"
+             ++ "Application version                : "
+             ++ appVersion' ++ "\n"
+             ++ "Component.IO repo ID               : "
+             ++ appId' ++ "\n"
+             ++ "Current working directory          : "
+             ++ cwd ++ "\n"
+             ++ "duplo is installed at              : "
+             ++ duploPath ++ "\n"
+  let envInfo = "\n"
+             ++ ">> Environment Variables\n"
+             ++ "Runtime environment - `DUPLO_ENV`  : "
+             ++ duploEnv ++ "\n"
+             ++ "Build mode          - `DUPLO_MODE` : "
+             ++ duploMode ++ "\n"
+             ++ "App parameters      - `DUPLO_IN`   : "
+             ++ duploIn ++ "\n"
+
+  -- We're displaying the version or we're in verbose mode
+  if   shakeCommand == "version"
+  then putStrLn appInfo
+  else if   verbose == "true"
+       then putStrLn $ appInfo ++ envInfo
+       else putStrLn envInfo
 
   -- Construct environment
   let buildConfig = C.BuildConfig { C._appName      = appName'
@@ -131,7 +140,7 @@ main = do
       logAction "Clean completed"
 
     "version" ~> do
-      -- By default it already outputs version information
+      -- Version information should already have
       putNormal ""
 
     "build" ~> do

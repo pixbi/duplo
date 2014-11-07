@@ -2,7 +2,6 @@ src/
 .cabal-sandbox/
 
 cabal.sandbox.config
-*.cabal
 Setup.hs
 
 *.hi
