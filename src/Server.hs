@@ -14,8 +14,6 @@ import Data.List (intercalate)
 import Control.Lens
 import System.FilePath.Posix (takeExtension)
 
-type Port = Int
-
 main = do
     -- Command-line arguments
     args     <- getArgs
