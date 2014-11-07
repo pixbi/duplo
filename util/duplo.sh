@@ -51,15 +51,15 @@ case "$cmd" in
   # Normalize
   version|ver|-v|--ver|--version)
     # This is why we love Cabal
-    cat duplo.cabal \
+    cat duplo.cabal |
       # Get the version line
-      | grep "^version:" \
+      grep "^version:" |
       # Extract the version
-      | awk -F":" '{print $2}' \
+      awk -F":" '{print $2}' |
       # Remove spaces
-      | tr -d ' ' \
+      tr -d ' ' |
       # Proper display
-      | awk '{ print "duplo v" $0; }'
+      awk '{ print "duplo v" $0; }'
 
     exit 0
     ;;
