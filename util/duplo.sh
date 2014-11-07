@@ -129,8 +129,13 @@ case "$cmd" in
     cmd=build
     ;;
 
+  # Create a new project
+  new|init)
+    cmd=init
+    ;;
+
   # Other allowed commands are passed through
-  new|build|clean)
+  build|clean)
     ;;
 
   # Default to help

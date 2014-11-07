@@ -162,16 +162,15 @@ main = do
 
       Git.commit buildConfig bumpLevel
 
-    "new" ~> do
+    "init" ~> do
       let name = cmdArgs ^. element 0
 
       logAction $ "Creating new duplo project " ++ name
 
       -- Copy the starting template
-      let src  = miscPath </> "template"
-      let dest = cwd </> name
-      putNormal $ src ++ " -> " ++ dest
-      command_ [] "cp" ["-r", src, dest]
+      let src  = miscPath </> "template/*"
+      let dest = (cwd </> name) ++ "/"
+      command_ [] (utilPath </> "init.sh") [src, dest]
 
       logAction $ "Project created at " ++ dest
 
