@@ -52,9 +52,13 @@ case "$cmd" in
   version|ver|-v|--ver|--version)
     # This is why we love Cabal
     cat duplo.cabal \
+      # Get the version line
       | grep "^version:" \
+      # Extract the version
       | awk -F":" '{print $2}' \
+      # Remove spaces
       | tr -d ' ' \
+      # Proper display
       | awk '{ print "duplo v" $0; }'
 
     exit 0
