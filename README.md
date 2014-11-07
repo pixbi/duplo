@@ -5,7 +5,11 @@ A opinionated, framework-less build tool for web applications
 
 ## Installation
 
-    $ npm install -g duplo
+1. Get a [Mac](http://www.apple.com/mac/)
+2. Install [Homebrew](http://brew.sh/)
+3. Get [npm](http://npmjs.org/): `brew install npm`
+4. Get [GMP](https://gmplib.org/): `brew install gmp`
+5. Get [duplo](https://github.com/pixbi/duplo): `npm install -g duplo`
 
 
 ## Usage
