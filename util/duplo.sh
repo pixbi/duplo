@@ -50,7 +50,14 @@ case "$cmd" in
 
   # Normalize
   version|ver|-v|--ver|--version)
-    cmd=version
+    # This is why we love Cabal
+    cat duplo.cabal \
+      | grep "^version:" \
+      | awk -F":" '{print $2}' \
+      | tr -d ' ' \
+      | awk '{ print "duplo v" $0; }'
+
+    exit 0
     ;;
 
   # Patch by default
