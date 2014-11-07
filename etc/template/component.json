@@ -1,0 +1,11 @@
+{
+  "name": "repo-name",
+  "repo": "user/repo",
+  "version": "0.0.0",
+  "dependencies": {},
+  "scripts": [],
+  "styles": [],
+  "templates": [],
+  "images": [],
+  "fonts": []
+}

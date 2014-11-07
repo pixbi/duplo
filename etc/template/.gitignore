@@ -1,0 +1,5 @@
+.DS_*
+.shake*
+*.log
+public/
+components/
