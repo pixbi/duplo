@@ -99,6 +99,12 @@ deps config = do
   let targetPath = config ^. C.targetPath
   let devPath    = config ^. C.devPath
 
+  -- Make sure all these directories exist
+  let requiredPaths = [assetsPath, depsPath, targetPath, devPath]
+  let mkdir = \ dir -> command_ [] "mkdir" ["-p", dir]
+  existing <- filterM ((fmap not) . doesDirectoryExist) requiredPaths
+  mapM_ mkdir existing
+
   -- We want all asset files
   assetFiles    <- getDirectoryFiles assetsPath ["//*"]
   -- ... including those of dependencies
@@ -137,9 +143,9 @@ qualify config path =
 -- their own containing components
 getDepAssets :: FilePath -> Action [FilePath]
 getDepAssets depsPath = do
-    -- Get all dependencies' root directories
+    -- Get all dependencies' root directories.
     depNames         <- getDirectoryDirs depsPath
-    -- In this context, everything is relative to the asset directory
+    -- In this context, everything is relative to the asset directory.
     let depAssetDirs  = fmap ((depsPath </>) . (</> "app/assets")) depNames
     -- See if there are even assets.
     applicableDeps   <- filterM doesDirectoryExist depAssetDirs
