@@ -18,6 +18,7 @@ import qualified Development.Duplo.Config as C
 import Control.Lens hiding (Action)
 import Control.Monad.Trans.Maybe (MaybeT(..))
 import Control.Monad.Trans.Class (lift)
+import Development.Duplo.ComponentIO (extractCompVersions)
 
       -- The environment
 build :: C.BuildConfig
@@ -56,9 +57,13 @@ build config = \ out -> do
                       replace (pack "\\") (pack "\\\\") $
                         pack input
 
-  -- Inject environment variables
+  -- Figure out each component's version
+  compVers <- liftIO $ extractCompVersions cwd
+
+  -- Inject global/environment variables
   let envVars = "var DUPLO_ENV = \"" ++ env ++ "\";\n"
              ++ "var DUPLO_IN = JSON.parse('" ++ duploIn ++ "' || '{}');\n"
+             ++ "var DUPLO_VERSIONS = JSON.parse('" ++ compVers ++ "');\n"
 
   -- Just pass through without compilation
   let compiler = bin </> "echo.sh"

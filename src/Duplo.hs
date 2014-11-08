@@ -16,6 +16,7 @@ import Data.ByteString.Base64 (decode)
 import Data.ByteString.Char8 (pack, unpack)
 import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
 import Control.Monad (void)
+import qualified Development.Duplo.Types.AppInfo as AI
 
 main :: IO ()
 main = do
@@ -64,8 +65,8 @@ main = do
   let targetMarkup = targetPath </> "index.html"
 
   -- Gather information about this project
-  appNameMaybe    <- runMaybeT $ getProperty I.name
-  appVersionMaybe <- runMaybeT $ getProperty I.version
+  appNameMaybe    <- runMaybeT $ getProperty AI.name
+  appVersionMaybe <- runMaybeT $ getProperty AI.version
   appIdMaybe      <- runMaybeT $ getProperty I.appId
   let appName'     = maybe "" id appNameMaybe
   let appVersion'  = maybe "" id appVersionMaybe
@@ -176,8 +177,8 @@ main = do
 
       -- Update fields
       Just appInfo <- liftIO $ runMaybeT $ I.readManifest
-      let newAppInfo = appInfo { I.name = repo
-                               , I.repo = name
+      let newAppInfo = appInfo { AI.name = repo
+                               , AI.repo = name
                                }
       -- Commit app info
       liftIO $ I.writeManifest newAppInfo
@@ -189,7 +190,7 @@ main = do
 
 -- | Get a particular manifest property property
 -- | TODO: use Lens?
-getProperty :: (I.AppInfo -> a) -> MaybeT IO a
+getProperty :: (AI.AppInfo -> a) -> MaybeT IO a
 getProperty accessor = do
     appInfo <- I.readManifest
     return $ accessor appInfo

@@ -7,6 +7,7 @@ import Development.Shake
 import Development.Shake.FilePath ((</>))
 import Development.Duplo.Utilities (logAction)
 import qualified Development.Duplo.ComponentIO as I
+import qualified Development.Duplo.Types.AppInfo as AI
 import Control.Lens hiding (Action, Level)
 import qualified Development.Duplo.Config as C
 import Data.List (intercalate)
@@ -31,7 +32,7 @@ commit :: C.BuildConfig
 commit config level = do
     let utilPath = config ^. C.utilPath
     Just appInfo <- liftIO $ runMaybeT $ I.readManifest
-    let version = I.version appInfo
+    let version = AI.version appInfo
 
     -- First stash any outstanding change
     command_ [] "git" ["stash"]
@@ -85,5 +86,5 @@ resetSubversion version index max
                    in  newVersion & (element index) .~ "0"
   | otherwise    = version
 
-updateVersion :: I.AppInfo -> Version -> I.AppInfo
-updateVersion manifest version = manifest { I.version = version }
+updateVersion :: AI.AppInfo -> Version -> AI.AppInfo
+updateVersion manifest version = manifest { AI.version = version }

@@ -158,6 +158,19 @@ is used for explicit ordering. Note that any Jade files within the `app/`
 directory are not included. They must be within the `app/modules/` directory.
 
 
+## Component Versions
+
+Each component's version is recorded in the `DUPLO_VERSIONS` global variable,
+in the form similar to:
+
+```json
+{
+  "pixbi-main": "4.1.9",
+  "pixbi-launcher": "0.1.4"
+}
+```
+
+
 ## Dependency Selection
 
 Some cases require the repo to be polymorphic in the sense that we could

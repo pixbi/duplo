@@ -34,6 +34,7 @@ executable duplo
                     , unordered-containers ==0.2.*
                     , base64-bytestring ==1.0.*
                     , bytestring ==0.10.*
+                    , filepather ==0.3.*
   hs-source-dirs:     src/
   default-language:   Haskell2010
   default-extensions: OverloadedStrings
