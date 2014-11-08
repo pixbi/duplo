@@ -69,7 +69,6 @@ function display_version() {
     tr -d ' ' |
     # Proper display
     awk '{ print "duplo v" $0; }'
-  echo ""
 }
 
 # Always display duplo version

@@ -37,8 +37,8 @@ getDirectoryFilesInOrder base patterns =
 
 logAction :: String -> Action ()
 logAction log = do
-  putNormal ""
   putNormal $ ">> " ++ log
+  putNormal ""
 
 -- | Given the path to a compiler, parameters to the compiler, a list of
 -- paths of to-be-compiled files, the output file path, and a processing
