@@ -20,8 +20,6 @@ import Control.Monad.Trans.Class (lift)
 import System.Directory (doesFileExist)
 import Development.Duplo.Types.AppInfo (AppInfo(..))
 import qualified Development.Duplo.Types.AppInfo as AI
-import Development.Duplo.Types.Version (Version(..))
-import qualified Development.Duplo.Types.Version as VS
 import Data.Aeson (encode, decode)
 import Data.Maybe (fromJust)
 import System.FilePath.FilePather.Find (findp)
@@ -29,6 +27,9 @@ import System.FilePath.FilePather.FilePathPredicate (always)
 import System.FilePath.FilePather.FilterPredicate (filterPredicate)
 import System.FilePath.FilePather.RecursePredicate (recursePredicate)
 import System.FilePath.Posix (takeFileName)
+import Data.Map (fromList)
+
+type Version = (String, String)
 
 -- | Each application must have a `component.json`
 manifestName = "component.json"
@@ -79,10 +80,10 @@ extractCompVersions path = do
     manifests <- mapM ((fmap BS.pack) . readFile) paths
     let decodeManifest = \ x -> fromJust $ (decode x :: Maybe AppInfo)
     let manifests' = fmap (appInfoToVersion . decodeManifest) manifests
-    return $ BS.unpack $ encode manifests'
+    return $ BS.unpack $ encode $ fromList manifests'
 
 appInfoToVersion :: AppInfo -> Version
-appInfoToVersion appInfo = Version (AI.name appInfo) (AI.version appInfo)
+appInfoToVersion appInfo = ((AI.name appInfo), (AI.version appInfo))
 
 -- | Given a path, find all the `component.json`s
 getAllManifestPaths :: FilePath -> IO [FilePath]
