@@ -56,14 +56,16 @@ build config = \ out -> do
                       -- Double-quotes
                       replace (pack "\\") (pack "\\\\") $
                         pack input
+  -- Make sure we hvae at least something
+  let duploIn' = if length duploIn > 0 then duploIn else "{}"
 
   -- Figure out each component's version
   compVers <- liftIO $ extractCompVersions cwd
 
   -- Inject global/environment variables
-  let envVars = "var DUPLO_ENV = \"" ++ env ++ "\";\n"
-             ++ "var DUPLO_IN = JSON.parse('" ++ duploIn ++ "' || '{}');\n"
-             ++ "var DUPLO_VERSIONS = JSON.parse('" ++ compVers ++ "');\n"
+  let envVars = "var DUPLO_ENV = '" ++ env ++ "';\n"
+             ++ "var DUPLO_IN = " ++ duploIn' ++ ";\n"
+             ++ "var DUPLO_VERSIONS = " ++ compVers ++ ";\n"
 
   -- Just pass through without compilation
   let compiler = bin </> "echo.sh"

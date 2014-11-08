@@ -109,17 +109,20 @@ build with a JSON object of unique IDs and metadata, you can pass any string
 as the environment variable `DUPLO_IN`. The string is then turned into a
 JavaScript string and stored into a global variable.
 
+To avoid special characters, `DUPLO_IN` must be base64 encoded.
+
 For example, say you need to pass in a random ID for each build, you would
 invoke:
 
 ```sh
-$ echo "{\"id\":\""$randomId"\"}" | duplo
+// Content decoded as: `{"id":"someId"}`
+$ env DUPLO_IN="eyJpZCI6InNvbWVJZCJ9" duplo
 ```
 
 Then in `app/index.js`:
 
 ```js
-var randomId = JSON.parse(DUPLO_IN).id;
+var someId = DUPLO_IN.id;
 ```
 
 Note that all newline characters are removed before the string is wrapped into
