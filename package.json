@@ -3,7 +3,7 @@
   "version": "1.2.1",
   "homepage": "https://github.com/pixbi/duplo",
   "scripts": {
-    "prepublish": "cabal sandbox init; cabal configure; cabal install --only-dependencies -j8 --reinstall --force-reinstall; cabal build"
+    "prepublish": "util/publish.sh"
   },
   "bin": {
     "duplo": "util/duplo.sh"
