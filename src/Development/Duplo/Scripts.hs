@@ -30,7 +30,7 @@ build config = \ out -> do
   lift $ logAction "Building scripts"
 
   let cwd   = config ^. C.cwd
-  let bin   = config ^. C.bin
+  let dist  = config ^. C.dist
   let env   = config ^. C.env
   let input = config ^. C.input
 
@@ -67,8 +67,8 @@ build config = \ out -> do
              ++ "var DUPLO_IN = " ++ duploIn' ++ ";\n"
              ++ "var DUPLO_VERSIONS = " ++ compVers ++ ";\n"
 
-  -- Just pass through without compilation
-  let compiler = bin </> "echo.sh"
+  -- Run through AMD compiler
+  let compiler = dist </> "compile-js/compile-js"
 
   -- Build it
   compiled <- compile config compiler [] paths $ \ files ->

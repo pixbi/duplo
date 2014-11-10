@@ -11,6 +11,7 @@ module Development.Duplo.Config
   , env
   , mode
   , bin
+  , dist
   , input
   , utilPath
   , defaultsPath
@@ -33,6 +34,7 @@ data BuildConfig = BuildConfig { _appName      :: String
                                , _env          :: String
                                , _mode         :: String
                                , _bin          :: FilePath
+                               , _dist         :: FilePath
                                , _input        :: String
                                , _utilPath     :: FilePath
                                , _defaultsPath :: FilePath

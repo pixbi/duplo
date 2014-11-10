@@ -51,6 +51,7 @@ main = do
   -- Paths to various relevant directories
   let nodeModulesPath = duploPath </> "node_modules/.bin/"
   let utilPath        = duploPath </> "util/"
+  let distPath        = duploPath </> "dist/build/"
   let miscPath        = duploPath </> "etc/"
   let defaultsPath    = miscPath </> "static/"
   let appPath         = cwd </> "app/"
@@ -111,6 +112,7 @@ main = do
                                   , C._env          = duploEnv
                                   , C._mode         = duploMode
                                   , C._bin          = utilPath
+                                  , C._dist         = distPath
                                   , C._input        = duploIn
                                   , C._utilPath     = utilPath
                                   , C._defaultsPath = defaultsPath
