@@ -3,5 +3,4 @@ import Development.Duplo.JSCompiler (compile)
 
 main = do
   content <- getContents
-  let node = readJs content
-  putStr $ show $ compile node
+  putStr $ show $ compile $ readJs content
