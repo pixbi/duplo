@@ -1,5 +1,5 @@
 name:                  duplo
-version:               0.1.2.1
+version:               0.1.2.2
 synopsis:              Frontend development build tool
 description:           Intuitive, simple building blocks for building composable, completely self-managed web applications
 license:               MIT
@@ -58,12 +58,3 @@ executable server
   hs-source-dirs:     src/
   default-language:   Haskell2010
   default-extensions: OverloadedStrings
-
-executable compile-js
-  main-is:            CompileJS.hs
-  build-depends:      base ==4.7.*
-                    , language-javascript ==0.5.*
-                    , mtl ==2.1.*
-                    , lens ==4.3.*
-  hs-source-dirs:     src/
-  default-language:   Haskell2010
