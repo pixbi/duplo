@@ -73,8 +73,9 @@ build config = \ out -> do
                  ]
 
   -- Compile it
-  compiled <- compile config compiler params paths $ \ files ->
-    fmap (rewriteIncludes cwd files) files
+  let pre files = fmap (rewriteIncludes cwd files) files
+  let post = id
+  compiled <- compile config compiler params paths pre post
 
   -- Pull index page from dev, assets, then default otherwise, in that order
   let defaultIndex    = makeFile defaultsPath "index.html"

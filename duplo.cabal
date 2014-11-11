@@ -36,6 +36,8 @@ executable duplo
                     , bytestring ==0.10.*
                     , filepather ==0.3.*
                     , containers ==0.5.*
+                    , language-javascript ==0.5.*
+                    , mtl ==2.1.*
   hs-source-dirs:     src/
   default-language:   Haskell2010
   default-extensions: OverloadedStrings

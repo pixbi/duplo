@@ -51,7 +51,7 @@ build config = \ out -> do
   let compiler = bin </> "stylus"
 
   -- Compile it
-  compiled <- compile config compiler [] paths id
+  compiled <- compile config compiler [] paths id id
 
   -- Write it to disk
   lift $ writeFileChanged out compiled

@@ -22,6 +22,7 @@ import Control.Monad.Trans.Maybe (MaybeT(..))
 import Control.Monad.Trans.Class (lift)
 
 type FileProcessor = [File] -> [File]
+type StringProcessor = String -> String
 
 getDirectoryFilesInOrder :: FilePath -> [FilePattern] -> Action [FilePath]
 getDirectoryFilesInOrder base patterns =
@@ -57,11 +58,14 @@ compile :: C.BuildConfig
         -> [String]
         -- Files to be compiled
         -> [FilePath]
-        -- The processing lambda
+        -- The processing lambda: it is handed with a list of files.
         -> FileProcessor
+        -- The postpcessing lambda: it is handed with all content
+        -- concatenated.
+        -> StringProcessor
         -- The compiled content
         -> MaybeT Action String
-compile config compiler params paths preprocess = do
+compile config compiler params paths preprocess postprocess = do
   mapM (lift . putNormal . ("Including " ++)) paths
 
   let cwd = config ^. C.cwd
@@ -78,9 +82,13 @@ compile config compiler params paths preprocess = do
   -- Trailing newline is significant in case of empty Stylus
   let concatenated = (intercalate "\n" contents) ++ "\n"
 
+  -- Send string over to post-processor in case of any manipulation before
+  -- handing off to the compiler.
+  let postprocessed = postprocess concatenated
+
   -- Pass it through the compiler
   lift $ putNormal $ "Compiling with: " ++ compiler ++ " " ++ intercalate " " params
-  Stdout compiled <- lift $ command [Stdin concatenated] compiler params
+  Stdout compiled <- lift $ command [Stdin postprocessed] compiler params
 
   -- The output
   return compiled

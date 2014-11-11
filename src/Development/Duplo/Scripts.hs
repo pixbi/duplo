@@ -19,6 +19,10 @@ import Control.Lens hiding (Action)
 import Control.Monad.Trans.Maybe (MaybeT(..))
 import Control.Monad.Trans.Class (lift)
 import Development.Duplo.ComponentIO (extractCompVersions)
+import Language.JavaScript.Parser (readJs, renderToString)
+import Development.Duplo.JavaScript.Order (order)
+
+import Debug.Trace (trace)
 
       -- The environment
 build :: C.BuildConfig
@@ -30,7 +34,7 @@ build config = \ out -> do
   lift $ logAction "Building scripts"
 
   let cwd   = config ^. C.cwd
-  let dist  = config ^. C.dist
+  let util  = config ^. C.utilPath
   let env   = config ^. C.env
   let input = config ^. C.input
 
@@ -56,6 +60,7 @@ build config = \ out -> do
                       -- Double-quotes
                       replace (pack "\\") (pack "\\\\") $
                         pack input
+
   -- Make sure we hvae at least something
   let duploIn' = if length duploIn > 0 then duploIn else "{}"
 
@@ -68,14 +73,15 @@ build config = \ out -> do
              ++ "var DUPLO_VERSIONS = " ++ compVers ++ ";\n"
 
   -- Run through AMD compiler
-  let compiler = dist </> "compile-js/compile-js"
+  let compiler = util </> "echo.sh"
+
+  -- Create a pseudo file that contains the environment variables and
+  -- prepend the environment variables.
+  let pre files = ((File { _fileContent = envVars }) : files)
+  let post = renderToString . order . readJs
 
   -- Build it
-  compiled <- compile config compiler [] paths $ \ files ->
-    -- Create a pseudo file that contains the environment variables
-    let envFile = File { _fileContent = envVars }
-    -- Prepend the environment variables
-    in  envFile : files
+  compiled <- compile config compiler [] paths pre post
 
   -- Write it to disk
   lift $ writeFileChanged out compiled
