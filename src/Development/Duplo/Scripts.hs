@@ -37,12 +37,11 @@ build config = \ out -> do
   let input = config ^. C.input
 
   -- These paths don't need to be expanded
-  let staticPaths = []
+  let staticPaths = [ "app/index.js"
+                    ]
 
   -- These paths need to be expanded by Shake
-  let dynamicPaths = [ "app/*.js"
-                     , "app/modules//*.js"
-                     , "components/*/app/*.js"
+  let dynamicPaths = [ "app/modules//*.js"
                      , "components/*/app/modules//*.js"
                      ]
 

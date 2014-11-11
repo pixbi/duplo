@@ -33,13 +33,11 @@ build config = \ out -> do
                     ]
 
   -- These paths need to be expanded by Shake
-  let dynamicPaths = [ "app/modules//index.styl"
-                     , "components/*/app/styl/variables.styl"
+  let dynamicPaths = [ "components/*/app/styl/variables.styl"
                      , "components/*/app/styl/keyframes.styl"
                      , "components/*/app/styl/fonts.styl"
                      , "components/*/app/styl/reset.styl"
                      , "components/*/app/styl/main.styl"
-                     , "components/*/app/modules//index.styl"
                      , "app/modules//*.styl"
                      , "components/*/app/modules//*.styl"
                      ]
