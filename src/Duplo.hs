@@ -111,7 +111,7 @@ main = do
                                   , C._duploPath    = duploPath
                                   , C._env          = duploEnv
                                   , C._mode         = duploMode
-                                  , C._bin          = utilPath
+                                  , C._nodejsPath   = nodeModulesPath
                                   , C._dist         = distPath
                                   , C._input        = duploIn
                                   , C._utilPath     = utilPath
@@ -122,13 +122,11 @@ main = do
                                   , C._depsPath     = depsPath
                                   , C._targetPath   = targetPath
                                   }
-  -- Environment when node modules are used
-  let buildConfigWithNode = buildConfig & C.bin .~ nodeModulesPath
 
   shake shakeOptions $ do
     targetScript *> (void . runMaybeT . Scripts.build buildConfig)
-    targetStyle  *> (void . runMaybeT . Styles.build buildConfigWithNode)
-    targetMarkup *> (void . runMaybeT . Markups.build buildConfigWithNode)
+    targetStyle  *> (void . runMaybeT . Styles.build buildConfig)
+    targetMarkup *> (void . runMaybeT . Markups.build buildConfig)
 
     -- Manually bootstrap Shake
     action $ do

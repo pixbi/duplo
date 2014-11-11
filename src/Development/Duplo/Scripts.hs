@@ -22,8 +22,6 @@ import Development.Duplo.ComponentIO (extractCompVersions)
 import Language.JavaScript.Parser (readJs, renderToString)
 import Development.Duplo.JavaScript.Order (order)
 
-import Debug.Trace (trace)
-
       -- The environment
 build :: C.BuildConfig
       -- The output file
@@ -72,8 +70,10 @@ build config = \ out -> do
              ++ "var DUPLO_IN = " ++ duploIn' ++ ";\n"
              ++ "var DUPLO_VERSIONS = " ++ compVers ++ ";\n"
 
-  -- Run through AMD compiler
-  let compiler = util </> "echo.sh"
+  -- Configure the compiler
+  let compiler = if   C.isInDev config
+                 then util </> "amd.js"
+                 else util </> "optimize.sh"
 
   -- Create a pseudo file that contains the environment variables and
   -- prepend the environment variables.

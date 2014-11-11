@@ -8,9 +8,9 @@ module Development.Duplo.Config
   , appId
   , cwd
   , duploPath
+  , nodejsPath
   , env
   , mode
-  , bin
   , dist
   , input
   , utilPath
@@ -33,10 +33,10 @@ data BuildConfig = BuildConfig { _appName      :: String
                                , _duploPath    :: FilePath
                                , _env          :: String
                                , _mode         :: String
-                               , _bin          :: FilePath
                                , _dist         :: FilePath
                                , _input        :: String
                                , _utilPath     :: FilePath
+                               , _nodejsPath   :: FilePath
                                , _defaultsPath :: FilePath
                                , _appPath      :: FilePath
                                , _devPath      :: FilePath

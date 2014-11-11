@@ -21,8 +21,8 @@ build :: C.BuildConfig
 build config = \ out -> do
   lift $ logAction "Building styles"
 
-  let cwd   = config ^. C.cwd
-  let bin   = config ^. C.bin
+  let cwd        = config ^. C.cwd
+  let nodejsPath = config ^. C.nodejsPath
 
   -- These paths don't need to be expanded
   let staticPaths = [ "app/styl/variables.styl"
@@ -48,7 +48,7 @@ build config = \ out -> do
   paths <- lift $ expandPaths cwd staticPaths dynamicPaths
 
   -- Path to the compiler
-  let compiler = bin </> "stylus"
+  let compiler = nodejsPath </> "stylus"
 
   -- Compile it
   compiled <- compile config compiler [] paths id id

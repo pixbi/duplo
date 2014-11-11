@@ -45,7 +45,7 @@ build config = \ out -> do
   lift $ alwaysRerun
 
   let cwd          = config ^. C.cwd
-  let bin          = config ^. C.bin
+  let nodejsPath   = config ^. C.nodejsPath
   let devPath      = config ^. C.devPath
   let assetsPath   = config ^. C.assetsPath
   let defaultsPath = config ^. C.defaultsPath
@@ -64,7 +64,7 @@ build config = \ out -> do
   paths <- lift $ expandPaths cwd staticPaths dynamicPaths
 
   -- Path to the compiler
-  let compiler = bin </> "jade"
+  let compiler = nodejsPath </> "jade"
   let params   = [ "--pretty"
                  , "--path"
                  -- Jade takes a file and takes its directory as its

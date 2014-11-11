@@ -68,7 +68,9 @@ compile :: C.BuildConfig
 compile config compiler params paths preprocess postprocess = do
   mapM (lift . putNormal . ("Including " ++)) paths
 
-  let cwd = config ^. C.cwd
+  let cwd    = config ^. C.cwd
+  let util   = config ^. C.utilPath
+  let nodejs = config ^. C.nodejsPath
 
   -- Construct files
   files <- mapM (readFile cwd) paths
@@ -83,12 +85,21 @@ compile config compiler params paths preprocess postprocess = do
   let concatenated = (intercalate "\n" contents) ++ "\n"
 
   -- Send string over to post-processor in case of any manipulation before
-  -- handing off to the compiler.
-  let postprocessed = postprocess concatenated
+  -- handing off to the compiler. Add trailing newline for hygiene.
+  let postprocessed = (++ "\n") $ postprocess concatenated
 
+  -- Paths should be available as environment variables
+  envOpt <- addEnv [ ("DUPLO_UTIL", util)
+                   , ("DUPLO_NODEJS", nodejs)
+                   , ("DUPLO_CWD", cwd)
+                   ]
+
+  lift $ putNormal $ "Compiling with: "
+                  ++ compiler
+                  ++ " "
+                  ++ intercalate " " params
   -- Pass it through the compiler
-  lift $ putNormal $ "Compiling with: " ++ compiler ++ " " ++ intercalate " " params
-  Stdout compiled <- lift $ command [Stdin postprocessed] compiler params
+  Stdout compiled <- lift $ command [Stdin postprocessed, envOpt] compiler params
 
   -- The output
   return compiled
