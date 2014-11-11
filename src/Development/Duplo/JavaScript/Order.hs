@@ -1,8 +1,8 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE DeriveDataTypeable #-}
 
-module Development.Duplo.JSCompiler
-  ( compile
+module Development.Duplo.JavaScript.Order
+  ( order
   ) where
 
 import Language.JavaScript.Parser (JSNode(..), Node(..), TokenPosn(..))
@@ -33,9 +33,9 @@ makeLenses ''Module
 
 type OrderedModules = State [Module]
 
--- | Compile a JSNode.
-compile :: JSNode -> JSNode
-compile node =
+-- | Reorder modules within the root node.
+order :: JSNode -> JSNode
+order node =
     -- Append the modules, in its rightful order, to all the non-applicable
     -- nodes.
     NN $ JSSourceElementsTop $ naNodes ++ aNodesWithSep

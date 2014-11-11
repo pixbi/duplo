@@ -1,6 +1,8 @@
 import Language.JavaScript.Parser (readJs, renderToString)
-import Development.Duplo.JSCompiler (compile)
+import Development.Duplo.JavaScript.Order (order)
 
 main = do
   content <- getContents
-  putStr $ renderToString $ compile $ readJs content
+  let precompiled = readJs content
+  let ordered = order precompiled
+  putStr $ renderToString ordered
