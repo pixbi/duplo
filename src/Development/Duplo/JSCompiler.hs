@@ -9,7 +9,7 @@ import Language.JavaScript.Parser (JSNode(..), Node(..), TokenPosn(..))
 import Control.Monad.Writer.Lazy (Writer, tell, runWriter)
 import Control.Monad.State.Lazy (State, get, put, state, execState)
 import Data.Maybe (isJust, fromJust)
-import Data.List (findIndex)
+import Data.List (findIndex, sortBy)
 import Control.Monad (liftM)
 import Control.Lens
 import Control.Exception (Exception, throw)
@@ -95,7 +95,14 @@ runModule mod = _node mod
 
 -- | Reorder all the applicable modules
 reorder :: [Module] -> [Module]
-reorder mods = execState computeScores mods
+reorder mods =
+    sorted
+  where
+    mods' = execState computeScores mods
+    sorted = sortBy byDepScore mods'
+
+byDepScore :: Module -> Module -> Ordering
+byDepScore a b = compare (_score a) (_score b)
 
 -- | Given a module list, find all the dependency scores of the constituent
 -- modules.
@@ -136,4 +143,4 @@ getDepScore modName = do
 
 -- | Get a module's dependency score given its dependencies.
 getDepScore' :: [ModuleName] -> OrderedModules DepScore
-getDepScore' modNames = liftM (foldr (+) 0) (mapM getDepScore modNames)
+getDepScore' modNames = liftM (foldr (+) 1) (mapM getDepScore modNames)
