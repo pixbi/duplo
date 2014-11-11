@@ -9,7 +9,7 @@ import Language.JavaScript.Parser (JSNode(..), Node(..), TokenPosn(..))
 import Control.Monad.Writer.Lazy (Writer, tell, runWriter)
 import Control.Monad.State.Lazy (State, get, put, state, execState)
 import Data.Maybe (isJust, fromJust)
-import Data.List (findIndex, sortBy)
+import Data.List (findIndex, sortBy, intersperse)
 import Control.Monad (liftM)
 import Control.Lens
 import Control.Exception (Exception, throw)
@@ -38,13 +38,17 @@ compile :: JSNode -> JSNode
 compile node =
     -- Append the modules, in its rightful order, to all the non-applicable
     -- nodes.
-    NN $ JSSourceElementsTop $ naNodes ++ aNodes'
+    NN $ JSSourceElementsTop $ naNodes ++ aNodesWithSep
   where
+    -- For hygiene
+    separator = NT (JSLiteral ";") (TokenPn 0 0 0) []
     -- The "normal" output is the filtered non-applicable nodes and the
     -- written-to nodes are of course the extracted ones.
     (naNodes, aNodes) = runWriter $ extract node
     -- Reorder modules
-    aNodes' = fmap runModule $ reorder aNodes
+    orderedANodes = fmap runModule $ reorder aNodes
+    -- Insert separators
+    aNodesWithSep = concat $ fmap (\n -> [n, separator]) orderedANodes
 
 -- | Extract AMD modules to logger for re-ordering and the rest to output.
 extract :: JSNode -> Writer [Module] [JSNode]
