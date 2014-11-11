@@ -1,16 +1,37 @@
+{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE DeriveDataTypeable #-}
+
 module Development.Duplo.JSCompiler
   ( compile
   ) where
 
 import Language.JavaScript.Parser (JSNode(..), Node(..), TokenPosn(..))
 import Control.Monad.Writer.Lazy (Writer, tell, runWriter)
+import Control.Monad.State.Lazy (State, get, put, state, execState)
 import Data.Maybe (isJust, fromJust)
-import Debug.Trace (trace)
+import Data.List (findIndex)
+import Control.Monad (liftM)
+import Control.Lens
+import Control.Exception (Exception, throw)
+import Data.Typeable (Typeable)
+
+data JSCompilerException = ModuleNotFoundException ModuleName
+  deriving (Show, Typeable)
+instance Exception JSCompilerException
 
 type ModuleName = String
+type DepScore = Int
 -- A module consists of its name, its dependencies by names, and the node
 -- itself.
-type Module = (ModuleName, [ModuleName], JSNode)
+data Module = Module { _name :: ModuleName
+                     , _deps :: [ModuleName]
+                     , _node :: JSNode
+                     , _score :: Maybe DepScore
+                     } deriving (Show)
+
+makeLenses ''Module
+
+type OrderedModules = State [Module]
 
 -- | Compile a JSNode.
 compile :: JSNode -> JSNode
@@ -23,7 +44,7 @@ compile node =
     -- written-to nodes are of course the extracted ones.
     (naNodes, aNodes) = runWriter $ extract node
     -- Reorder modules
-    aNodes' = fmap runModule aNodes
+    aNodes' = fmap runModule $ reorder aNodes
 
 -- | Extract AMD modules to logger for re-ordering and the rest to output.
 extract :: JSNode -> Writer [Module] [JSNode]
@@ -48,7 +69,7 @@ makeModule :: JSNode
            -- The created module
            -> Module
 makeModule rootNode argNode =
-    (moduleName, deps, rootNode)
+    Module moduleName deps rootNode Nothing
   where
     -- Extract the terminating nodes that are arguments.
     (NN (JSArguments _ argNTs _)) = argNode
@@ -70,8 +91,49 @@ stringLiteralNT _ = Nothing
 
 -- | Turn a module into a node
 runModule :: Module -> JSNode
-runModule (name, deps, node) = node
+runModule mod = _node mod
 
 -- | Reorder all the applicable modules
 reorder :: [Module] -> [Module]
-reorder = undefined
+reorder mods = execState computeScores mods
+
+-- | Given a module list, find all the dependency scores of the constituent
+-- modules.
+computeScores :: OrderedModules ()
+computeScores = do
+    mods <- get
+    -- Put the modules in state to be re-ordered as well as extract the
+    -- names by placing it in the State as values.
+    mapM_ getDepScore $ fmap _name mods
+
+-- | Given a module name, get its score
+getDepScore :: ModuleName -> OrderedModules DepScore
+getDepScore modName = do
+    -- Take out the modules.
+    mods <- get
+    -- Assume module exist, as it should at this point.
+    let maybeIndex = findIndex ((modName ==) . _name) mods
+    let index = case maybeIndex of
+                  Just i -> i
+                  Nothing -> throw $ ModuleNotFoundException modName
+    -- Get the actual module.
+    let mod = fromJust $ mods ^? ix index
+    -- The dependency list
+    let modDeps = _deps mod
+    -- If there is a score, use it; otherwise, obviously go get it.
+    depScore <- case _score mod of
+                  -- Re-wrap with the score as the result.
+                  Just score -> state $ \_ -> (score, mods)
+                  -- Go through the dependencies' individual scores.
+                  Nothing -> getDepScore' modDeps
+    -- Update the score.
+    let newMod = mod & score .~ (Just depScore)
+    -- TODO: somehow can't get Lens to work. Doing the old fashion way.
+    let newMods = (take index mods) ++ [newMod] ++ (drop (index + 1) mods)
+    put newMods
+    -- Return the score.
+    return depScore
+
+-- | Get a module's dependency score given its dependencies.
+getDepScore' :: [ModuleName] -> OrderedModules DepScore
+getDepScore' modNames = liftM (foldr (+) 0) (mapM getDepScore modNames)

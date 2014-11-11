@@ -3,4 +3,4 @@ import Development.Duplo.JSCompiler (compile)
 
 main = do
   content <- getContents
-  putStr $ show $ compile $ readJs content
+  putStr $ renderToString $ compile $ readJs content
