@@ -52,15 +52,19 @@ markup.
 
 ## File Structure
 
-    app/index.jade  --> Entry point for templates. Only this file is compiled.
-                        Use Jade's include system to pull in other templates.
+    app/            --> Application code
+    app/index.jade  --> Entry point for markups. Only this file is compiled.
+                        Use Jade's include system to pull in other markups.
     app/index.js    --> Application entry point. Only the top-level
-                        application's `index.js is included and run. Its
+                        application's `index.js` is included and run. Its
                         dependencies' are ignored.
     app/assets/     --> Asset files are copied as-is to build's top-level
                         directory
-    app/styl/       --> Application stylesheets
-    app/modules/    --> Application code
+    app/styl/       --> It contains "special" stylesheets that get loaded
+                        before any other stylesheets.
+    app/modules/    --> All other application code not listed above must be
+                        placed here. All files at the `app/` level are not
+                        included by default.
     components/     --> Other repos imported via Component.IO
     component.json  --> The Component.IO manifest
     dev/            --> Files here are copied as-is to project root when
@@ -149,7 +153,7 @@ significant. Stylus files will be concatenated in this order:
                                  environment
     app/styl/main.styl       --> Application CSS that goes before any module
                                  CSS
-    app/modules/*/index.styl --> CSS relevant to specific modules
+    app/**/*.styl            --> All other CSS files
 
 There is no particular concatenation order between different dependencies.
 
@@ -157,8 +161,7 @@ There is no particular concatenation order between different dependencies.
 ## HTML/Jade Concatenation Order
 
 Jade files are concatenated in no particular order as the Jade include system
-is used for explicit ordering. Note that any Jade files within the `app/`
-directory are not included. They must be within the `app/modules/` directory.
+is used for explicit ordering.
 
 
 ## Component Versions
