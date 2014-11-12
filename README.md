@@ -67,27 +67,25 @@ markup.
                         included by default.
     components/     --> Other repos imported via Component.IO
     component.json  --> The Component.IO manifest
-    dev/            --> Files here are copied as-is to project root when
-                        building in development mode
+    dev/            --> Files here are included only when building in
+                        development mode.
+    dev/assets/     --> Copied as-is just like `app/assets/`. Files here would
+                        replace those with the same name under `app/assets/`.
+    dev/modules/    --> Works just like `app/modules/`.
     public/         --> Built files when developing. Not committed to source
     test/           --> Test files go here
 
 
 ## Development
 
-During development, everything in the `dev/` directory is copied over as-is *at
-the end* of the build process. This means that files in the directory would
-replace whatever that has been built at their respective locations. So the
-`dev/index.html` would need to reference the script and the tag manually, e.g.
+During development, everything in the `dev/assets/` directory is copied over
+as-is *at the end* of the build process. This means that files in the directory
+would replace whatever that has been built (or copied over from `app/assets/`)
+at their respective locations.
 
-    <html>
-      <head>
-        <link rel="stylesheet" href="style.css"/>
-      </head>
-      <body>
-        <script src="script.js"></script>
-      </body>
-    </html>
+Anything under `dev/modules/` would be treated just like those under
+`app/modules/`, that they would be concatenated/compiled into the respective
+output files (i.e. `index.html`, `index.css`, or `index.js`).
 
 
 ## Environment
@@ -135,9 +133,11 @@ a JavaScript string.
 
 ## JavaScript Concatenation Order
 
-JavaScript files are not concatenated in any particular order. It is good
-practice to just define functions that would be called later on by the main
-repo when its `app/index.js` is called.
+JavaScript files are not concatenated in any particular order.  You must wrap
+code inside an AMD module and declaring its dependencies. For code that needs
+to be executed at initialization, utilize the host system's initialization
+event such as `document.addEventListener("DOMContentLoaded")` to bootstrap the
+rest of the script.
 
 
 ## CSS/Stylus Concatenation Order
