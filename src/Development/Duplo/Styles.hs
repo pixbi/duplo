@@ -40,7 +40,10 @@ build config = \ out -> do
                      , "components/*/app/styl/main.styl"
                      , "app/modules//*.styl"
                      , "components/*/app/modules//*.styl"
-                     ]
+                     -- Compile dev files in dev mode as well.
+                     ] ++ if   C.isInDev config
+                          then ["dev/modules//*.styl"]
+                          else []
 
   -- Merge both types of paths
   paths <- lift $ expandPaths cwd staticPaths dynamicPaths

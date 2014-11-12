@@ -110,7 +110,7 @@ deps config = do
   -- ... including those of dependencies
   depAssetFiles <- getDepAssets depsPath
   -- Add dev files to the mix, if we're in dev mode
-  devFiles'     <- getDirectoryFiles devPath ["//*"]
+  devFiles'     <- getDirectoryFiles devPath ["assets//*"]
   let devFiles   = if C.isInDev config then devFiles' else []
   -- Mix them together
   let allFiles   = nub $ concat [depAssetFiles, assetFiles, devFiles]

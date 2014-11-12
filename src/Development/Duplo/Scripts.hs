@@ -13,7 +13,7 @@ import Development.Duplo.Utilities
 import Development.Shake
 import Development.Shake.FilePath ((</>))
 import Data.Text (replace, pack, unpack)
-import Development.Duplo.Files (File(..))
+import Development.Duplo.Files (File(..), pseudoFile)
 import qualified Development.Duplo.Config as C
 import Control.Lens hiding (Action)
 import Control.Monad.Trans.Maybe (MaybeT(..))
@@ -31,10 +31,10 @@ build :: C.BuildConfig
 build config = \ out -> do
   lift $ logAction "Building scripts"
 
-  let cwd   = config ^. C.cwd
-  let util  = config ^. C.utilPath
-  let env   = config ^. C.env
-  let input = config ^. C.input
+  let cwd     = config ^. C.cwd
+  let util    = config ^. C.utilPath
+  let env     = config ^. C.env
+  let input   = config ^. C.input
 
   -- These paths don't need to be expanded
   let staticPaths = [ "app/index.js"
@@ -43,7 +43,10 @@ build config = \ out -> do
   -- These paths need to be expanded by Shake
   let dynamicPaths = [ "app/modules//*.js"
                      , "components/*/app/modules//*.js"
-                     ]
+                     -- Compile dev files in dev mode as well.
+                     ] ++ if   C.isInDev config
+                          then ["dev/modules//*.js"]
+                          else []
 
   -- Merge both types of paths
   paths <- lift $ expandPaths cwd staticPaths dynamicPaths
@@ -71,12 +74,12 @@ build config = \ out -> do
 
   -- Configure the compiler
   let compiler = if   C.isInDev config
-                 then util </> "amd.js"
+                 then util </> "dev.sh"
                  else util </> "optimize.sh"
 
   -- Create a pseudo file that contains the environment variables and
-  -- prepend the environment variables.
-  let pre files = ((File { _fileContent = envVars }) : files)
+  -- prepend the file.
+  let pre files = ((pseudoFile { _fileContent = envVars }) : files)
   let post = renderToString . order . readJs
 
   -- Build it

@@ -58,7 +58,10 @@ build config = \ out -> do
 
   -- These paths need to be expanded by Shake
   let dynamicPaths = [ "components/*/app/index.jade"
-                     ]
+                     -- Compile dev files in dev mode as well.
+                     ] ++ if   C.isInDev config
+                          then ["dev/modules//*.jade"]
+                          else []
 
   -- Merge both types of paths
   paths <- lift $ expandPaths cwd staticPaths dynamicPaths

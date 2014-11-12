@@ -86,7 +86,7 @@ compile config compiler params paths preprocess postprocess = do
 
   -- Send string over to post-processor in case of any manipulation before
   -- handing off to the compiler. Add trailing newline for hygiene.
-  let postprocessed = (++ "\n") $ postprocess concatenated
+  let postprocessed = (postprocess concatenated) ++ "\n"
 
   -- Paths should be available as environment variables
   envOpt <- addEnv [ ("DUPLO_UTIL", util)

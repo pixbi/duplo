@@ -10,6 +10,7 @@ module Development.Duplo.Files
   , fileContent
   , isRoot
   , ComponentId
+  , pseudoFile
   ) where
 
 import Prelude hiding (readFile)
@@ -35,6 +36,14 @@ data File        = File { _filePath    :: FilePath
                         -- Is this part of the root project?
                         , _isRoot      :: Bool
                         } deriving (Show)
+
+pseudoFile = File { _filePath    = ""
+                   , _fileDir     = ""
+                   , _fileName    = ""
+                   , _componentId = ""
+                   , _fileContent = ""
+                   , _isRoot      = False
+                   }
 
 makeLenses ''File
 
