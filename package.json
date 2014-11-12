@@ -9,7 +9,6 @@
     "duplo": "util/duplo.sh"
   },
   "dependencies": {
-    "almond": "^0.3.0",
     "amdclean": "^2.3.0",
     "jade": "^1.7.0",
     "stylus": "^0.49.1",
