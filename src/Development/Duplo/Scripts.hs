@@ -74,8 +74,8 @@ build config = \ out -> do
 
   -- Configure the compiler
   let compiler = if   C.isInDev config
-                 then util </> "dev.sh"
-                 else util </> "optimize.sh"
+                 then util </> "scripts-dev.sh"
+                 else util </> "scripts-optimize.sh"
 
   -- Create a pseudo file that contains the environment variables and
   -- prepend the file.

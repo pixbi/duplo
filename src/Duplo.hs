@@ -167,13 +167,13 @@ main = do
       let user = cmdArgs ^. element 0
       let repo = cmdArgs ^. element 1
       let name = user ++ "/" ++ repo
-      let src  = miscPath </> "template/"
+      let src  = miscPath </> "boilerplate/"
       let dest = cwd ++ "/"
 
       logAction $ "Creating new duplo project " ++ name
 
-      -- Initialize with template
-      command_ [] (utilPath </> "template.sh") [src, dest]
+      -- Initialize with boilerplate
+      command_ [] (utilPath </> "init-boilerplate") [src, dest]
 
       -- Update fields
       Just appInfo <- liftIO $ runMaybeT $ I.readManifest
@@ -184,7 +184,7 @@ main = do
       liftIO $ I.writeManifest newAppInfo
 
       -- Initalize git
-      command_ [] (utilPath </> "gitinit.sh") [name]
+      command_ [] (utilPath </> "init-git.sh") [name]
 
       logAction $ "Project created at " ++ dest
 

@@ -3,7 +3,7 @@
 src=$1
 dest=$2
 
-# Copy template
+# Copy boilerplate
 cp -anv $src/* $dest
 # Copy gitignore file
 cp -n $src/.gitignore $dest

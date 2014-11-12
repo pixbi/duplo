@@ -98,9 +98,10 @@ deps config = do
   let depsPath   = config ^. C.depsPath
   let targetPath = config ^. C.targetPath
   let devPath    = config ^. C.devPath
+  let devAssetsPath = devPath </> "assets/"
 
   -- Make sure all these directories exist
-  let requiredPaths = [assetsPath, depsPath, targetPath, devPath]
+  let requiredPaths = [assetsPath, depsPath, targetPath, devAssetsPath]
   let mkdir = \ dir -> command_ [] "mkdir" ["-p", dir]
   existing <- filterM ((fmap not) . doesDirectoryExist) requiredPaths
   mapM_ mkdir existing
@@ -110,7 +111,7 @@ deps config = do
   -- ... including those of dependencies
   depAssetFiles <- getDepAssets depsPath
   -- Add dev files to the mix, if we're in dev mode
-  devFiles'     <- getDirectoryFiles devPath ["assets//*"]
+  devFiles'     <- getDirectoryFiles devAssetsPath ["//*"]
   let devFiles   = if C.isInDev config then devFiles' else []
   -- Mix them together
   let allFiles   = nub $ concat [depAssetFiles, assetFiles, devFiles]

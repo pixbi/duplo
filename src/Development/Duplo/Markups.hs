@@ -45,12 +45,13 @@ build config = \ out -> do
   lift $ alwaysRerun
 
   let cwd          = config ^. C.cwd
-  let nodejsPath   = config ^. C.nodejsPath
+  let utilPath     = config ^. C.utilPath
   let devPath      = config ^. C.devPath
   let assetsPath   = config ^. C.assetsPath
   let defaultsPath = config ^. C.defaultsPath
   let targetPath   = config ^. C.targetPath
   let refTagsPath  = defaultsPath </> "head.html"
+  let devAssetsPath = devPath </> "assets/"
 
   -- These paths don't need to be expanded
   let staticPaths = [ "app/index.jade"
@@ -67,22 +68,16 @@ build config = \ out -> do
   paths <- lift $ expandPaths cwd staticPaths dynamicPaths
 
   -- Path to the compiler
-  let compiler = nodejsPath </> "jade"
-  let params   = [ "--pretty"
-                 , "--path"
-                 -- Jade takes a file and takes its directory as its
-                 -- current working directory
-                 , cwd </> "index.jade"
-                 ]
+  let compiler = utilPath </> "markups-compile.sh"
 
   -- Compile it
   let pre files = fmap (rewriteIncludes cwd files) files
   let post = id
-  compiled <- compile config compiler params paths pre post
+  compiled <- compile config compiler [] paths pre post
 
-  -- Pull index page from dev, assets, then default otherwise, in that order
+  -- Pull index page from dev, assets, then default otherwise, in that order.
   let defaultIndex    = makeFile defaultsPath "index.html"
-  let possibleSources = [devPath, assetsPath]
+  let possibleSources = [devAssetsPath, assetsPath]
   let possibleIndexes = fmap (flip makeFile "index.html") possibleSources
   fromIndex <- lift $ fromMaybe defaultIndex <$> collapseFileList possibleIndexes
   indexContent <- lift $ readFile' $ fromIndex ^. FileList.filePath
@@ -94,8 +89,13 @@ build config = \ out -> do
   refTags <- lift $ readFile' refTagsPath
   let indexWithRefs   = replace "</head>" (refTags ++ "</head>") indexWithMarkup
 
+  -- Path to the minifier
+  let minifier = utilPath </> "markups-minify.sh"
+  -- Minify it
+  minified <- compile config minifier [] paths id $ \_ -> indexWithRefs
+
   -- Write it to disk
-  lift $ writeFileChanged out indexWithRefs
+  lift $ writeFileChanged out minified
 
 -- | Rewrite paths to external files (i.e. include statements) because Jade
 -- doesn't accept more than one path to look up includes. It is passed all
