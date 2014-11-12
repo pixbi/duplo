@@ -4,7 +4,6 @@ src/
 dist/
 !dist/build/
 
-*.cabal
 cabal.sandbox.config
 Setup.hs
 
