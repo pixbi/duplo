@@ -159,9 +159,9 @@ main = do
       logAction "Build completed"
 
     "bump" ~> do
-      logAction "Bumping version"
+      (oldVersion, newVersion) <- Git.commit buildConfig bumpLevel
 
-      Git.commit buildConfig bumpLevel
+      logAction $ "Bumped version from " ++ oldVersion ++ " to " ++ newVersion
 
     "init" ~> do
       let user = cmdArgs ^. element 0

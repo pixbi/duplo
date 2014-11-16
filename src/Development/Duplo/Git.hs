@@ -10,16 +10,18 @@ import qualified Development.Duplo.ComponentIO as I
 import qualified Development.Duplo.Types.AppInfo as AI
 import Control.Lens hiding (Action, Level)
 import qualified Development.Duplo.Config as C
-import Data.List (intercalate)
+import Data.List (intercalate, filter)
 import Data.Text (unpack, pack, splitOn)
 import Data.Maybe (fromMaybe)
+import System.FilePath.Posix (makeRelative)
 import Control.Applicative ((<$>))
 import Debug.Trace (trace)
 import Control.Monad.Trans.Maybe (MaybeT(..))
 
-type Level      = String
-type Version    = String
-type Subversion = String
+type Level         = String
+type Version       = String
+type Subversion    = String
+type FileExtension = String
 
 -- We use Semantic Versioning protocol
 versionLength :: Int
@@ -28,11 +30,13 @@ versionLength = 3
 -- | Commit to git and bump version for current project
 commit :: C.BuildConfig
        -> Level
-       -> Action ()
+       -> Action (Version, Version)
 commit config level = do
     let utilPath = config ^. C.utilPath
     Just appInfo <- liftIO $ runMaybeT $ I.readManifest
     let version = AI.version appInfo
+    let cwd = config ^. C.cwd
+    let manifest = cwd </> "component.json"
 
     -- First stash any outstanding change
     command_ [] "git" ["stash"]
@@ -42,14 +46,16 @@ commit config level = do
     -- Increment version according to level
     let newVersion = incrementVersion level version
     -- Update app info
-    let newAppInfo = updateVersion appInfo newVersion
+    let appInfo' = updateVersion appInfo newVersion
+    -- Update registered file list with Component.IO
+    appInfo'' <- updateFileRegistry cwd appInfo'
     -- Commit app info
-    liftIO $ I.writeManifest newAppInfo
+    liftIO $ I.writeManifest appInfo''
 
     -- Commit with the version
     command_ [] (utilPath </> "commit.sh") [newVersion]
 
-    logAction $ "Bumped version from " ++ version ++ " to " ++ newVersion
+    return (version, newVersion)
 
 -- | Bump a version, given a bump type
 incrementVersion :: Version
@@ -88,3 +94,47 @@ resetSubversion version index max
 
 updateVersion :: AI.AppInfo -> Version -> AI.AppInfo
 updateVersion manifest version = manifest { AI.version = version }
+
+-- | Read from the given directory and update the app manifest object.
+updateFileRegistry :: FilePath -> AI.AppInfo -> Action AI.AppInfo
+updateFileRegistry cwd appInfo = do
+    let appPath = cwd </> "app"
+    let assetPath = appPath </> "assets"
+    let imagePath = assetPath </> "images"
+    let fontPath = assetPath </> "fonts"
+
+    -- Helper functions
+    let find = \path pttrn ->
+                 command [] "find" [ path
+                                   -- Must not be hidden
+                                   , "-not" , "-name", ".*"
+                                   -- Must match pattern
+                                   , "-name" , pttrn
+                                   -- Must be a file
+                                   , "-type" , "f"]
+    let split = (fmap unpack) . (splitOn "\n") . pack
+    let makeRelative' = makeRelative cwd
+    let filterNames = filter ((> 0) . length)
+    let prepareFileList = filterNames . (fmap $ makeRelative cwd) . split
+
+    -- Collect eligible files
+    Stdout scripts <- find appPath "*.js"
+    Stdout styles <- find appPath "*.styl"
+    Stdout markups <- find appPath "*.jade"
+    Stdout images <- find imagePath "*"
+    Stdout fonts <- find fontPath "*"
+
+    -- Convert to arrays and make relative to cwd
+    let scripts' = prepareFileList scripts
+    let styles' = prepareFileList styles
+    let markups' = prepareFileList markups
+    let images' = prepareFileList images
+    let fonts' = prepareFileList fonts
+
+    -- Update manifest
+    return appInfo { AI.images    = images'
+                   , AI.scripts   = scripts'
+                   , AI.styles    = styles'
+                   , AI.templates = markups'
+                   , AI.fonts     = fonts'
+                   }
