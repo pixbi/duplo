@@ -21,6 +21,7 @@ import System.Directory (doesFileExist)
 import Development.Duplo.Types.AppInfo (AppInfo(..))
 import qualified Development.Duplo.Types.AppInfo as AI
 import Data.Aeson (encode, decode)
+import Data.Aeson.Encode.Pretty (encodePretty)
 import Data.Maybe (fromJust)
 import System.FilePath.FilePather.Find (findp)
 import System.FilePath.FilePather.FilePathPredicate (always)
@@ -52,7 +53,7 @@ readManifest' path = do
       Just a  -> MaybeT $ return $ Just a
 
 writeManifest :: AppInfo -> IO ()
-writeManifest = (writeFile manifestName) . BS.unpack . encode
+writeManifest = (writeFile manifestName) . BS.unpack . encodePretty
 
 -- | Get the app's Component.IO ID
 appId :: AppInfo -> String
