@@ -6,7 +6,7 @@ version=$1
 git add component.json
 git commit -m "Bump version to v"$version
 # Merge into live
-git checkout -b live
+git checkout live
 # Always force the new changes
 git merge master -X theirs
 # Apply tag
