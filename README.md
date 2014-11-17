@@ -103,6 +103,17 @@ on which duplo is run does duplo execute `app/index.js`. Note that
 consuming application does not see library index files when building the
 project.
 
+Note that duplo only inspects the *top-level* `define()`. If you use
+`require()`, your program may not execute as duplo is not aware of anything
+other `define()` declarations. The proper way to declare an entry point in
+`app/index.js` is:
+
+```js
+define('main', [/* ... dependencies ... */], function (/* ... dependencies ... */) {
+  // Code here ...
+});
+```
+
 
 ## Application Parameterization
 
