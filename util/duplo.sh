@@ -135,7 +135,7 @@ case "$cmd" in
     cmd=init
 
     if [ -z "$arg1" -o -z "$arg2" ]; then
-      echo "There must be a name and a repo."
+      echo "There must be a GitHub user and a repo name."
       echo ""
       exit 1
     fi

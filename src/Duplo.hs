@@ -173,7 +173,7 @@ main = do
       logAction $ "Creating new duplo project " ++ name
 
       -- Initialize with boilerplate
-      command_ [] (utilPath </> "init-boilerplate") [src, dest]
+      command_ [] (utilPath </> "init-boilerplate.sh") [src, dest]
 
       -- Update fields
       Just appInfo <- liftIO $ runMaybeT $ I.readManifest
