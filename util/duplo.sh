@@ -124,9 +124,14 @@ case "$cmd" in
     forever=true
     ;;
 
+  # Production
+  build)
+    DUPLO_ENV=build
+    ;;
+
   # Testing forces an environment change
   test)
-    DUPLO_ENV="test"
+    DUPLO_ENV=test
     cmd=build
     ;;
 
@@ -142,7 +147,7 @@ case "$cmd" in
     ;;
 
   # Other allowed commands are passed through
-  build|clean)
+  clean)
     ;;
 
   # Default to help
