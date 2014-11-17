@@ -48,7 +48,7 @@ commit config level = do
     -- Update app info
     let appInfo' = updateVersion appInfo newVersion
     -- Update registered file list with Component.IO
-    appInfo'' <- updateFileRegistry cwd appInfo'
+    appInfo'' <- updateFileRegistry config appInfo'
     -- Commit app info
     liftIO $ I.writeManifest appInfo''
 
@@ -96,22 +96,17 @@ updateVersion :: AI.AppInfo -> Version -> AI.AppInfo
 updateVersion manifest version = manifest { AI.version = version }
 
 -- | Read from the given directory and update the app manifest object.
-updateFileRegistry :: FilePath -> AI.AppInfo -> Action AI.AppInfo
-updateFileRegistry cwd appInfo = do
+updateFileRegistry :: C.BuildConfig -> AI.AppInfo -> Action AI.AppInfo
+updateFileRegistry config appInfo = do
+    let cwd = config ^. C.cwd
+    let utilPath = config ^. C.utilPath
     let appPath = cwd </> "app"
     let assetPath = appPath </> "assets"
     let imagePath = assetPath </> "images"
     let fontPath = assetPath </> "fonts"
 
     -- Helper functions
-    let find = \path pttrn ->
-                 command [] "find" [ path
-                                   -- Must not be hidden
-                                   , "-not" , "-name", ".*"
-                                   -- Must match pattern
-                                   , "-name" , pttrn
-                                   -- Must be a file
-                                   , "-type" , "f"]
+    let find = \path pttrn -> command [] (utilPath </> "find.sh") [path, pttrn]
     let split = (fmap unpack) . (splitOn "\n") . pack
     let makeRelative' = makeRelative cwd
     let filterNames = filter ((> 0) . length)
