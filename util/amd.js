@@ -15,6 +15,12 @@ rl.on('line', function(line) {
 });
 
 rl.on('close', function() {
-  console.log(amdclean.clean(code));
+  console.log(amdclean.clean({
+    code: code,
+    wrap: {
+      start: '(function(window, document, Math, localStorage, screen, navigator, location, undefined) {\n',
+      end: '\n}(window, document, Math, localStorage, screen, navigator, location));'
+    }
+  }));
   code = "";
 });
