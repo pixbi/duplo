@@ -42,6 +42,7 @@ build config = \ out -> do
 
   -- These paths need to be expanded by Shake
   let dynamicPaths = [ "app/modules//*.js"
+                     , "components/*/app//*.js"
                      , "components/*/app/modules//*.js"
                      -- Compile dev files in dev mode as well.
                      ] ++ if   C.isInDev config
