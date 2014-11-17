@@ -95,6 +95,9 @@ main = do
              ++ "DUPLO_IN (app parameters)       : "
              ++ duploIn ++ "\n"
 
+  -- Give it some space
+  putStrLn "\n----------------------------------------"
+
   -- We don't always show the environment info, or the app info, depending
   -- on the mode.
   if   cmd == "version"
