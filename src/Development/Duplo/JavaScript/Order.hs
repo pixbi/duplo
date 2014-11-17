@@ -1,5 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 {-# LANGUAGE DeriveDataTypeable #-}
+{-# LANGUAGE BangPatterns #-}
 
 module Development.Duplo.JavaScript.Order
   ( order
@@ -16,6 +17,7 @@ import Control.Exception (Exception, throw)
 import Data.Typeable (Typeable)
 
 data JSCompilerException = ModuleNotFoundException ModuleName
+                         | CircularDependencyException [ModuleName]
   deriving (Show, Typeable)
 instance Exception JSCompilerException
 
@@ -110,16 +112,24 @@ byDepScore a b = compare (_score a) (_score b)
 
 -- | Given a module list, find all the dependency scores of the constituent
 -- modules.
-computeScores :: OrderedModules ()
+computeScores :: OrderedModules [DepScore]
 computeScores = do
     mods <- get
     -- Put the modules in state to be re-ordered as well as extract the
     -- names by placing it in the State as values.
-    mapM_ getDepScore $ fmap _name mods
+    mapM (getDepScore []) $ fmap _name mods
 
--- | Given a module name, get its score
-getDepScore :: ModuleName -> OrderedModules DepScore
-getDepScore modName = do
+-- | Given a module name, get its score.
+getDepScore :: [ModuleName] -> ModuleName -> OrderedModules DepScore
+getDepScore history modName = do
+    -- We go nuclear when there's circular dependency.
+    let history' = (modName:history)
+             -- If it's in the recorded modules
+    let !_ = if   modName `elem` history
+             -- Display the duplicate module
+             then throw $ CircularDependencyException $ reverse history'
+             -- Boilerplate
+             else history'
     -- Take out the modules.
     mods <- get
     -- Assume module exist, as it should at this point.
@@ -136,7 +146,7 @@ getDepScore modName = do
                   -- Re-wrap with the score as the result.
                   Just score -> state $ \_ -> (score, mods)
                   -- Go through the dependencies' individual scores.
-                  Nothing -> getDepScore' modDeps
+                  nothing -> getDepScore' history' modDeps
     -- Update the score.
     let newMod = mod & score .~ (Just depScore)
     -- TODO: somehow can't get Lens to work. Doing the old fashion way.
@@ -146,5 +156,6 @@ getDepScore modName = do
     return depScore
 
 -- | Get a module's dependency score given its dependencies.
-getDepScore' :: [ModuleName] -> OrderedModules DepScore
-getDepScore' modNames = liftM (foldr (+) 1) (mapM getDepScore modNames)
+getDepScore' :: [ModuleName] -> [ModuleName] -> OrderedModules DepScore
+getDepScore' history modNames =
+    liftM ((1 +) . sum) $ mapM (getDepScore history) modNames
