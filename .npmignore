@@ -1,12 +1,10 @@
 src/
 .cabal-sandbox/
-
 dist/
 !dist/build/
-
+*-tmp
 cabal.sandbox.config
 Setup.hs
-
 *.hi
 *.o
 *.hs
