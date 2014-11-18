@@ -10,7 +10,7 @@ import Language.JavaScript.Parser (JSNode(..), Node(..), TokenPosn(..))
 import Control.Monad.Writer.Lazy (Writer, tell, runWriter)
 import Control.Monad.State.Lazy (State, get, put, state, execState)
 import Data.Maybe (isJust, fromJust)
-import Data.List (findIndex, sortBy, intersperse)
+import Data.List (findIndex, sortBy, intersperse, nubBy, reverse)
 import Control.Monad (liftM)
 import Control.Lens
 import Control.Exception (Exception, throw)
@@ -102,7 +102,7 @@ runModule mod = _node mod
 -- | Reorder all the applicable modules
 reorder :: [Module] -> [Module]
 reorder mods =
-    sorted
+    nubbed
   where
     -- Score all the modules
     scored = execState computeScores mods
@@ -110,6 +110,8 @@ reorder mods =
     filtered = filter withScore scored
     -- Sort by score
     sorted = sortBy byDepScore filtered
+    -- Deduplicate, keeping the higher score ones
+    nubbed = reverse $ nubBy (\x y -> _name x == _name y) $ reverse sorted
 
 withScore :: Module -> Bool
 withScore mod = case _score mod of
