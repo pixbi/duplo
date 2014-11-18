@@ -9,6 +9,7 @@ import Development.Duplo.Utilities
          , logAction
          , expandPaths
          , compile
+         , createIntermediaryDirectories
          )
 import Development.Shake
 import Development.Shake.FilePath ((</>))
@@ -31,10 +32,15 @@ build :: C.BuildConfig
 build config = \ out -> do
   lift $ logAction "Building scripts"
 
-  let cwd     = config ^. C.cwd
-  let util    = config ^. C.utilPath
-  let env     = config ^. C.env
-  let input   = config ^. C.input
+  let cwd         = config ^. C.cwd
+  let util        = config ^. C.utilPath
+  let env         = config ^. C.env
+  let input       = config ^. C.input
+  let devPath     = config ^. C.devPath
+  let devCodePath = devPath </> "modules/index.js"
+
+  -- Preconditions
+  lift $ createIntermediaryDirectories devCodePath
 
   -- These paths don't need to be expanded
   let staticPaths = [ "app/index.js"

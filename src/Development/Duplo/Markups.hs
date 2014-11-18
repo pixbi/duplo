@@ -3,10 +3,10 @@ module Development.Duplo.Markups
   ) where
 
 import Development.Duplo.Utilities
-         ( getDirectoryFilesInOrder
-         , logAction
+         ( logAction
          , expandPaths
          , compile
+         , createIntermediaryDirectories
          )
 import Development.Shake
 import Development.Shake.FilePath ((</>))
@@ -44,14 +44,18 @@ build config = \ out -> do
   -- ourselves?
   lift $ alwaysRerun
 
-  let cwd          = config ^. C.cwd
-  let utilPath     = config ^. C.utilPath
-  let devPath      = config ^. C.devPath
-  let assetsPath   = config ^. C.assetsPath
-  let defaultsPath = config ^. C.defaultsPath
-  let targetPath   = config ^. C.targetPath
-  let refTagsPath  = defaultsPath </> "head.html"
-  let devAssetsPath = devPath </> "assets/"
+  let cwd           = config ^. C.cwd
+  let utilPath      = config ^. C.utilPath
+  let devPath       = config ^. C.devPath
+  let assetsPath    = config ^. C.assetsPath
+  let defaultsPath  = config ^. C.defaultsPath
+  let targetPath    = config ^. C.targetPath
+  let refTagsPath   = defaultsPath </> "head.html"
+  let devAssetsPath = devPath </> "assets"
+  let devCodePath   = devPath </> "modules/index.jade"
+
+  -- Preconditions
+  lift $ createIntermediaryDirectories devCodePath
 
   -- These paths don't need to be expanded
   let staticPaths = [ "app/index.jade"
@@ -61,7 +65,7 @@ build config = \ out -> do
   let dynamicPaths = [ "components/*/app/index.jade"
                      -- Compile dev files in dev mode as well.
                      ] ++ if   C.isInDev config
-                          then ["dev/modules//*.jade"]
+                          then [devCodePath ++ "//*.jade"]
                           else []
 
   -- Merge both types of paths

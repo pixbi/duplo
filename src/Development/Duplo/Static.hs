@@ -4,7 +4,10 @@ module Development.Duplo.Static
   , qualify
   ) where
 
-import Development.Duplo.Utilities (logAction)
+import Development.Duplo.Utilities
+         ( logAction
+         , createIntermediaryDirectories
+         )
 import Development.Shake
 import qualified Development.Duplo.Config as C
 import Control.Lens hiding (Action)
@@ -20,16 +23,16 @@ import Development.Duplo.FileList
          )
 import qualified Development.Duplo.FileList as FileList (filePath)
 import Development.Shake.FilePath ((</>))
-import System.FilePath.Posix (joinPath, splitPath)
 
 build :: C.BuildConfig
       -> [FilePath]
       -> Action ()
 build config = \ outs -> do
-  let targetPath = config ^. C.targetPath
-  let assetsPath = config ^. C.assetsPath
-  let depsPath   = config ^. C.depsPath
-  let devPath    = config ^. C.devPath
+  let targetPath   = config ^. C.targetPath
+  let assetsPath   = config ^. C.assetsPath
+  let depsPath     = config ^. C.depsPath
+  let devPath      = config ^. C.devPath
+  let devAssetPath = devPath </> "assets"
 
   -- Convert to relative paths for copying
   let filesRel = fmap (makeRelative targetPath) outs
@@ -38,8 +41,9 @@ build config = \ outs -> do
   -- Look in components' asset directories as well
   depAssetDirs <- getDirectoryDirs depsPath
   -- Assets are relative to their own asset directories
-  let depAssetPaths = [ base </> dep </> "app/assets"
-                      | base <- [depsPath]
+  let depAssetPaths = [ base </> dep </> src </> "assets"
+                      | src  <- ["app"]
+                      , base <- [depsPath]
                       , dep  <- depAssetDirs
                       ]
   -- Make the actual file records with the asset directory as the base
@@ -48,7 +52,7 @@ build config = \ outs -> do
                       , file <- filesRel
                       ]
   -- Look in the dev directory as well
-  let devFiles = makeFiles devPath filesRel
+  let devFiles = makeFiles devAssetPath filesRel
 
   -- Combine matching files into lists each pointing to its corresponding
   -- output file. Note that this is in order of precedence.
@@ -80,13 +84,6 @@ build config = \ outs -> do
 
   -- Copy all files
   zipWithM_ copyFileChanged froms tos
-
--- | This should be self-evident.
-createIntermediaryDirectories :: String -> Action ()
-createIntermediaryDirectories path =
-    command_ [] "mkdir" ["-p", dir]
-  where
-    dir = joinPath $ init $ splitPath path
 
 -- | Build dependency list for static files
 deps :: C.BuildConfig

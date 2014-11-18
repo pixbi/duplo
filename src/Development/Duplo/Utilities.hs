@@ -4,6 +4,7 @@ module Development.Duplo.Utilities
   , expandPaths
   , compile
   , FileProcessor
+  , createIntermediaryDirectories
   ) where
 
 import Prelude hiding (readFile)
@@ -20,6 +21,7 @@ import Control.Lens hiding (Action)
 import qualified Development.Duplo.Config as C
 import Control.Monad.Trans.Maybe (MaybeT(..))
 import Control.Monad.Trans.Class (lift)
+import System.FilePath.Posix (joinPath, splitPath)
 
 type FileProcessor = [File] -> [File]
 type StringProcessor = String -> String
@@ -110,3 +112,10 @@ expandPaths cwd staticPaths dynamicPaths = do
   staticExpanded <- filterM doesFileExist $ expand staticPaths
   dynamicExpanded <- getDirectoryFilesInOrder cwd dynamicPaths
   return $ staticExpanded ++ expand dynamicExpanded
+
+-- | This should be self-evident.
+createIntermediaryDirectories :: String -> Action ()
+createIntermediaryDirectories path =
+    command_ [] "mkdir" ["-p", dir]
+  where
+    dir = joinPath $ init $ splitPath path

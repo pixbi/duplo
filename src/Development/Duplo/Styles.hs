@@ -7,6 +7,7 @@ import Development.Duplo.Utilities
          , logAction
          , expandPaths
          , compile
+         , createIntermediaryDirectories
          )
 import Development.Shake
 import Development.Shake.FilePath ((</>))
@@ -21,8 +22,13 @@ build :: C.BuildConfig
 build config = \ out -> do
   lift $ logAction "Building styles"
 
-  let cwd      = config ^. C.cwd
-  let utilPath = config ^. C.utilPath
+  let cwd         = config ^. C.cwd
+  let utilPath    = config ^. C.utilPath
+  let devPath     = config ^. C.devPath
+  let devCodePath = devPath </> "modules/index.styl"
+
+  -- Preconditions
+  lift $ createIntermediaryDirectories devCodePath
 
   -- These paths don't need to be expanded
   let staticPaths = [ "app/styl/variables.styl"
