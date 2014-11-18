@@ -104,8 +104,17 @@ reorder :: [Module] -> [Module]
 reorder mods =
     sorted
   where
-    mods' = execState computeScores mods
-    sorted = sortBy byDepScore mods'
+    -- Score all the modules
+    scored = execState computeScores mods
+    -- Filter out initial modules that may have a score of `Nothing`
+    filtered = filter withScore scored
+    -- Sort by score
+    sorted = sortBy byDepScore filtered
+
+withScore :: Module -> Bool
+withScore mod = case _score mod of
+                  Just _ -> True
+                  Nothing -> False
 
 byDepScore :: Module -> Module -> Ordering
 byDepScore a b = compare (_score a) (_score b)
@@ -146,7 +155,7 @@ getDepScore history modName = do
                   -- Re-wrap with the score as the result.
                   Just score -> state $ \_ -> (score, mods)
                   -- Go through the dependencies' individual scores.
-                  nothing -> getDepScore' history' modDeps
+                  Nothing -> getDepScore' history' modDeps
     -- Update the score.
     let newMod = mod & score .~ (Just depScore)
     -- TODO: somehow can't get Lens to work. Doing the old fashion way.
