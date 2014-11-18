@@ -144,7 +144,7 @@ main = do
       -- Clean only when the target is there
       needCleaning <- doesDirectoryExist targetPath
       if   needCleaning
-      then removeFilesAfter targetPath ["//*"]
+      then liftIO $ removeFiles targetPath ["//*"]
       else return ()
 
       logAction "Clean completed"
@@ -154,6 +154,11 @@ main = do
       return ()
 
     "build" ~> do
+      -- Always rebuild if we're building for production.
+      if   C.isInDev buildConfig
+      then return ()
+      else need ["clean"]
+
       -- Copy over static files first
       need ["static"]
       -- Then compile
