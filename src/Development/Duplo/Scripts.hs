@@ -1,3 +1,5 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 module Development.Duplo.Scripts
   ( build
   ) where
@@ -14,7 +16,7 @@ import Development.Duplo.Utilities
          )
 import Development.Shake
 import Development.Shake.FilePath ((</>))
-import Data.Text (replace, pack, unpack)
+import Data.Text (Text, replace, pack, unpack)
 import Development.Duplo.Files (File(..), pseudoFile)
 import qualified Development.Duplo.Config as C
 import Control.Lens hiding (Action)
@@ -24,6 +26,7 @@ import qualified Language.JavaScript.Parser as JS
 import Development.Duplo.JavaScript.Order (order)
 import Control.Exception (throw)
 import Development.Duplo.Types.JavaScript
+import Control.Applicative ((<*>), (<$>))
 
       -- The environment
 build :: C.BuildConfig
@@ -60,15 +63,7 @@ build config = \ out -> do
   paths <- lift $ expandPaths cwd staticPaths dynamicPaths
 
   -- Sanitize input
-  let duploIn = unpack $
-                  -- No newlines
-                  replace (pack "\n") (pack "") $
-                    -- Single-quotes
-                    replace (pack "'") (pack "\\'") $
-                      -- Double-quotes
-                      replace (pack "\\") (pack "\\\\") $
-                        pack input
-
+  let duploIn = sanitize input
   -- Make sure we hvae at least something
   let duploIn' = if length duploIn > 0 then duploIn else "{}"
 
@@ -98,3 +93,14 @@ build config = \ out -> do
 
   -- Write it to disk
   lift $ writeFileChanged out compiled
+
+-- | Sanitize script input
+sanitize :: String -> String
+sanitize = unpack . sanitize' . pack
+
+-- | Text version of `sanitize`
+sanitize' :: Text -> Text
+sanitize' input = foldr id input
+               -- Curry sanitizing functions
+               $ replace <$> ["\n", "'", "\\"]
+                         <*> ["", "\\", "\\\\"]

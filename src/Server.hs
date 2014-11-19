@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 import Network.Wai (pathInfo)
 import Network.HTTP.Types (status200)
 import Control.Monad.Trans (liftIO)

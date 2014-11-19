@@ -1,5 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE BangPatterns #-}
+{-# LANGUAGE TemplateHaskell, BangPatterns #-}
 
 module Development.Duplo.JavaScript.Order
   ( order
