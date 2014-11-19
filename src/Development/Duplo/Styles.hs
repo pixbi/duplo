@@ -8,17 +8,17 @@ import Development.Duplo.Utilities
          , expandPaths
          , compile
          , createIntermediaryDirectories
+         , CompiledContent
          )
 import Development.Shake
 import Development.Shake.FilePath ((</>))
 import qualified Development.Duplo.Config as C
 import Control.Lens hiding (Action)
-import Control.Monad.Trans.Maybe (MaybeT(..))
 import Control.Monad.Trans.Class (lift)
 
 build :: C.BuildConfig
       -> FilePath
-      -> MaybeT Action ()
+      -> CompiledContent ()
 build config = \ out -> do
   lift $ logAction "Building styles"
 
@@ -58,7 +58,7 @@ build config = \ out -> do
   let compiler = utilPath </> "styles.sh"
 
   -- Compile it
-  compiled <- compile config compiler [] paths id id
+  compiled <- compile config compiler [] paths (return . id) (return . id)
 
   -- Write it to disk
   lift $ writeFileChanged out compiled

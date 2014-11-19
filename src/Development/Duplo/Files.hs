@@ -23,7 +23,7 @@ import Development.Duplo.ComponentIO (appId)
 import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)
 import Control.Monad.Trans.Class (lift)
 import qualified Development.Duplo.ComponentIO as I
-import Control.Monad.Trans.Maybe (MaybeT(..))
+import Control.Monad.Except (ExceptT(..), runExceptT)
 
 type FileName    = String
 type FileContent = String
@@ -47,11 +47,11 @@ pseudoFile = File { _filePath    = ""
 
 makeLenses ''File
 
-readFile :: FilePath -> FilePath -> MaybeT Action File
+readFile :: FilePath -> FilePath -> ExceptT String Action File
 readFile cwd path = do
   let (fileDir, fileName) = parseFilePath path
   fileContent    <- lift $ readFile' path
-  Just appInfo   <- liftIO $ runMaybeT $ I.readManifest
+  Right appInfo  <- liftIO $ runExceptT $ I.readManifest
   let appId'      = appId appInfo
   let componentId = parseComponentId cwd appId' fileDir
   let isRoot      = componentId == appId'

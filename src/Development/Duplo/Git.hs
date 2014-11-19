@@ -12,11 +12,9 @@ import Control.Lens hiding (Action, Level)
 import qualified Development.Duplo.Config as C
 import Data.List (intercalate, filter)
 import Data.Text (unpack, pack, splitOn)
-import Data.Maybe (fromMaybe)
 import System.FilePath.Posix (makeRelative)
 import Control.Applicative ((<$>))
-import Debug.Trace (trace)
-import Control.Monad.Trans.Maybe (MaybeT(..))
+import Control.Monad.Except (runExceptT)
 
 type Level         = String
 type Version       = String
@@ -33,7 +31,7 @@ commit :: C.BuildConfig
        -> Action (Version, Version)
 commit config level = do
     let utilPath = config ^. C.utilPath
-    Just appInfo <- liftIO $ runMaybeT $ I.readManifest
+    Right appInfo <- liftIO $ runExceptT $ I.readManifest
     let version = AI.version appInfo
     let cwd = config ^. C.cwd
     let manifest = cwd </> "component.json"

@@ -7,6 +7,7 @@ import Development.Duplo.Utilities
          , expandPaths
          , compile
          , createIntermediaryDirectories
+         , CompiledContent
          )
 import Development.Shake
 import Development.Shake.FilePath ((</>))
@@ -30,12 +31,11 @@ import qualified Development.Duplo.FileList as FileList (filePath)
 import Data.String.Utils (replace)
 import Data.Maybe (fromMaybe)
 import Control.Applicative ((<$>))
-import Control.Monad.Trans.Maybe (MaybeT(..))
 import Control.Monad.Trans.Class (lift)
 
 build :: C.BuildConfig
       -> FilePath
-      -> MaybeT Action ()
+      -> CompiledContent ()
 build config = \ out -> do
   lift $ logAction "Building markups"
   -- TODO: using Jade's include system means that all files are loaded by
@@ -75,9 +75,8 @@ build config = \ out -> do
   let compiler = utilPath </> "markups-compile.sh"
 
   -- Compile it
-  let pre files = fmap (rewriteIncludes cwd files) files
-  let post = id
-  compiled <- compile config compiler [] paths pre post
+  let preCompile files = return $ fmap (rewriteIncludes cwd files) files
+  compiled <- compile config compiler [] paths preCompile (return . id)
 
   -- Pull index page from dev, assets, then default otherwise, in that order.
   let defaultIndex    = makeFile defaultsPath "index.html"
@@ -91,12 +90,13 @@ build config = \ out -> do
 
   -- Inject CSS/JS references
   refTags <- lift $ readFile' refTagsPath
-  let indexWithRefs   = replace "</head>" (refTags ++ "</head>") indexWithMarkup
+  let indexWithRefs = replace "</head>" (refTags ++ "</head>") indexWithMarkup
 
   -- Path to the minifier
   let minifier = utilPath </> "markups-minify.sh"
   -- Minify it
-  minified <- compile config minifier [] paths id $ \_ -> indexWithRefs
+  let postMinify _ = return indexWithRefs
+  minified <- compile config minifier [] paths (return . id) postMinify
 
   -- Write it to disk
   lift $ writeFileChanged out minified
@@ -148,9 +148,9 @@ rewriteInclude defaultId line =
           relPath' = (</>) "app/modules" $ joinPath relPath
           compName = case (parseComponentId depId) of
                        -- There is a component ID
-                       Just (user, repo) -> depId
+                       Right (user, repo) -> depId
                        -- Use default component ID
-                       Nothing -> defaultId
+                       Left _ -> defaultId
           compPath = if   length compName > 0
                      then "components" </> compName
                      else ""

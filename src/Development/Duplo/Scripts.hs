@@ -10,6 +10,7 @@ import Development.Duplo.Utilities
          , expandPaths
          , compile
          , createIntermediaryDirectories
+         , CompiledContent
          )
 import Development.Shake
 import Development.Shake.FilePath ((</>))
@@ -17,18 +18,19 @@ import Data.Text (replace, pack, unpack)
 import Development.Duplo.Files (File(..), pseudoFile)
 import qualified Development.Duplo.Config as C
 import Control.Lens hiding (Action)
-import Control.Monad.Trans.Maybe (MaybeT(..))
 import Control.Monad.Trans.Class (lift)
 import Development.Duplo.ComponentIO (extractCompVersions)
-import Language.JavaScript.Parser (readJs, renderToString)
+import qualified Language.JavaScript.Parser as JS
 import Development.Duplo.JavaScript.Order (order)
+import Control.Exception (throw)
+import Development.Duplo.Types.JavaScript
 
       -- The environment
 build :: C.BuildConfig
       -- The output file
       -> FilePath
       -- Doesn't need anything in return
-      -> MaybeT Action ()
+      -> CompiledContent ()
 build config = \ out -> do
   lift $ logAction "Building scripts"
 
@@ -85,8 +87,8 @@ build config = \ out -> do
 
   -- Create a pseudo file that contains the environment variables and
   -- prepend the file.
-  let pre files = ((pseudoFile { _fileContent = envVars }) : files)
-  let post = renderToString . order . readJs
+  let pre = return . (:) (pseudoFile { _fileContent = envVars })
+  let post = return . either (throw . ParseException) (JS.renderToString . order) . flip JS.parse ""
 
   -- Build it
   compiled <- compile config compiler [] paths pre post

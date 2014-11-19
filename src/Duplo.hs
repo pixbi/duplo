@@ -17,6 +17,7 @@ import Data.ByteString.Char8 (pack, unpack)
 import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
 import Control.Monad (void)
 import qualified Development.Duplo.Types.AppInfo as AI
+import Control.Monad.Except (runExceptT)
 
 main :: IO ()
 main = do
@@ -66,22 +67,19 @@ main = do
   let targetMarkup = targetPath </> "index.html"
 
   -- Gather information about this project
-  appNameMaybe    <- runMaybeT $ getProperty AI.name
-  appVersionMaybe <- runMaybeT $ getProperty AI.version
-  appIdMaybe      <- runMaybeT $ getProperty I.appId
-  let appName'     = maybe "" id appNameMaybe
-  let appVersion'  = maybe "" id appVersionMaybe
-  let appId'       = maybe "" id appIdMaybe
+  appName <- getProperty AI.name ""
+  appVersion <- getProperty AI.version ""
+  appId <- getProperty I.appId ""
 
   -- Report back what's given for confirmation
   let appInfo = "\n"
              ++ ">> Current Directory\n"
              ++ "Application name          : "
-             ++ appName' ++ "\n"
+             ++ appName ++ "\n"
              ++ "Application version       : "
-             ++ appVersion' ++ "\n"
+             ++ appVersion ++ "\n"
              ++ "Component.IO repo ID      : "
-             ++ appId' ++ "\n"
+             ++ appId ++ "\n"
              ++ "Current working directory : "
              ++ cwd ++ "\n"
              ++ "duplo is installed at     : "
@@ -107,9 +105,9 @@ main = do
        else putStrLn envInfo
 
   -- Construct environment
-  let buildConfig = C.BuildConfig { C._appName      = appName'
-                                  , C._appVersion   = appVersion'
-                                  , C._appId        = appId'
+  let buildConfig = C.BuildConfig { C._appName      = appName
+                                  , C._appVersion   = appVersion
+                                  , C._appId        = appId
                                   , C._cwd          = cwd
                                   , C._duploPath    = duploPath
                                   , C._env          = duploEnv
@@ -127,9 +125,9 @@ main = do
                                   }
 
   shake shakeOptions $ do
-    targetScript *> (void . runMaybeT . Scripts.build buildConfig)
-    targetStyle  *> (void . runMaybeT . Styles.build buildConfig)
-    targetMarkup *> (void . runMaybeT . Markups.build buildConfig)
+    targetScript *> (void . runExceptT . Scripts.build buildConfig)
+    targetStyle  *> (void . runExceptT . Styles.build buildConfig)
+    targetMarkup *> (void . runExceptT . Markups.build buildConfig)
 
     -- Manually bootstrap Shake
     action $ do
@@ -184,7 +182,7 @@ main = do
       command_ [] (utilPath </> "init-boilerplate.sh") [src, dest]
 
       -- Update fields
-      Just appInfo <- liftIO $ runMaybeT $ I.readManifest
+      Right appInfo <- liftIO $ runExceptT $ I.readManifest
       let newAppInfo = appInfo { AI.name = repo
                                , AI.repo = name
                                }
@@ -197,8 +195,14 @@ main = do
       logAction $ "Project created at " ++ dest
 
 -- | Get a particular manifest property property
--- | TODO: use Lens?
-getProperty :: (AI.AppInfo -> a) -> MaybeT IO a
-getProperty accessor = do
-    appInfo <- I.readManifest
-    return $ accessor appInfo
+-- | TODO: use Lens
+            -- Accessor
+getProperty :: (AI.AppInfo -> a)
+            -- Default value
+            -> a
+            -> IO a
+getProperty accessor defValue = do
+    -- Function that returns default value
+    let retDef _ = defValue
+    appInfo <- liftIO $ runExceptT I.readManifest
+    return $ either retDef accessor appInfo

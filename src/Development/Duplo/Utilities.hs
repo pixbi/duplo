@@ -5,6 +5,7 @@ module Development.Duplo.Utilities
   , compile
   , FileProcessor
   , createIntermediaryDirectories
+  , CompiledContent
   ) where
 
 import Prelude hiding (readFile)
@@ -19,12 +20,13 @@ import Development.Duplo.Files
 import Development.Shake.FilePath ((</>))
 import Control.Lens hiding (Action)
 import qualified Development.Duplo.Config as C
-import Control.Monad.Trans.Maybe (MaybeT(..))
+import Control.Monad.Except (ExceptT(..))
 import Control.Monad.Trans.Class (lift)
 import System.FilePath.Posix (joinPath, splitPath)
 
-type FileProcessor = [File] -> [File]
-type StringProcessor = String -> String
+type CompiledContent = ExceptT String Action
+type FileProcessor = [File] -> CompiledContent [File]
+type StringProcessor = String -> CompiledContent String
 
 getDirectoryFilesInOrder :: FilePath -> [FilePattern] -> Action [FilePath]
 getDirectoryFilesInOrder base patterns =
@@ -66,7 +68,7 @@ compile :: C.BuildConfig
         -- concatenated.
         -> StringProcessor
         -- The compiled content
-        -> MaybeT Action String
+        -> CompiledContent String
 compile config compiler params paths preprocess postprocess = do
   mapM (lift . putNormal . ("Including " ++)) paths
 
@@ -78,7 +80,7 @@ compile config compiler params paths preprocess postprocess = do
   files <- mapM (readFile cwd) paths
 
   -- Pass to processor for specific manipulation
-  let processed = preprocess files
+  processed <- preprocess files
 
   -- We only care about the content from this point on
   let contents = fmap (^. fileContent) processed
@@ -88,7 +90,7 @@ compile config compiler params paths preprocess postprocess = do
 
   -- Send string over to post-processor in case of any manipulation before
   -- handing off to the compiler. Add trailing newline for hygiene.
-  let postprocessed = (postprocess concatenated) ++ "\n"
+  postprocessed <- fmap (++ "\n") $ postprocess concatenated
 
   -- Paths should be available as environment variables
   envOpt <- addEnv [ ("DUPLO_UTIL", util)

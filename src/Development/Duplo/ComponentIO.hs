@@ -15,7 +15,7 @@ import qualified Data.Text as T (unpack, pack)
 import Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as BS (unpack, pack)
 import System.FilePath.Posix (splitDirectories)
-import Control.Monad.Trans.Maybe (MaybeT(..))
+import Control.Monad.Except (ExceptT(..), throwError)
 import Control.Monad.Trans.Class (lift)
 import System.Directory (doesFileExist)
 import Development.Duplo.Types.AppInfo (AppInfo(..))
@@ -35,22 +35,22 @@ type Version = (String, String)
 -- | Each application must have a `component.json`
 manifestName = "component.json"
 
-readManifest :: MaybeT IO AppInfo
+readManifest :: ExceptT String IO AppInfo
 readManifest = do
     exists <- liftIO $ doesFileExist manifestName
 
     if   exists
     then readManifest' manifestName
-    else MaybeT $ return Nothing
+    else throwError $ "Manifest expected at " ++ manifestName
 
-readManifest' :: FilePath -> MaybeT IO AppInfo
+readManifest' :: FilePath -> ExceptT String IO AppInfo
 readManifest' path = do
     manifest <- liftIO $ readFile path
     let maybeAppInfo = decode (BS.pack manifest) :: Maybe AppInfo
 
     case maybeAppInfo of
-      Nothing -> MaybeT $ return Nothing
-      Just a  -> MaybeT $ return $ Just a
+      Nothing -> ExceptT $ return $ Left $ "Unparsable manifest at " ++ path
+      Just a  -> ExceptT $ return $ Right a
 
 writeManifest :: AppInfo -> IO ()
 writeManifest = (writeFile manifestName) . BS.unpack . encodePretty
@@ -66,10 +66,10 @@ parseRepoInfo _ = ""
 
 -- | Given a possible component ID, return the user and the repo
 -- constituents
-parseComponentId :: String -> Maybe (String, String)
+parseComponentId :: String -> Either String (String, String)
 parseComponentId cId
-  | repoL > 0 = Just ((T.unpack user), (T.unpack repo))
-  | otherwise = Nothing
+  | repoL > 0 = Right ((T.unpack user), (T.unpack repo))
+  | otherwise = Left $ "No component ID found with " ++ cId
   where
     (user, repo) = breakOn (T.pack "-") (T.pack cId)
     repoL = length $ T.unpack repo

@@ -1,39 +1,22 @@
 {-# LANGUAGE TemplateHaskell #-}
-{-# LANGUAGE DeriveDataTypeable #-}
 {-# LANGUAGE BangPatterns #-}
 
 module Development.Duplo.JavaScript.Order
   ( order
+  , JSCompilerException(..)
   ) where
 
 import Language.JavaScript.Parser (JSNode(..), Node(..), TokenPosn(..))
 import Control.Monad.Writer.Lazy (Writer, tell, runWriter)
-import Control.Monad.State.Lazy (State, get, put, state, execState)
+import Control.Monad.State.Lazy (get, put, state, execState)
 import Data.Maybe (isJust, fromJust)
 import Data.List (findIndex, sortBy, intersperse, nubBy, reverse)
 import Control.Monad (liftM)
 import Control.Lens
-import Control.Exception (Exception, throw)
-import Data.Typeable (Typeable)
-
-data JSCompilerException = ModuleNotFoundException ModuleName
-                         | CircularDependencyException [ModuleName]
-  deriving (Show, Typeable)
-instance Exception JSCompilerException
-
-type ModuleName = String
-type DepScore = Int
--- A module consists of its name, its dependencies by names, and the node
--- itself.
-data Module = Module { _name :: ModuleName
-                     , _deps :: [ModuleName]
-                     , _node :: JSNode
-                     , _score :: Maybe DepScore
-                     } deriving (Show)
+import Control.Exception (throw)
+import Development.Duplo.Types.JavaScript
 
 makeLenses ''Module
-
-type OrderedModules = State [Module]
 
 -- | Reorder modules within the root node.
 order :: JSNode -> JSNode
