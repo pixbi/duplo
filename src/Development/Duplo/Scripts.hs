@@ -88,7 +88,10 @@ build config = \ out -> do
   -- Create a pseudo file that contains the environment variables and
   -- prepend the file.
   let pre = return . (:) (pseudoFile { _fileContent = envVars })
-  let post = return . either (throw . ParseException) (JS.renderToString . order) . flip JS.parse ""
+  let post = return
+           . either (throw . ParseException)
+                    (JS.renderToString . order)
+           . flip JS.parse ""
 
   -- Build it
   compiled <- compile config compiler [] paths pre post
