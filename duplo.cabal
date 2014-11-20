@@ -40,6 +40,7 @@ executable duplo
                     , mtl ==2.2.*
                     , system-filepath ==0.4.*
                     , aeson-pretty ==0.7.*
+                    , regex-compat ==0.95.*
   hs-source-dirs:     src/
   default-language:   Haskell2010
   default-extensions: OverloadedStrings

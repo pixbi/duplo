@@ -125,9 +125,9 @@ main = do
                                   }
 
   shake shakeOptions $ do
-    targetScript *> (void . runExceptT . Scripts.build buildConfig)
-    targetStyle  *> (void . runExceptT . Styles.build buildConfig)
     targetMarkup *> (void . runExceptT . Markups.build buildConfig)
+    targetStyle  *> (void . runExceptT . Styles.build buildConfig)
+    targetScript *> (void . runExceptT . Scripts.build buildConfig)
 
     -- Manually bootstrap Shake
     action $ do
@@ -193,6 +193,7 @@ main = do
       command_ [] (utilPath </> "init-git.sh") [name]
 
       logAction $ "Project created at " ++ dest
+
 
 -- | Get a particular manifest property property
 -- | TODO: use Lens

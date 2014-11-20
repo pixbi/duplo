@@ -108,6 +108,8 @@ compile config compiler params paths preprocess postprocess = do
   -- The output
   return compiled
 
+-- | Given a list of static and a list of dynamic paths, return a list of
+-- all paths, resolved to absolute paths.
 expandPaths :: String -> [String] -> [String] -> Action [String]
 expandPaths cwd staticPaths dynamicPaths = do
   let expand = map (cwd </>)
@@ -115,7 +117,9 @@ expandPaths cwd staticPaths dynamicPaths = do
   dynamicExpanded <- getDirectoryFilesInOrder cwd dynamicPaths
   return $ staticExpanded ++ expand dynamicExpanded
 
--- | This should be self-evident.
+-- | Create all the directories within a path if they do not exist. Note
+-- that the last segment is assumed to be the file and therefore not
+-- created.
 createIntermediaryDirectories :: String -> Action ()
 createIntermediaryDirectories path =
     command_ [] "mkdir" ["-p", dir]

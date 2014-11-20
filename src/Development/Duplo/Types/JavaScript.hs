@@ -6,19 +6,35 @@ module Development.Duplo.Types.JavaScript
   , DepScore
   , Module(..)
   , OrderedModules
+  , LineNumber
   ) where
 
 import Control.Exception (Exception)
 import Data.Typeable (Typeable)
 import Control.Monad.State.Lazy (State)
 import Language.JavaScript.Parser (JSNode(..))
+import Data.List (intercalate)
 
 data JSCompilerException = ModuleNotFoundException ModuleName
                          | CircularDependencyException [ModuleName]
-                         | ParseException String
-  deriving (Show, Typeable)
+                         | ParseException [String]
+                         -- When the compiler itself is buggy
+                         | InternalParserException String
+  deriving (Typeable)
+
 instance Exception JSCompilerException
 
+instance Show JSCompilerException where
+    show (ParseException e) =
+      "You have some syntax error in your JavaScript:\n" ++ unlines e
+    show (CircularDependencyException names) =
+      "Your module dependencies form a cycle:\n" ++ intercalate " => " names
+    show (ModuleNotFoundException name) =
+      "The module \"" ++ name ++ "\" is not found."
+    show (InternalParserException e) =
+      "Uh oh. The parser itself is misbehaving: " ++ e
+
+type LineNumber = Int
 type ModuleName = String
 type DepScore = Int
 -- A module consists of its name, its dependencies by names, and the node

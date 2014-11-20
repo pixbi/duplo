@@ -1,4 +1,4 @@
-{-# LANGUAGE OverloadedStrings #-}
+{-# LANGUAGE OverloadedStrings, ScopedTypeVariables #-}
 
 module Development.Duplo.Scripts
   ( build
@@ -16,7 +16,7 @@ import Development.Duplo.Utilities
          )
 import Development.Shake
 import Development.Shake.FilePath ((</>))
-import Data.Text (Text, replace, pack, unpack)
+import Data.Text.Lazy (Text, pack, unpack, replace, splitOn)
 import Development.Duplo.Files (File(..), pseudoFile)
 import qualified Development.Duplo.Config as C
 import Control.Lens hiding (Action)
@@ -24,10 +24,17 @@ import Control.Monad.Trans.Class (lift)
 import Development.Duplo.ComponentIO (extractCompVersions)
 import qualified Language.JavaScript.Parser as JS
 import Development.Duplo.JavaScript.Order (order)
-import Control.Exception (throw)
+import Control.Exception (throw, SomeException(..))
 import Development.Duplo.Types.JavaScript
 import Control.Applicative ((<*>), (<$>))
+import Language.JavaScript.Parser.SrcLocation (TokenPosn(..))
+import Text.Regex (mkRegex, matchRegex)
 
+-- | How many lines to display around the source of error (both ways).
+errorDisplayRange :: Int
+errorDisplayRange = 20
+
+-- | Build scripts
       -- The environment
 build :: C.BuildConfig
       -- The output file
@@ -83,10 +90,13 @@ build config = \ out -> do
   -- Create a pseudo file that contains the environment variables and
   -- prepend the file.
   let pre = return . (:) (pseudoFile { _fileContent = envVars })
-  let post = return
-           . either (throw . ParseException)
-                    (JS.renderToString . order)
-           . flip JS.parse ""
+  -- Reorder modules and print as string
+  let prepareJs = JS.renderToString . order
+  let post content = return
+                   -- Handle error
+                   $ either (handleParseError content) prepareJs
+                   -- Parse
+                   $ JS.parse content ""
 
   -- Build it
   compiled <- compile config compiler [] paths pre post
@@ -104,3 +114,48 @@ sanitize' input = foldr id input
                -- Curry sanitizing functions
                $ replace <$> ["\n", "'", "\\"]
                          <*> ["", "\\", "\\\\"]
+
+-- | Given the original content as string and an error message that is
+-- produced by `language-javascript` parser, throw an error.
+handleParseError :: String -> String -> String
+handleParseError content e =
+    throw $ ShakeException { shakeExceptionTarget = ""
+                           , shakeExceptionStack = []
+                           , shakeExceptionInner = SomeException
+                                                 $ ParseException
+                                                 $ badLines
+                           }
+  where
+    linedContent = fmap unpack $ splitOn "\n" $ pack content
+    lineNum = readParseError e
+    -- Display surrounding lines
+              -- Construct a list of target line numbers
+    lineRange = take errorDisplayRange
+              -- Turn into infinite list
+              $ iterate (+ 1)
+              -- Position the starting point
+              $ lineNum - errorDisplayRange `div` 2
+    badLines = fmap (showBadLine linedContent lineNum) lineRange
+
+-- | Given a file's lines, its line number, and the "target" line number
+-- that caused the parse error, format it for human-readable output.
+showBadLine :: [String] -> LineNumber -> LineNumber -> String
+showBadLine allLines badLineNum lineNum =
+    marker ++ " | " ++ line
+  where
+    line = allLines !! lineNum
+    lineNum' = show lineNum
+    marker = if   lineNum == badLineNum
+             then ">> " ++ lineNum'
+             else "   " ++ lineNum'
+
+-- | Because the parser's error isn't readable, we need to use RegExp to
+-- extract what we need for debugging.
+readParseError :: String -> LineNumber
+readParseError e =
+    case match of
+      Just m -> (read $ head m) :: Int
+      Nothing -> throw $ InternalParserException e
+  where
+    regex = mkRegex "TokenPn [0-9]+ ([0-9]+) [0-9]+"
+    match = matchRegex regex e
