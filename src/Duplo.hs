@@ -1,6 +1,6 @@
 import Control.Applicative ((<$>))
 import Data.Maybe (fromMaybe)
-import Development.Duplo.Utilities (logAction)
+import Development.Duplo.Utilities (logAction, getProperty)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
 import System.Environment (lookupEnv, getArgs)
@@ -193,17 +193,3 @@ main = do
       command_ [] (utilPath </> "init-git.sh") [name]
 
       logAction $ "Project created at " ++ dest
-
-
--- | Get a particular manifest property property
--- | TODO: use Lens
-            -- Accessor
-getProperty :: (AI.AppInfo -> a)
-            -- Default value
-            -> a
-            -> IO a
-getProperty accessor defValue = do
-    -- Function that returns default value
-    let retDef _ = defValue
-    appInfo <- liftIO $ runExceptT I.readManifest
-    return $ either retDef accessor appInfo
