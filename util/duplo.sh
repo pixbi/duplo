@@ -5,74 +5,74 @@
 # long-running tasks like a web server. Ultimately we want this to be in
 # Haskell as well. This is just easier to get started.
 
-# Arguments
-cmd=$1
-arg1=$2
-arg2=$3
-arg3=$4
+## Arguments
+#cmd=$1
+#arg1=$2
+#arg2=$3
+#arg3=$4
 
 # Defaults
 
-if [ -z "$PORT" ]; then
-  PORT=8888
-fi
+#if [ -z "$PORT" ]; then
+#  PORT=8888
+#fi
 
-if [ -z "$DUPLO_ENV" ]; then
-  DUPLO_ENV=dev
-fi
+#if [ -z "$DUPLO_ENV" ]; then
+#  DUPLO_ENV=dev
+#fi
 
-# Common paths
-cwd="$( pwd )"
+## Common paths
+#cwd="$( pwd )"
 
-# Get the full path, even if the file is run a symlink and/or with a relative
-# path
-path=`perl -e 'use Cwd "abs_path"; print abs_path(shift)' $0`
-# Take the directory of that
-dir="$( dirname "$path" )"
-# Get the project's root
-root="$( cd "$dir"/../ && pwd )"
+## Get the full path, even if the file is run a symlink and/or with a relative
+## path
+#path=`perl -e 'use Cwd "abs_path"; print abs_path(shift)' $0`
+## Take the directory of that
+#dir="$( dirname "$path" )"
+## Get the project's root
+#root="$( cd "$dir"/../ && pwd )"
 
 # Should we go into infinite loop?
 forever=false
 
-# Do we want extra info?
-if [ "$2" = "--verbose" ]; then
-  verbose="true"
-else
-  verbose="false"
-fi
+## Do we want extra info?
+#if [ "$2" = "--verbose" ]; then
+#  verbose="true"
+#else
+#  verbose="false"
+#fi
 
 
 # Construct the command to invoke duplo
 function make_duplo_cmd() {
   echo env \
-       CWD="$cwd" \
+       #CWD="$cwd" \
        DUPLO_PATH="$root" \
-       DUPLO_ENV="$DUPLO_ENV" \
-       DUPLO_MODE="$DUPLO_MODE" \
-       DUPLO_IN="$DUPLO_IN" \
-       DUPLO_VERBOSE="$verbose" \
+       #DUPLO_ENV="$DUPLO_ENV" \
+       #DUPLO_MODE="$DUPLO_MODE" \
+       #DUPLO_IN="$DUPLO_IN" \
+       #DUPLO_VERBOSE="$verbose" \
        DUPLO_BUMP_LEVEL="$DUPLO_BUMP_LEVEL" \
-       "$root"/dist/build/duplo/duplo "$cmd" "$arg1" "$arg2" "$arg3"
+       "$root"/dist/build/duplo/duplo "$cmd" "$arg1" "$arg2" "$arg3" --verbose
 }
 
-# Display duplo's version
-function display_version() {
-  echo ""
-  # Love Cabal's manifest format!
-  cat $root"/duplo.cabal" |
-    # Get the version line
-    grep "^version:" |
-    # Extract the version
-    awk -F":" '{print $2}' |
-    # Remove spaces
-    tr -d ' ' |
-    # Proper display
-    awk '{ print "duplo v" $0; }'
-}
+## Display duplo's version
+#function display_version() {
+#  echo ""
+#  # Love Cabal's manifest format!
+#  cat $root"/duplo.cabal" |
+#    # Get the version line
+#    grep "^version:" |
+#    # Extract the version
+#    awk -F":" '{print $2}' |
+#    # Remove spaces
+#    tr -d ' ' |
+#    # Proper display
+#    awk '{ print "duplo v" $0; }'
+#}
 
-# Always display duplo version
-display_version
+## Always display duplo version
+#display_version
 
 # Perform any setup and actions that Shake is not good at.
 case "$cmd" in

@@ -16,20 +16,23 @@ import Development.Duplo.Scripts as Scripts
 import Development.Duplo.Static as Static
 import Development.Duplo.Git as Git
 import Control.Monad (void)
+import System.Console.GetOpt (OptDescr(..), ArgDescr(..))
+import qualified Development.Duplo.Types.Options as OP
 
-shakeMain :: String -> [String] -> TC.BuildConfig -> IO ()
-shakeMain cmd cmdArgs config = shake shakeOptions $ do
-    let cwd = config ^. TC.cwd
-    let utilPath = config ^. TC.utilPath
-    let miscPath = config ^. TC.miscPath
-    let targetPath = config ^. TC.targetPath
-    let bumpLevel' = config ^. TC.bumpLevel
-
-    let bumpLevel = if   bumpLevel' `elem` ["patch", "minor", "major"]
-                    then bumpLevel'
-                    else "patch"
-
-    -- What to build
+shakeMain :: String -> [String] -> TC.BuildConfig -> OP.Options -> IO ()
+shakeMain cmdName cmdArgs config options = shake shakeOptions $ do
+    let cwd          = config ^. TC.cwd
+    let utilPath     = config ^. TC.utilPath
+    let miscPath     = config ^. TC.miscPath
+    let targetPath   = config ^. TC.targetPath
+    let bumpLevel'   = config ^. TC.bumpLevel
+    let appName      = config ^. TC.appName
+    let appVersion   = config ^. TC.appVersion
+    let appId        = config ^. TC.appId
+    let duploPath    = config ^. TC.duploPath
+    let bumpLevel    = if   bumpLevel' `elem` ["patch", "minor", "major"]
+                       then bumpLevel'
+                       else "patch"
     let targetScript = targetPath </> "index.js"
     let targetStyle  = targetPath </> "index.css"
     let targetMarkup = targetPath </> "index.html"
@@ -39,7 +42,7 @@ shakeMain cmd cmdArgs config = shake shakeOptions $ do
     targetScript *> (void . runExceptT . Scripts.build config)
 
     -- Manually bootstrap Shake
-    action $ need [cmd]
+    action $ need [cmdName]
 
     -- Handling static assets
     (Static.qualify config) &?> Static.build config
@@ -54,10 +57,6 @@ shakeMain cmd cmdArgs config = shake shakeOptions $ do
       else return ()
 
       logAction "Clean completed"
-
-    "version" ~> do
-      -- Version information should already have
-      return ()
 
     "build" ~> do
       -- Always rebuild if we're building for production.
@@ -101,3 +100,7 @@ shakeMain cmd cmdArgs config = shake shakeOptions $ do
       command_ [] (utilPath </> "init-git.sh") [name]
 
       logAction $ "Project created at " ++ dest
+
+    "version" ~> do
+      -- Version should have already been displayed if requested 
+      return ()
