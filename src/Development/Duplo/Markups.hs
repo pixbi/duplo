@@ -24,7 +24,7 @@ import Development.Duplo.Files
 import Development.Duplo.ComponentIO (parseComponentId)
 import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)
 import Control.Lens hiding (Action)
-import qualified Development.Duplo.Config as C
+import qualified Development.Duplo.Types.Config as C
 import Control.Lens hiding (Action)
 import Development.Duplo.FileList (collapseFileList, makeFile)
 import qualified Development.Duplo.FileList as FileList (filePath)

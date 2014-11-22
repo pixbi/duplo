@@ -4,7 +4,7 @@ import Development.Duplo.Shake (shakeMain)
 import Development.Shake.FilePath ((</>))
 import System.Environment (lookupEnv, getArgs)
 import qualified Development.Duplo.ComponentIO as I
-import qualified Development.Duplo.Config as C
+import qualified Development.Duplo.Types.Config as C
 import Data.ByteString.Base64 (decode)
 import Data.ByteString.Char8 (pack, unpack)
 import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)

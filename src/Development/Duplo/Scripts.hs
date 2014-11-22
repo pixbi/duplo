@@ -18,7 +18,7 @@ import Development.Shake
 import Development.Shake.FilePath ((</>))
 import Data.Text.Lazy (Text, pack, unpack, replace, splitOn)
 import Development.Duplo.Files (File(..), pseudoFile)
-import qualified Development.Duplo.Config as C
+import qualified Development.Duplo.Types.Config as C
 import Control.Lens hiding (Action)
 import Control.Monad.Trans.Class (lift)
 import Development.Duplo.ComponentIO (extractCompVersions)

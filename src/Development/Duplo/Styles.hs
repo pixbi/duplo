@@ -12,7 +12,7 @@ import Development.Duplo.Utilities
          )
 import Development.Shake
 import Development.Shake.FilePath ((</>))
-import qualified Development.Duplo.Config as C
+import qualified Development.Duplo.Types.Config as C
 import Control.Lens hiding (Action)
 import Control.Monad.Trans.Class (lift)
 

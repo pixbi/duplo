@@ -7,7 +7,7 @@ import Development.Shake
 import Development.Shake.FilePath ((</>))
 import qualified Development.Duplo.ComponentIO as I
 import Control.Monad.Except (runExceptT)
-import qualified Development.Duplo.Config as C
+import qualified Development.Duplo.Types.Config as C
 import qualified Development.Duplo.Types.AppInfo as AI
 import Control.Lens hiding (Action)
 import Development.Duplo.Markups as Markups

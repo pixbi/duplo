@@ -9,7 +9,7 @@ import Development.Duplo.Utilities (logAction)
 import qualified Development.Duplo.ComponentIO as I
 import qualified Development.Duplo.Types.AppInfo as AI
 import Control.Lens hiding (Action, Level)
-import qualified Development.Duplo.Config as C
+import qualified Development.Duplo.Types.Config as C
 import Data.List (intercalate, filter)
 import Data.Text (unpack, pack, splitOn)
 import System.FilePath.Posix (makeRelative)

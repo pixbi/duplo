@@ -9,7 +9,7 @@ import Development.Duplo.Utilities
          , createIntermediaryDirectories
          )
 import Development.Shake
-import qualified Development.Duplo.Config as C
+import qualified Development.Duplo.Types.Config as C
 import Control.Lens hiding (Action)
 import System.FilePath.Posix (splitExtension, splitDirectories, makeRelative)
 import Data.List (transpose, nub)

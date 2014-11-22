@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Development.Duplo.Config where
+module Development.Duplo.Types.Config where
 
 import Development.Shake
 import Control.Lens hiding (Action)

@@ -20,7 +20,7 @@ import Development.Duplo.Files
          )
 import Development.Shake.FilePath ((</>))
 import Control.Lens hiding (Action)
-import qualified Development.Duplo.Config as C
+import qualified Development.Duplo.Types.Config as C
 import Control.Monad.Except (ExceptT(..))
 import Control.Monad.Trans.Class (lift)
 import System.FilePath.Posix (joinPath, splitPath)
