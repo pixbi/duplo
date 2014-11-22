@@ -82,27 +82,27 @@ main = do
   -- More info about where we are
   when (OP.optVerbose options) $
     putStr $ "\n"
-             ++ ">> Current Directory\n"
-             ++ "Application name          : "
-             ++ appName ++ "\n"
-             ++ "Application version       : "
-             ++ appVersion ++ "\n"
-             ++ "Component.IO repo ID      : "
-             ++ appId ++ "\n"
-             ++ "Current working directory : "
-             ++ cwd ++ "\n"
-             ++ "duplo is installed at     : "
-             ++ duploPath ++ "\n"
+          ++ ">> Current Directory\n"
+          ++ "Application name                : "
+          ++ appName ++ "\n"
+          ++ "Application version             : "
+          ++ appVersion ++ "\n"
+          ++ "Component.IO repo ID            : "
+          ++ appId ++ "\n"
+          ++ "Current working directory       : "
+          ++ cwd ++ "\n"
+          ++ "duplo is installed at           : "
+          ++ duploPath ++ "\n"
 
   -- Report back what's given for confirmation.
   putStr $ "\n"
-          ++ ">> Environment Variables\n"
-          ++ "DUPLO_ENV (runtime environment) : "
-          ++ duploEnv ++ "\n"
-          ++ "DUPLO_MODE (build mode)         : "
-          ++ duploMode ++ "\n"
-          ++ "DUPLO_IN (app parameters)       : "
-          ++ duploIn ++ "\n"
+        ++ ">> Environment Variables\n"
+        ++ "DUPLO_ENV (runtime environment) : "
+        ++ duploEnv ++ "\n"
+        ++ "DUPLO_MODE (build mode)         : "
+        ++ duploMode ++ "\n"
+        ++ "DUPLO_IN (app parameters)       : "
+        ++ duploIn ++ "\n"
 
   -- Construct environment
   let buildConfig = TC.BuildConfig { TC._appName      = appName
@@ -126,4 +126,5 @@ main = do
                                    , TC._bumpLevel    = bumpLevel
                                    }
 
+  -- Shake should take it from here.
   shakeMain cmdName cmdArgs buildConfig options

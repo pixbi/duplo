@@ -42,7 +42,11 @@ shakeMain cmdName cmdArgs config options = shake shakeOptions $ do
     targetScript *> (void . runExceptT . Scripts.build config)
 
     -- Manually bootstrap Shake
-    action $ need [cmdName]
+    action $ do
+      need [cmdName]
+
+      -- Trailing space
+      putNormal ""
 
     -- Handling static assets
     (Static.qualify config) &?> Static.build config
