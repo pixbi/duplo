@@ -1,8 +1,6 @@
 {-# LANGUAGE TemplateHaskell, DeriveGeneric #-}
 
-module Development.Duplo.Types.AppInfo
-  ( AppInfo(..)
-  ) where
+module Development.Duplo.Types.AppInfo where
 
 import Data.Aeson (FromJSON, ToJSON)
 import Data.HashMap.Strict (HashMap, empty)

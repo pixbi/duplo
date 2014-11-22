@@ -49,7 +49,6 @@ build config = \ out -> do
   let devPath       = config ^. C.devPath
   let assetsPath    = config ^. C.assetsPath
   let defaultsPath  = config ^. C.defaultsPath
-  let targetPath    = config ^. C.targetPath
   let refTagsPath   = defaultsPath </> "head.html"
   let devAssetsPath = devPath </> "assets"
   let devCodePath   = devPath </> "modules/index.jade"

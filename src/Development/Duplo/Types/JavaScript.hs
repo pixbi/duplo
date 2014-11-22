@@ -1,13 +1,6 @@
 {-# LANGUAGE DeriveDataTypeable #-}
 
-module Development.Duplo.Types.JavaScript
-  ( JSCompilerException(..)
-  , ModuleName
-  , DepScore
-  , Module(..)
-  , OrderedModules
-  , LineNumber
-  ) where
+module Development.Duplo.Types.JavaScript where
 
 import Control.Exception (Exception)
 import Data.Typeable (Typeable)

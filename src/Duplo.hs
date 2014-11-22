@@ -1,23 +1,15 @@
 import Control.Applicative ((<$>))
 import Data.Maybe (fromMaybe)
-import Development.Duplo.Utilities (logAction, getProperty)
-import Development.Shake
+import Development.Duplo.Shake (shakeMain)
 import Development.Shake.FilePath ((</>))
 import System.Environment (lookupEnv, getArgs)
 import qualified Development.Duplo.ComponentIO as I
-import Development.Duplo.Markups as Markups
-import Development.Duplo.Styles as Styles
-import Development.Duplo.Scripts as Scripts
-import Development.Duplo.Static as Static
-import Development.Duplo.Git as Git
 import qualified Development.Duplo.Config as C
-import Control.Lens hiding (Action)
 import Data.ByteString.Base64 (decode)
 import Data.ByteString.Char8 (pack, unpack)
 import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
-import Control.Monad (void)
 import qualified Development.Duplo.Types.AppInfo as AI
-import Control.Monad.Except (runExceptT)
+import Development.Duplo.Utilities (getProperty)
 
 main :: IO ()
 main = do
@@ -26,22 +18,19 @@ main = do
   let (cmd:cmdArgs) = args
 
   -- Environment - e.g. dev, staging, live
-  duploEnv   <- fromMaybe "" <$> lookupEnv "DUPLO_ENV"
+  duploEnv   <- fromMaybe "dev" <$> lookupEnv "DUPLO_ENV"
   -- Build mode, for dependency selection
   duploMode  <- fromMaybe "" <$> lookupEnv "DUPLO_MODE"
   -- Application parameter
   duploIn'   <- fromMaybe "" <$> lookupEnv "DUPLO_IN"
   -- Print extra info?
-  verbose    <- fromMaybe "" <$> lookupEnv "DUPLO_VERBOSE"
+  verbose    <- fromMaybe "True" <$> lookupEnv "DUPLO_VERBOSE"
   -- Current directory
   cwd        <- fromMaybe "" <$> lookupEnv "CWD"
   -- Duplo directory
   duploPath  <- fromMaybe "" <$> lookupEnv "DUPLO_PATH"
   -- Semantic version bump level: patch, minor, or major
-  bumpLevel' <- fromMaybe "" <$> lookupEnv "DUPLO_BUMP_LEVEL"
-  let bumpLevel = if   bumpLevel' `elem` ["patch", "minor", "major"]
-                  then bumpLevel'
-                  else "patch"
+  bumpLevel <- fromMaybe "" <$> lookupEnv "DUPLO_BUMP_LEVEL"
 
   -- Decode
   let duploIn'' = decode $ pack duploIn'
@@ -60,11 +49,6 @@ main = do
   let assetsPath      = appPath </> "assets/"
   let depsPath        = cwd </> "components/"
   let targetPath      = cwd </> "public/"
-
-  -- What to build
-  let targetScript = targetPath </> "index.js"
-  let targetStyle  = targetPath </> "index.css"
-  let targetMarkup = targetPath </> "index.html"
 
   -- Gather information about this project
   appName <- getProperty AI.name ""
@@ -100,7 +84,7 @@ main = do
   -- on the mode.
   if   cmd == "version"
   then putStrLn appInfo
-  else if   verbose == "true"
+  else if   verbose == "True"
        then putStrLn $ appInfo ++ envInfo
        else putStrLn envInfo
 
@@ -116,80 +100,14 @@ main = do
                                   , C._dist         = distPath
                                   , C._input        = duploIn
                                   , C._utilPath     = utilPath
+                                  , C._miscPath     = miscPath
                                   , C._defaultsPath = defaultsPath
                                   , C._appPath      = appPath
                                   , C._devPath      = devPath
                                   , C._assetsPath   = assetsPath
                                   , C._depsPath     = depsPath
                                   , C._targetPath   = targetPath
+                                  , C._bumpLevel    = bumpLevel
                                   }
 
-  shake shakeOptions $ do
-    targetMarkup *> (void . runExceptT . Markups.build buildConfig)
-    targetStyle  *> (void . runExceptT . Styles.build buildConfig)
-    targetScript *> (void . runExceptT . Scripts.build buildConfig)
-
-    -- Manually bootstrap Shake
-    action $ do
-      need [cmd]
-
-    -- Handling static assets
-    (Static.qualify buildConfig) &?> Static.build buildConfig
-
-    "static" ~> Static.deps buildConfig
-
-    "clean" ~> do
-      -- Clean only when the target is there
-      needCleaning <- doesDirectoryExist targetPath
-      if   needCleaning
-      then liftIO $ removeFiles targetPath ["//*"]
-      else return ()
-
-      logAction "Clean completed"
-
-    "version" ~> do
-      -- Version information should already have
-      return ()
-
-    "build" ~> do
-      -- Always rebuild if we're building for production.
-      if   C.isInDev buildConfig
-      then return ()
-      else need ["clean"]
-
-      -- Copy over static files first
-      need ["static"]
-      -- Then compile
-      need [targetScript, targetStyle, targetMarkup]
-
-      logAction "Build completed"
-
-    "bump" ~> do
-      (oldVersion, newVersion) <- Git.commit buildConfig bumpLevel
-
-      logAction $ "Bumped version from " ++ oldVersion ++ " to " ++ newVersion
-
-    "init" ~> do
-      let user = cmdArgs ^. element 0
-      let repo = cmdArgs ^. element 1
-      let name = user ++ "/" ++ repo
-      let src  = miscPath </> "boilerplate/"
-      let dest = cwd ++ "/"
-
-      logAction $ "Creating new duplo project " ++ name
-
-      -- Initialize with boilerplate
-      command_ [] (utilPath </> "init-boilerplate.sh") [src, dest]
-
-      -- Update fields
-      Right appInfo <- liftIO $ runExceptT $ I.readManifest
-      let newAppInfo = appInfo { AI.name = repo
-                               , AI.repo = name
-                               }
-      -- Commit app info
-      liftIO $ I.writeManifest newAppInfo
-
-      -- Initalize git
-      command_ [] (utilPath </> "init-git.sh") [name]
-
-      logAction $ "Project created at " ++ dest
+  shakeMain cmd cmdArgs buildConfig
