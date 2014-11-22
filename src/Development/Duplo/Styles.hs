@@ -12,19 +12,19 @@ import Development.Duplo.Utilities
          )
 import Development.Shake
 import Development.Shake.FilePath ((</>))
-import qualified Development.Duplo.Types.Config as C
+import qualified Development.Duplo.Types.Config as TC
 import Control.Lens hiding (Action)
 import Control.Monad.Trans.Class (lift)
 
-build :: C.BuildConfig
+build :: TC.BuildConfig
       -> FilePath
       -> CompiledContent ()
 build config = \ out -> do
   lift $ logAction "Building styles"
 
-  let cwd         = config ^. C.cwd
-  let utilPath    = config ^. C.utilPath
-  let devPath     = config ^. C.devPath
+  let cwd         = config ^. TC.cwd
+  let utilPath    = config ^. TC.utilPath
+  let devPath     = config ^. TC.devPath
   let devCodePath = devPath </> "modules/index.styl"
 
   -- Preconditions
@@ -47,7 +47,7 @@ build config = \ out -> do
                      , "app/modules//*.styl"
                      , "components/*/app/modules//*.styl"
                      -- Compile dev files in dev mode as well.
-                     ] ++ if   C.isInDev config
+                     ] ++ if   TC.isInDev config
                           then ["dev/modules//*.styl"]
                           else []
 

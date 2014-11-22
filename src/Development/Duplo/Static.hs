@@ -9,7 +9,7 @@ import Development.Duplo.Utilities
          , createIntermediaryDirectories
          )
 import Development.Shake
-import qualified Development.Duplo.Types.Config as C
+import qualified Development.Duplo.Types.Config as TC
 import Control.Lens hiding (Action)
 import System.FilePath.Posix (splitExtension, splitDirectories, makeRelative)
 import Data.List (transpose, nub)
@@ -24,14 +24,14 @@ import Development.Duplo.FileList
 import qualified Development.Duplo.FileList as FileList (filePath)
 import Development.Shake.FilePath ((</>))
 
-build :: C.BuildConfig
+build :: TC.BuildConfig
       -> [FilePath]
       -> Action ()
 build config = \ outs -> do
-  let targetPath   = config ^. C.targetPath
-  let assetsPath   = config ^. C.assetsPath
-  let depsPath     = config ^. C.depsPath
-  let devPath      = config ^. C.devPath
+  let targetPath   = config ^. TC.targetPath
+  let assetsPath   = config ^. TC.assetsPath
+  let depsPath     = config ^. TC.depsPath
+  let devPath      = config ^. TC.devPath
   let devAssetPath = devPath </> "assets"
 
   -- Convert to relative paths for copying
@@ -86,15 +86,15 @@ build config = \ outs -> do
   zipWithM_ copyFileChanged froms tos
 
 -- | Build dependency list for static files
-deps :: C.BuildConfig
+deps :: TC.BuildConfig
      -> Action ()
 deps config = do
   logAction "Copying static files"
 
-  let assetsPath = config ^. C.assetsPath
-  let depsPath   = config ^. C.depsPath
-  let targetPath = config ^. C.targetPath
-  let devPath    = config ^. C.devPath
+  let assetsPath = config ^. TC.assetsPath
+  let depsPath   = config ^. TC.depsPath
+  let targetPath = config ^. TC.targetPath
+  let devPath    = config ^. TC.devPath
   let devAssetsPath = devPath </> "assets/"
 
   -- Make sure all these directories exist
@@ -109,7 +109,7 @@ deps config = do
   depAssetFiles <- getDepAssets depsPath
   -- Add dev files to the mix, if we're in dev mode
   devFiles'     <- getDirectoryFiles devAssetsPath ["//*"]
-  let devFiles   = if C.isInDev config then devFiles' else []
+  let devFiles   = if TC.isInDev config then devFiles' else []
   -- Mix them together
   let allFiles   = nub $ concat [depAssetFiles, assetFiles, devFiles]
   -- We do NOT want index
@@ -127,7 +127,7 @@ deps config = do
   -- Declare dependencies
   need filesOut
 
-qualify :: C.BuildConfig
+qualify :: TC.BuildConfig
         -> FilePath
         -> Maybe [FilePath]
 qualify config path =
@@ -135,7 +135,7 @@ qualify config path =
     then Just [path]
     else Nothing
   where
-    targetPath = config ^. C.targetPath ++ "/*"
+    targetPath = config ^. TC.targetPath ++ "/*"
 
 -- | Given where the dependencies are, return a list of assets relative to
 -- their own containing components

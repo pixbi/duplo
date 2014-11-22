@@ -18,10 +18,10 @@ import Development.Shake
 import Development.Shake.FilePath ((</>))
 import Data.Text.Lazy (Text, pack, unpack, replace, splitOn)
 import Development.Duplo.Files (File(..), pseudoFile)
-import qualified Development.Duplo.Types.Config as C
+import qualified Development.Duplo.Types.Config as TC
 import Control.Lens hiding (Action)
 import Control.Monad.Trans.Class (lift)
-import Development.Duplo.ComponentIO (extractCompVersions)
+import Development.Duplo.Component (extractCompVersions)
 import qualified Language.JavaScript.Parser as JS
 import Development.Duplo.JavaScript.Order (order)
 import Control.Exception (throw, SomeException(..))
@@ -36,7 +36,7 @@ errorDisplayRange = 20
 
 -- | Build scripts
       -- The environment
-build :: C.BuildConfig
+build :: TC.BuildConfig
       -- The output file
       -> FilePath
       -- Doesn't need anything in return
@@ -44,11 +44,11 @@ build :: C.BuildConfig
 build config = \ out -> do
   lift $ logAction "Building scripts"
 
-  let cwd         = config ^. C.cwd
-  let util        = config ^. C.utilPath
-  let env         = config ^. C.env
-  let input       = config ^. C.input
-  let devPath     = config ^. C.devPath
+  let cwd         = config ^. TC.cwd
+  let util        = config ^. TC.utilPath
+  let env         = config ^. TC.env
+  let input       = config ^. TC.input
+  let devPath     = config ^. TC.devPath
   let devCodePath = devPath </> "modules/index.js"
 
   -- Preconditions
@@ -62,7 +62,7 @@ build config = \ out -> do
   let dynamicPaths = [ "app/modules//*.js"
                      , "components/*/app/modules//*.js"
                      -- Compile dev files in dev mode as well.
-                     ] ++ if   C.isInDev config
+                     ] ++ if   TC.isInDev config
                           then ["dev/modules//*.js"]
                           else []
 
@@ -83,7 +83,7 @@ build config = \ out -> do
              ++ "var DUPLO_VERSIONS = " ++ compVers ++ ";\n"
 
   -- Configure the compiler
-  let compiler = if   C.isInDev config
+  let compiler = if   TC.isInDev config
                  then util </> "scripts-dev.sh"
                  else util </> "scripts-optimize.sh"
 

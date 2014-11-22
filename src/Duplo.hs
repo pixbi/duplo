@@ -3,8 +3,8 @@ import Data.Maybe (fromMaybe)
 import Development.Duplo.Shake (shakeMain)
 import Development.Shake.FilePath ((</>))
 import System.Environment (lookupEnv, getArgs)
-import qualified Development.Duplo.ComponentIO as I
-import qualified Development.Duplo.Types.Config as C
+import qualified Development.Duplo.Component as CM
+import qualified Development.Duplo.Types.Config as TC
 import Data.ByteString.Base64 (decode)
 import Data.ByteString.Char8 (pack, unpack)
 import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
@@ -53,7 +53,7 @@ main = do
   -- Gather information about this project
   appName <- getProperty AI.name ""
   appVersion <- getProperty AI.version ""
-  appId <- getProperty I.appId ""
+  appId <- getProperty CM.appId ""
 
   -- Report back what's given for confirmation
   let appInfo = "\n"
@@ -89,25 +89,25 @@ main = do
        else putStrLn envInfo
 
   -- Construct environment
-  let buildConfig = C.BuildConfig { C._appName      = appName
-                                  , C._appVersion   = appVersion
-                                  , C._appId        = appId
-                                  , C._cwd          = cwd
-                                  , C._duploPath    = duploPath
-                                  , C._env          = duploEnv
-                                  , C._mode         = duploMode
-                                  , C._nodejsPath   = nodeModulesPath
-                                  , C._dist         = distPath
-                                  , C._input        = duploIn
-                                  , C._utilPath     = utilPath
-                                  , C._miscPath     = miscPath
-                                  , C._defaultsPath = defaultsPath
-                                  , C._appPath      = appPath
-                                  , C._devPath      = devPath
-                                  , C._assetsPath   = assetsPath
-                                  , C._depsPath     = depsPath
-                                  , C._targetPath   = targetPath
-                                  , C._bumpLevel    = bumpLevel
+  let buildConfig = TC.BuildConfig { TC._appName      = appName
+                                  , TC._appVersion   = appVersion
+                                  , TC._appId        = appId
+                                  , TC._cwd          = cwd
+                                  , TC._duploPath    = duploPath
+                                  , TC._env          = duploEnv
+                                  , TC._mode         = duploMode
+                                  , TC._nodejsPath   = nodeModulesPath
+                                  , TC._dist         = distPath
+                                  , TC._input        = duploIn
+                                  , TC._utilPath     = utilPath
+                                  , TC._miscPath     = miscPath
+                                  , TC._defaultsPath = defaultsPath
+                                  , TC._appPath      = appPath
+                                  , TC._devPath      = devPath
+                                  , TC._assetsPath   = assetsPath
+                                  , TC._depsPath     = depsPath
+                                  , TC._targetPath   = targetPath
+                                  , TC._bumpLevel    = bumpLevel
                                   }
 
   shakeMain cmd cmdArgs buildConfig

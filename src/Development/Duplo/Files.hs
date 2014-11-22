@@ -19,10 +19,10 @@ import Data.Text (split, pack, unpack)
 import Control.Lens hiding (Action)
 import Control.Lens.TH (makeLenses)
 import Data.List (intercalate)
-import Development.Duplo.ComponentIO (appId)
+import Development.Duplo.Component (appId)
 import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)
 import Control.Monad.Trans.Class (lift)
-import qualified Development.Duplo.ComponentIO as I
+import qualified Development.Duplo.Component as CM
 import Control.Monad.Except (ExceptT(..), runExceptT)
 
 type FileName    = String
@@ -51,7 +51,7 @@ readFile :: FilePath -> FilePath -> ExceptT String Action File
 readFile cwd path = do
   let (fileDir, fileName) = parseFilePath path
   fileContent    <- lift $ readFile' path
-  Right appInfo  <- liftIO $ runExceptT $ I.readManifest
+  Right appInfo  <- liftIO $ runExceptT $ CM.readManifest
   let appId'      = appId appInfo
   let componentId = parseComponentId cwd appId' fileDir
   let isRoot      = componentId == appId'

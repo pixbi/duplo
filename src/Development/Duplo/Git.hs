@@ -6,10 +6,10 @@ module Development.Duplo.Git
 import Development.Shake
 import Development.Shake.FilePath ((</>))
 import Development.Duplo.Utilities (logAction)
-import qualified Development.Duplo.ComponentIO as I
+import qualified Development.Duplo.Component as CM
 import qualified Development.Duplo.Types.AppInfo as AI
 import Control.Lens hiding (Action, Level)
-import qualified Development.Duplo.Types.Config as C
+import qualified Development.Duplo.Types.Config as TC
 import Data.List (intercalate, filter)
 import Data.Text (unpack, pack, splitOn)
 import System.FilePath.Posix (makeRelative)
@@ -26,14 +26,14 @@ versionLength :: Int
 versionLength = 3
 
 -- | Commit to git and bump version for current project
-commit :: C.BuildConfig
+commit :: TC.BuildConfig
        -> Level
        -> Action (Version, Version)
 commit config level = do
-    let utilPath = config ^. C.utilPath
-    Right appInfo <- liftIO $ runExceptT $ I.readManifest
+    let utilPath = config ^. TC.utilPath
+    Right appInfo <- liftIO $ runExceptT $ CM.readManifest
     let version = AI.version appInfo
-    let cwd = config ^. C.cwd
+    let cwd = config ^. TC.cwd
     let manifest = cwd </> "component.json"
 
     -- First stash any outstanding change
@@ -48,7 +48,7 @@ commit config level = do
     -- Update registered file list with Component.IO
     appInfo'' <- updateFileRegistry config appInfo'
     -- Commit app info
-    liftIO $ I.writeManifest appInfo''
+    liftIO $ CM.writeManifest appInfo''
 
     -- Commit with the version
     command_ [] (utilPath </> "commit.sh") [newVersion]
@@ -94,10 +94,10 @@ updateVersion :: AI.AppInfo -> Version -> AI.AppInfo
 updateVersion manifest version = manifest { AI.version = version }
 
 -- | Read from the given directory and update the app manifest object.
-updateFileRegistry :: C.BuildConfig -> AI.AppInfo -> Action AI.AppInfo
+updateFileRegistry :: TC.BuildConfig -> AI.AppInfo -> Action AI.AppInfo
 updateFileRegistry config appInfo = do
-    let cwd = config ^. C.cwd
-    let utilPath = config ^. C.utilPath
+    let cwd = config ^. TC.cwd
+    let utilPath = config ^. TC.utilPath
     let appPath = cwd </> "app"
     let assetPath = appPath </> "assets"
     let imagePath = assetPath </> "images"

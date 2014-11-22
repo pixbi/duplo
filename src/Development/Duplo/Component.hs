@@ -1,6 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Development.Duplo.ComponentIO
+module Development.Duplo.Component
   ( appId
   , parseComponentId
   , readManifest

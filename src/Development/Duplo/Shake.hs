@@ -5,9 +5,9 @@ module Development.Duplo.Shake
 import Development.Duplo.Utilities (logAction)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
-import qualified Development.Duplo.ComponentIO as I
+import qualified Development.Duplo.Component as CM
 import Control.Monad.Except (runExceptT)
-import qualified Development.Duplo.Types.Config as C
+import qualified Development.Duplo.Types.Config as TC
 import qualified Development.Duplo.Types.AppInfo as AI
 import Control.Lens hiding (Action)
 import Development.Duplo.Markups as Markups
@@ -17,13 +17,13 @@ import Development.Duplo.Static as Static
 import Development.Duplo.Git as Git
 import Control.Monad (void)
 
-shakeMain :: String -> [String] -> C.BuildConfig -> IO ()
+shakeMain :: String -> [String] -> TC.BuildConfig -> IO ()
 shakeMain cmd cmdArgs config = shake shakeOptions $ do
-    let cwd = config ^. C.cwd
-    let utilPath = config ^. C.utilPath
-    let miscPath = config ^. C.miscPath
-    let targetPath = config ^. C.targetPath
-    let bumpLevel' = config ^. C.bumpLevel
+    let cwd = config ^. TC.cwd
+    let utilPath = config ^. TC.utilPath
+    let miscPath = config ^. TC.miscPath
+    let targetPath = config ^. TC.targetPath
+    let bumpLevel' = config ^. TC.bumpLevel
 
     let bumpLevel = if   bumpLevel' `elem` ["patch", "minor", "major"]
                     then bumpLevel'
@@ -61,7 +61,7 @@ shakeMain cmd cmdArgs config = shake shakeOptions $ do
 
     "build" ~> do
       -- Always rebuild if we're building for production.
-      if   C.isInDev config
+      if   TC.isInDev config
       then return ()
       else need ["clean"]
 
@@ -90,12 +90,12 @@ shakeMain cmd cmdArgs config = shake shakeOptions $ do
       command_ [] (utilPath </> "init-boilerplate.sh") [src, dest]
 
       -- Update fields
-      Right appInfo <- liftIO $ runExceptT $ I.readManifest
+      Right appInfo <- liftIO $ runExceptT $ CM.readManifest
       let newAppInfo = appInfo { AI.name = repo
                                , AI.repo = name
                                }
       -- Commit app info
-      liftIO $ I.writeManifest newAppInfo
+      liftIO $ CM.writeManifest newAppInfo
 
       -- Initalize git
       command_ [] (utilPath </> "init-git.sh") [name]

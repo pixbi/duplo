@@ -21,10 +21,10 @@ import Development.Duplo.Files
          , isRoot
          , ComponentId
          )
-import Development.Duplo.ComponentIO (parseComponentId)
+import Development.Duplo.Component (parseComponentId)
 import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)
 import Control.Lens hiding (Action)
-import qualified Development.Duplo.Types.Config as C
+import qualified Development.Duplo.Types.Config as TC
 import Control.Lens hiding (Action)
 import Development.Duplo.FileList (collapseFileList, makeFile)
 import qualified Development.Duplo.FileList as FileList (filePath)
@@ -33,7 +33,7 @@ import Data.Maybe (fromMaybe)
 import Control.Applicative ((<$>))
 import Control.Monad.Trans.Class (lift)
 
-build :: C.BuildConfig
+build :: TC.BuildConfig
       -> FilePath
       -> CompiledContent ()
 build config = \ out -> do
@@ -44,11 +44,11 @@ build config = \ out -> do
   -- ourselves?
   lift $ alwaysRerun
 
-  let cwd           = config ^. C.cwd
-  let utilPath      = config ^. C.utilPath
-  let devPath       = config ^. C.devPath
-  let assetsPath    = config ^. C.assetsPath
-  let defaultsPath  = config ^. C.defaultsPath
+  let cwd           = config ^. TC.cwd
+  let utilPath      = config ^. TC.utilPath
+  let devPath       = config ^. TC.devPath
+  let assetsPath    = config ^. TC.assetsPath
+  let defaultsPath  = config ^. TC.defaultsPath
   let refTagsPath   = defaultsPath </> "head.html"
   let devAssetsPath = devPath </> "assets"
   let devCodePath   = devPath </> "modules/index.jade"
@@ -63,7 +63,7 @@ build config = \ out -> do
   -- These paths need to be expanded by Shake
   let dynamicPaths = [ "components/*/app/index.jade"
                      -- Compile dev files in dev mode as well.
-                     ] ++ if   C.isInDev config
+                     ] ++ if   TC.isInDev config
                           then [devCodePath ++ "//*.jade"]
                           else []
 

@@ -20,13 +20,13 @@ import Development.Duplo.Files
          )
 import Development.Shake.FilePath ((</>))
 import Control.Lens hiding (Action)
-import qualified Development.Duplo.Types.Config as C
+import qualified Development.Duplo.Types.Config as TC
 import Control.Monad.Except (ExceptT(..))
 import Control.Monad.Trans.Class (lift)
 import System.FilePath.Posix (joinPath, splitPath)
 import qualified Development.Duplo.Types.AppInfo as AI
 import Control.Monad.Except (runExceptT)
-import qualified Development.Duplo.ComponentIO as I
+import qualified Development.Duplo.Component as CM
 
 type CompiledContent = ExceptT String Action
 type FileProcessor = [File] -> CompiledContent [File]
@@ -59,7 +59,7 @@ logAction log = do
 -- * concatenates all files
 -- * passes the concatenated string to the compiler
 -- * returns the compiled content
-compile :: C.BuildConfig
+compile :: TC.BuildConfig
         -- The path to the compilation command
         -> FilePath
         -- The parameters passed to the compilation command
@@ -76,9 +76,9 @@ compile :: C.BuildConfig
 compile config compiler params paths preprocess postprocess = do
   mapM (lift . putNormal . ("Including " ++)) paths
 
-  let cwd    = config ^. C.cwd
-  let util   = config ^. C.utilPath
-  let nodejs = config ^. C.nodejsPath
+  let cwd    = config ^. TC.cwd
+  let util   = config ^. TC.utilPath
+  let nodejs = config ^. TC.nodejsPath
 
   -- Construct files
   files <- mapM (readFile cwd) paths
@@ -140,5 +140,5 @@ getProperty accessor defValue = do
     -- TODO: use Lens
     -- Function that returns default value
     let retDef _ = defValue
-    appInfo <- liftIO $ runExceptT I.readManifest
+    appInfo <- liftIO $ runExceptT CM.readManifest
     return $ either retDef accessor appInfo
