@@ -6,7 +6,7 @@
     "prepublish": "util/publish.sh"
   },
   "bin": {
-    "duplo": "util/duplo.sh"
+    "duplo": "dist/build/duplo/duplo"
   },
   "dependencies": {
     "amdclean": "^2.3.0",
