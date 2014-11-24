@@ -173,4 +173,4 @@ main = do
     _ <- forkIO $ serve port
 
     -- Watch for file changes
-    watch shake $ cwd </> "app/"
+    watch shake [devPath, appPath, depsPath]

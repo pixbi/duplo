@@ -18,7 +18,7 @@ import System.FilePath.Posix (takeExtension)
 
 serve :: Port -> IO ()
 serve port = do
-    putStrLn $ "Server started on port " ++ show port
+    putStrLn $ "\n>> Starting server on port " ++ show port
     scotty port serve'
 
 serve' :: ScottyM ()

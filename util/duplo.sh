@@ -94,35 +94,35 @@ case "$cmd" in
   #  cmd=bump
   #  ;;
 
-  # A server is needed
-  dev|live)
-    ## Only when environment isn't provided.
-    #if [ -z "$DUPLO_ENV" ]; then
-    #  DUPLO_ENV=$cmd
-    #fi
+  ## A server is needed
+  #dev|live)
+  #  ## Only when environment isn't provided.
+  #  #if [ -z "$DUPLO_ENV" ]; then
+  #  #  DUPLO_ENV=$cmd
+  #  #fi
 
-    #cmd=build
+  #  #cmd=build
 
-    ## The server
-    #$root/dist/build/server/server $PORT &
+  #  ## The server
+  #  #$root/dist/build/server/server $PORT &
 
-    ## The watchers
-    #$root/bin/spy run "$( make_duplo_cmd )" $cwd/app/ -n &
-    $root/bin/spy run "$( make_duplo_cmd )" $cwd/dev/ -n &
-    $root/bin/spy run "$( make_duplo_cmd )" $cwd/components/ -n &
+  #  ## The watchers
+  #  #$root/bin/spy run "$( make_duplo_cmd )" $cwd/app/ -n &
+  #  #$root/bin/spy run "$( make_duplo_cmd )" $cwd/dev/ -n &
+  #  #$root/bin/spy run "$( make_duplo_cmd )" $cwd/components/ -n &
 
-    ## Kill all child processes
-    #function cleanup() {
-    #  kill $(jobs -p)
-    #  exit $?
-    #}
+  #  ## Kill all child processes
+  #  #function cleanup() {
+  #  #  kill $(jobs -p)
+  #  #  exit $?
+  #  #}
 
-    ## Trap Ctrl-C
-    #trap cleanup SIGINT
+  #  ## Trap Ctrl-C
+  #  #trap cleanup SIGINT
 
-    ## Infinite loop
-    #forever=true
-    #;;
+  #  ## Infinite loop
+  #  #forever=true
+  #  #;;
 
   ## Production
   #build)

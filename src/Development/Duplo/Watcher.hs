@@ -4,50 +4,73 @@ module Development.Duplo.Watcher
   ( watch
   ) where
 
-import Control.Concurrent (threadDelay)
+import Control.Concurrent (threadDelay, forkIO, forkFinally, ThreadId(..), killThread)
 import Control.Monad (forever, void, when, unless)
 import Data.IORef (newIORef, readIORef, writeIORef, IORef)
 import Data.Maybe (isJust, fromJust)
 import Data.String (fromString)
-import GHC.Conc (ThreadId(..), forkIO, killThread)
-import System.FSNotify (withManagerConf, watchTree, WatchConfig(..), Debounce(..), Action, Event)
+import System.FSNotify (withManagerConf, watchTreeChan, WatchConfig(..), Debounce(..), Action, Event)
 import System.FilePath.Posix (FilePath)
+import Control.Concurrent.Chan (Chan, newChan, readChan, getChanContents)
+import Control.Exception (try)
 
--- | Given the path to watch and something to do, watch every 100ms without
--- debouncing but would interrupt the action when there is a new event.
-watch :: IO () -> FilePath -> IO ()
-watch onChange path = do
+-- | Given some paths to watch and something to do, watch every 100ms
+-- without debouncing but would interrupt the action when there is a new
+-- event.
+watch :: IO () -> [FilePath] -> IO ()
+watch onChange paths = do
     let watchConfig = WatchConfig { confDebounce = NoDebounce
                                   , confPollInterval = 100000
                                   , confUsePolling = False
                                   }
 
+    -- We need a variable to store the currently executing handler.
     tidVar <- newIORef (Nothing :: Maybe ThreadId)
 
+    -- We need a channel to prevent race condition when an event is
+    -- triggered on multiple paths.
+    chan <- newChan :: IO (Chan Event)
+    -- Make it a stream
+    let chanStream = getChanContents chan
+
+    -- The handler needs special treatment capturing IO exceptions. The
+    -- policy is simply to drop all exceptions because we have a lot of
+    -- incoming requests.
+    let exceptionHandler _ = return ()
+    let handler = forkFinally onChange exceptionHandler
+
+    -- Curry `handleEvent` to stay DRY
+    let handleEvent' = handleEvent tidVar handler
+
+    -- Make sure we handle the event with a channel to avoid race
+    -- condition.
+    forkIO $ chanStream >>= (mapM_ $ handleEvent' . Just)
+
+    -- Start watching
     withManagerConf watchConfig $ \manager -> do
-      let path' = fromString path
+      let paths' = fmap fromString paths
       let always = const True
-      let handler = handleEvent tidVar onChange
+      let watch' p = watchTreeChan manager p always chan
 
       -- Always start an initial round
-      onChange
+      void $ handleEvent' Nothing
 
       -- Watch for changes
-      watchTree manager path' always handler
+      mapM_ watch' paths'
 
-      -- Hibernate!
+      -- Hibernate, for a year!
       forever $ threadDelay $ 1000000 * 60 * 60 * 24 * 365
 
--- | Interrupt the given thread and restart the "callback".
-handleEvent :: IORef (Maybe ThreadId) -> IO () -> Action
-handleEvent tidVar onChange _ = do
+-- | Interrupt the given thread and re-perform the action.
+handleEvent :: IORef (Maybe ThreadId) -> IO ThreadId -> Maybe Event -> IO ()
+handleEvent tidVar handler _ = do
     tid <- readIORef tidVar
 
     -- Kill existing thread
     when (isJust tid) $ killThread $ fromJust tid
 
     -- Perform action
-    newTid <- forkIO onChange
+    newTid <- handler
 
     -- Save thread ID
     writeIORef tidVar $ Just newTid
