@@ -4,7 +4,7 @@ src=$1
 dest=$2
 
 # Copy boilerplate
-cp -anv "$src"/* "$dest"
+cp -anv "$src"* "$dest"
 # Remove all hidden files
 find . -name ".*" -type f | xargs rm
 # Copy gitignore file

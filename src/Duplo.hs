@@ -76,6 +76,7 @@ main = do
   let cmdName'' = case cmdName' of
                     "info" -> "version"
                     "ver" -> "version"
+                    "new" -> "init"
                     "release" -> "bump"
                     "patch" -> "bump"
                     "minor" -> "bump"

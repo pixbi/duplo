@@ -135,16 +135,16 @@ case "$cmd" in
     cmd=build
     ;;
 
-  # Create a new project
-  new|init)
-    cmd=init
+  ## Create a new project
+  #new|init)
+  #  cmd=init
 
-    if [ -z "$arg1" -o -z "$arg2" ]; then
-      echo "There must be a GitHub user and a repo name."
-      echo ""
-      exit 1
-    fi
-    ;;
+  #  if [ -z "$arg1" -o -z "$arg2" ]; then
+  #    echo "There must be a GitHub user and a repo name."
+  #    echo ""
+  #    exit 1
+  #  fi
+  #  ;;
 
   ## Other allowed commands are passed through
   #clean)

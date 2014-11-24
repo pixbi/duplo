@@ -9,6 +9,7 @@ import qualified Development.Duplo.Component as CM
 import Control.Monad.Except (runExceptT)
 import qualified Development.Duplo.Types.Config as TC
 import qualified Development.Duplo.Types.AppInfo as AI
+import qualified Development.Duplo.Types.Builder as BD
 import Control.Lens hiding (Action)
 import Development.Duplo.Markups as Markups
 import Development.Duplo.Styles as Styles
@@ -19,6 +20,8 @@ import Control.Monad (void)
 import System.Console.GetOpt (OptDescr(..), ArgDescr(..))
 import qualified Development.Duplo.Types.Options as OP
 import System.IO (readFile)
+import Control.Monad (when)
+import Control.Exception (throw)
 
 shakeMain :: String -> [String] -> TC.BuildConfig -> OP.Options -> IO ()
 shakeMain cmdName cmdArgs config options = shake shakeOptions $ do
@@ -102,8 +105,12 @@ shakeMain cmdName cmdArgs config options = shake shakeOptions $ do
       let user = cmdArgs ^. element 0
       let repo = cmdArgs ^. element 1
       let name = user ++ "/" ++ repo
-      let src  = miscPath </> "boilerplate/"
+      let src = miscPath </> "boilerplate/"
       let dest = cwd ++ "/"
+
+      -- Check prerequisites
+      when (length user == 0) $ throw BD.MissingGithubUserException
+      when (length repo == 0) $ throw BD.MissingGithubRepoException
 
       logAction $ "Creating new duplo project " ++ name
 
