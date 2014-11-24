@@ -127,4 +127,4 @@ shakeMain cmdName cmdArgs config options = shake shakeOptions $ do
       -- Version should have already been displayed if requested 
       return ()
 
-    "help" ~> ((liftIO $ readFile $ miscPath </> "help.txt") >>= putNormal)
+    "help" ~> ((liftIO $ readFile $ miscPath </> "help.txt") >>= (liftIO . putStr))

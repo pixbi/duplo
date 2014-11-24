@@ -88,6 +88,31 @@ main = do
           then "version"
           else cmdName''
 
+  -- Display additional information when verbose.
+  when (OP.optVerbose options) $
+    -- More info about where we are
+    putStr $ "\n"
+          ++ ">> Current Directory\n"
+          ++ "Application name                : "
+          ++ appName ++ "\n"
+          ++ "Application version             : "
+          ++ appVersion ++ "\n"
+          ++ "Component.IO repo ID            : "
+          ++ appId ++ "\n"
+          ++ "Current working directory       : "
+          ++ cwd ++ "\n"
+          ++ "duplo is installed at           : "
+          ++ duploPath ++ "\n"
+    -- Report back what's given for confirmation.
+          ++ "\n"
+          ++ ">> Environment Variables\n"
+          ++ "DUPLO_ENV (runtime environment) : "
+          ++ duploEnv ++ "\n"
+          ++ "DUPLO_MODE (build mode)         : "
+          ++ duploMode ++ "\n"
+          ++ "DUPLO_IN (app parameters)       : "
+          ++ duploIn ++ "\n"
+
   -- Display version either via command or option.
   when (cmdName == "version") $ do
     -- Prefacing space
@@ -102,31 +127,6 @@ main = do
     waitForProcess handle
 
     return ()
-
-  -- More info about where we are
-  when (OP.optVerbose options) $
-    putStr $ "\n"
-          ++ ">> Current Directory\n"
-          ++ "Application name                : "
-          ++ appName ++ "\n"
-          ++ "Application version             : "
-          ++ appVersion ++ "\n"
-          ++ "Component.IO repo ID            : "
-          ++ appId ++ "\n"
-          ++ "Current working directory       : "
-          ++ cwd ++ "\n"
-          ++ "duplo is installed at           : "
-          ++ duploPath ++ "\n"
-
-  -- Report back what's given for confirmation.
-  putStr $ "\n"
-        ++ ">> Environment Variables\n"
-        ++ "DUPLO_ENV (runtime environment) : "
-        ++ duploEnv ++ "\n"
-        ++ "DUPLO_MODE (build mode)         : "
-        ++ duploMode ++ "\n"
-        ++ "DUPLO_IN (app parameters)       : "
-        ++ duploIn ++ "\n"
 
   -- Construct environment
   let buildConfig = TC.BuildConfig { TC._appName      = appName

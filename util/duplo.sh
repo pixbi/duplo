@@ -43,18 +43,18 @@ forever=false
 #fi
 
 
-# Construct the command to invoke duplo
-function make_duplo_cmd() {
-  echo env \
-       #CWD="$cwd" \
-       #DUPLO_PATH="$root" \
-       #DUPLO_ENV="$DUPLO_ENV" \
-       #DUPLO_MODE="$DUPLO_MODE" \
-       #DUPLO_IN="$DUPLO_IN" \
-       #DUPLO_VERBOSE="$verbose" \
-       DUPLO_BUMP_LEVEL="$DUPLO_BUMP_LEVEL" \
-       #"$root"/dist/build/duplo/duplo "$cmd" "$arg1" "$arg2" "$arg3" --verbose
-}
+## Construct the command to invoke duplo
+#function make_duplo_cmd() {
+#  echo env \
+#       #CWD="$cwd" \
+#       #DUPLO_PATH="$root" \
+#       #DUPLO_ENV="$DUPLO_ENV" \
+#       #DUPLO_MODE="$DUPLO_MODE" \
+#       #DUPLO_IN="$DUPLO_IN" \
+#       #DUPLO_VERBOSE="$verbose" \
+#       #DUPLO_BUMP_LEVEL="$DUPLO_BUMP_LEVEL" \
+#       #"$root"/dist/build/duplo/duplo "$cmd" "$arg1" "$arg2" "$arg3" --verbose
+#}
 
 ## Display duplo's version
 #function display_version() {
@@ -77,10 +77,10 @@ function make_duplo_cmd() {
 # Perform any setup and actions that Shake is not good at.
 case "$cmd" in
 
-  # Normalize
-  info|version|ver|-v|--ver|--version)
-    cmd=version
-    ;;
+  ## Normalize
+  #info|version|ver|-v|--ver|--version)
+  #  cmd=version
+  #  ;;
 
   ## Patch by default
   #bump|release)
@@ -124,10 +124,10 @@ case "$cmd" in
     forever=true
     ;;
 
-  # Production
-  build)
-    DUPLO_ENV=build
-    ;;
+  ## Production
+  #build)
+  #  DUPLO_ENV=build
+  #  ;;
 
   # Testing forces an environment change
   test)
@@ -146,22 +146,22 @@ case "$cmd" in
     fi
     ;;
 
-  # Other allowed commands are passed through
-  clean)
-    ;;
+  ## Other allowed commands are passed through
+  #clean)
+  #  ;;
 
-  # Default to help
-  *)
-    # Then the help text
-    cat $root"/etc/help.txt"
+  ## Default to help
+  #*)
+  #  # Then the help text
+  #  cat $root"/etc/help.txt"
 
-    exit 0
-    ;;
+  #  exit 0
+  #  ;;
 
 esac
 
-# Run build system
-eval "$( make_duplo_cmd )"
+## Run build system
+#eval "$( make_duplo_cmd )"
 
 # Infinite loop
 if $forever; then

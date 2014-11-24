@@ -23,4 +23,3 @@ Commands:
     duplo patch               Bumps the patch version.
     duplo minor               Bumps the minor version.
     duplo major               Bumps the major version.
-
