@@ -122,7 +122,7 @@ build with a JSON object of unique IDs and metadata, you can pass any string
 as the environment variable `DUPLO_IN`. The string is then turned into a
 JavaScript string and stored into a global variable.
 
-To avoid special characters, `DUPLO_IN` must be base64 encoded.
+To avoid special characters, `DUPLO_IN` must be base-64 encoded.
 
 For example, say you need to pass in a random ID for each build, you would
 invoke:
@@ -144,9 +144,9 @@ a JavaScript string.
 
 ## JavaScript Concatenation Order
 
-JavaScript files are not concatenated in any particular order.  You must wrap
+JavaScript files are not concatenated in any particular order. You must wrap
 code inside an AMD module and declaring its dependencies. For code that needs
-to be executed at initialization, utilize the host system's initialization
+to be executed at initialization, utilize the environment's initialization
 event such as `document.addEventListener("DOMContentLoaded")` to bootstrap the
 rest of the script.
 
@@ -156,15 +156,15 @@ rest of the script.
 Unlike script files, where you place your CSS files within `app/` is
 significant. Stylus files will be concatenated in this order:
 
-    app/styl/variables.styl  --> An optional variable file that gets injected
-                                 into every Stylus file
-    app/styl/keyframes.styl  --> Keyframes
-    app/styl/fonts.styl      --> Font declarations
-    app/styl/reset.styl      --> Resetting existing CSS in the target
-                                 environment
-    app/styl/main.styl       --> Application CSS that goes before any module
-                                 CSS
-    app/**/*.styl            --> All other CSS files
+    app/styl/variables.styl --> An optional variable file that gets injected
+                                into every Stylus file
+    app/styl/keyframes.styl --> Keyframes
+    app/styl/fonts.styl     --> Font declarations
+    app/styl/reset.styl     --> Resetting existing CSS in the target
+                                environment
+    app/styl/main.styl      --> Application CSS that goes before any module
+                                CSS
+    app/**/*.styl           --> All other CSS files
 
 There is no particular concatenation order between different dependencies.
 
@@ -203,12 +203,12 @@ specified in the `dependencies` attribute to include.
 Running duplo with the environment variable `DUPLO_MODE` set to `embeddable`
 would build with the dependencies specified under `embeddable` while setting
 `MODE` to `standalone` would do the same with those specified under the
-`standalone` attribute. Otherwise duplo would build with all dependencies.
+`standalone` attribute. Otherwise duplo would just build with all dependencies.
 
 Note that dependency selection applies at the dependency level but not at the
 file level within the components.
 
-An example of a `component.json`:
+Putting it all together, an example of a `component.json`:
 
 ```json
 {

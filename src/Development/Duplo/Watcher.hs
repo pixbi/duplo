@@ -63,12 +63,10 @@ watch onChange paths = do
 handleEvent :: IORef (Maybe ThreadId) -> IO ThreadId -> Maybe Event -> IO ()
 handleEvent tidVar handler _ = do
     tid <- readIORef tidVar
-
     -- Kill existing thread
     when (isJust tid) $ killThread $ fromJust tid
 
     -- Perform action
     newTid <- handler
-
     -- Save thread ID
     writeIORef tidVar $ Just newTid
