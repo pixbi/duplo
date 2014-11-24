@@ -18,6 +18,7 @@ import Development.Duplo.Git as Git
 import Control.Monad (void)
 import System.Console.GetOpt (OptDescr(..), ArgDescr(..))
 import qualified Development.Duplo.Types.Options as OP
+import System.IO (readFile)
 
 shakeMain :: String -> [String] -> TC.BuildConfig -> OP.Options -> IO ()
 shakeMain cmdName cmdArgs config options = shake shakeOptions $ do
@@ -46,7 +47,21 @@ shakeMain cmdName cmdArgs config options = shake shakeOptions $ do
 
     -- Manually bootstrap Shake
     action $ do
-      need [cmdName]
+      -- Keep a list of commands so we can check before we call Shake,
+      -- which doesn't allow us to change the error message when an action
+      -- isn't found.
+      let actions = [ "static"
+                    , "clean"
+                    , "build"
+                    , "bump"
+                    , "init"
+                    , "version"
+                    ]
+
+      -- Default to help
+      let cmdName' = if (cmdName `elem` actions) then cmdName else "help"
+      -- Call command
+      need [cmdName']
 
       -- Trailing space
       putNormal ""
@@ -111,3 +126,5 @@ shakeMain cmdName cmdArgs config options = shake shakeOptions $ do
     "version" ~> do
       -- Version should have already been displayed if requested 
       return ()
+
+    "help" ~> ((liftIO $ readFile $ miscPath </> "help.txt") >>= putNormal)
