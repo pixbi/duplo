@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 import Control.Applicative ((<$>))
 import Control.Lens.Operators
 import Control.Monad (void, when, unless)

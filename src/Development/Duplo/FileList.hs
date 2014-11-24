@@ -24,6 +24,11 @@ data File = File { _filePath :: FilePath
                  } deriving (Show)
 type Copy = (FilePath, FilePath)
 
+defaultFile :: File
+defaultFile = File { _filePath = ""
+                   , _fileBase = ""
+                   }
+
 makeLenses ''File
 
 -- | Given a base and a list of relative paths, transform into file objects
@@ -36,7 +41,7 @@ makeFile :: FilePath -> FilePath -> File
 makeFile base relPath =
     setPath absPath
   where
-    constructor = File { _fileBase = base }
+    constructor = defaultFile { _fileBase = base }
     absPath     = base </> relPath
     setPath     = (constructor &) . (filePath .~)
 

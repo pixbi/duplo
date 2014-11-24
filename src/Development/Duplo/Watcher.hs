@@ -1,5 +1,3 @@
-{-# LANGUAGE OverloadedStrings #-}
-
 module Development.Duplo.Watcher
   ( watch
   ) where
