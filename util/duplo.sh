@@ -47,13 +47,13 @@ forever=false
 function make_duplo_cmd() {
   echo env \
        #CWD="$cwd" \
-       DUPLO_PATH="$root" \
+       #DUPLO_PATH="$root" \
        #DUPLO_ENV="$DUPLO_ENV" \
        #DUPLO_MODE="$DUPLO_MODE" \
        #DUPLO_IN="$DUPLO_IN" \
        #DUPLO_VERBOSE="$verbose" \
        DUPLO_BUMP_LEVEL="$DUPLO_BUMP_LEVEL" \
-       "$root"/dist/build/duplo/duplo "$cmd" "$arg1" "$arg2" "$arg3" --verbose
+       #"$root"/dist/build/duplo/duplo "$cmd" "$arg1" "$arg2" "$arg3" --verbose
 }
 
 ## Display duplo's version
@@ -82,17 +82,17 @@ case "$cmd" in
     cmd=version
     ;;
 
-  # Patch by default
-  bump|release)
-    DUPLO_BUMP_LEVEL=patch
-    cmd=bump
-    ;;
+  ## Patch by default
+  #bump|release)
+  #  DUPLO_BUMP_LEVEL=patch
+  #  cmd=bump
+  #  ;;
 
-  # Specified bump
-  patch|minor|major)
-    DUPLO_BUMP_LEVEL=$cmd
-    cmd=bump
-    ;;
+  ## Specified bump
+  #patch|minor|major)
+  #  DUPLO_BUMP_LEVEL=$cmd
+  #  cmd=bump
+  #  ;;
 
   # A server is needed
   dev|live)

@@ -21,7 +21,7 @@ main :: IO ()
 main = do
   -- Command-line arguments
   args <- getArgs
-  let (cmdName:cmdArgs) = args
+  let (cmdName':cmdArgs) = args
 
   -- Deal with options
   let (actions, nonOptions, errors) = getOpt Permute OP.options args
@@ -63,6 +63,16 @@ main = do
   appName <- getProperty AI.name ""
   appVersion <- getProperty AI.version ""
   appId <- getProperty CM.appId ""
+
+  -- Command synonyms
+  let cmdName = case cmdName' of
+                  "info" -> "version"
+                  "ver" -> "version"
+                  "release" -> "bump"
+                  "patch" -> "bump"
+                  "minor" -> "bump"
+                  "major" -> "bump"
+                  _ -> cmdName'
 
   -- Display version either via command or option.
   when ((OP.optVersion options) || (cmdName == "version")) $ do

@@ -21,25 +21,28 @@ import qualified Development.Duplo.Types.Options as OP
 
 shakeMain :: String -> [String] -> TC.BuildConfig -> OP.Options -> IO ()
 shakeMain cmdName cmdArgs config options = shake shakeOptions $ do
-    let cwd          = config ^. TC.cwd
-    let utilPath     = config ^. TC.utilPath
-    let miscPath     = config ^. TC.miscPath
-    let targetPath   = config ^. TC.targetPath
-    let bumpLevel'   = config ^. TC.bumpLevel
-    let appName      = config ^. TC.appName
-    let appVersion   = config ^. TC.appVersion
-    let appId        = config ^. TC.appId
-    let duploPath    = config ^. TC.duploPath
-    let bumpLevel    = if   bumpLevel' `elem` ["patch", "minor", "major"]
-                       then bumpLevel'
-                       else "patch"
+    let cwd        = config ^. TC.cwd
+    let utilPath   = config ^. TC.utilPath
+    let miscPath   = config ^. TC.miscPath
+    let targetPath = config ^. TC.targetPath
+    let bumpLevel' = config ^. TC.bumpLevel
+    let appName    = config ^. TC.appName
+    let appVersion = config ^. TC.appVersion
+    let appId      = config ^. TC.appId
+    let duploPath  = config ^. TC.duploPath
+
+    -- Only some levels are allowed.
+    let bumpLevel = if   bumpLevel' `elem` ["patch", "minor", "major"]
+                    then bumpLevel'
+                    else "patch"
+
+    -- What to build and each action's related action
     let targetScript = targetPath </> "index.js"
     let targetStyle  = targetPath </> "index.css"
     let targetMarkup = targetPath </> "index.html"
-
-    targetMarkup *> (void . runExceptT . Markups.build config)
-    targetStyle  *> (void . runExceptT . Styles.build config)
     targetScript *> (void . runExceptT . Scripts.build config)
+    targetStyle  *> (void . runExceptT . Styles.build config)
+    targetMarkup *> (void . runExceptT . Markups.build config)
 
     -- Manually bootstrap Shake
     action $ do
