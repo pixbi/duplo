@@ -16,12 +16,20 @@ import System.Directory (getCurrentDirectory)
 import System.Console.GetOpt (getOpt, OptDescr(..), ArgDescr(..), ArgOrder(..))
 import Control.Monad (when)
 import System.Process (proc, createProcess, waitForProcess)
+import qualified Control.Lens
+import Control.Lens.Operators
 
 main :: IO ()
 main = do
   -- Command-line arguments
   args <- getArgs
-  let (cmdName':cmdArgs) = args
+
+  let (cmdName':cmdArgs) =
+        if   (length args > 0)
+        -- Normal case (with command name)
+        then args
+        -- Edge cases (with nothing provided)
+        else ("":[])
 
   -- Deal with options
   let (actions, nonOptions, errors) = getOpt Permute OP.options args
@@ -65,17 +73,23 @@ main = do
   appId <- getProperty CM.appId ""
 
   -- Command synonyms
-  let cmdName = case cmdName' of
-                  "info" -> "version"
-                  "ver" -> "version"
-                  "release" -> "bump"
-                  "patch" -> "bump"
-                  "minor" -> "bump"
-                  "major" -> "bump"
-                  _ -> cmdName'
+  let cmdName'' = case cmdName' of
+                    "info" -> "version"
+                    "ver" -> "version"
+                    "release" -> "bump"
+                    "patch" -> "bump"
+                    "minor" -> "bump"
+                    "major" -> "bump"
+                    _ -> cmdName'
+
+  -- Certain flags turn into commands.
+  let cmdName =
+        if (OP.optVersion options)
+          then "version"
+          else cmdName''
 
   -- Display version either via command or option.
-  when ((OP.optVersion options) || (cmdName == "version")) $ do
+  when (cmdName == "version") $ do
     -- Prefacing space
     putStr "\n"
 
