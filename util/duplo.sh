@@ -32,8 +32,8 @@
 ## Get the project's root
 #root="$( cd "$dir"/../ && pwd )"
 
-# Should we go into infinite loop?
-forever=false
+## Should we go into infinite loop?
+#forever=false
 
 ## Do we want extra info?
 #if [ "$2" = "--verbose" ]; then
@@ -96,33 +96,33 @@ case "$cmd" in
 
   # A server is needed
   dev|live)
-    # Only when environment isn't provided.
-    if [ -z "$DUPLO_ENV" ]; then
-      DUPLO_ENV=$cmd
-    fi
+    ## Only when environment isn't provided.
+    #if [ -z "$DUPLO_ENV" ]; then
+    #  DUPLO_ENV=$cmd
+    #fi
 
-    cmd=build
+    #cmd=build
 
-    # The server
-    $root/dist/build/server/server $PORT &
+    ## The server
+    #$root/dist/build/server/server $PORT &
 
-    # The watchers
-    $root/bin/spy run "$( make_duplo_cmd )" $cwd/app/ -n &
+    ## The watchers
+    #$root/bin/spy run "$( make_duplo_cmd )" $cwd/app/ -n &
     $root/bin/spy run "$( make_duplo_cmd )" $cwd/dev/ -n &
     $root/bin/spy run "$( make_duplo_cmd )" $cwd/components/ -n &
 
-    # Kill all child processes
-    function cleanup() {
-      kill $(jobs -p)
-      exit $?
-    }
+    ## Kill all child processes
+    #function cleanup() {
+    #  kill $(jobs -p)
+    #  exit $?
+    #}
 
-    # Trap Ctrl-C
-    trap cleanup SIGINT
+    ## Trap Ctrl-C
+    #trap cleanup SIGINT
 
-    # Infinite loop
-    forever=true
-    ;;
+    ## Infinite loop
+    #forever=true
+    #;;
 
   ## Production
   #build)
@@ -163,7 +163,7 @@ esac
 ## Run build system
 #eval "$( make_duplo_cmd )"
 
-# Infinite loop
-if $forever; then
-  while true; do read _; done
-fi
+## Infinite loop
+#if $forever; then
+#  while true; do read _; done
+#fi

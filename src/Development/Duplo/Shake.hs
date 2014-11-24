@@ -25,20 +25,16 @@ import Control.Exception (throw)
 
 shakeMain :: String -> [String] -> TC.BuildConfig -> OP.Options -> IO ()
 shakeMain cmdName cmdArgs config options = shake shakeOptions $ do
-    let cwd        = config ^. TC.cwd
-    let utilPath   = config ^. TC.utilPath
-    let miscPath   = config ^. TC.miscPath
+    let port = config ^. TC.port
+    let cwd = config ^. TC.cwd
+    let utilPath = config ^. TC.utilPath
+    let miscPath = config ^. TC.miscPath
     let targetPath = config ^. TC.targetPath
-    let bumpLevel' = config ^. TC.bumpLevel
-    let appName    = config ^. TC.appName
+    let bumpLevel = config ^. TC.bumpLevel
+    let appName = config ^. TC.appName
     let appVersion = config ^. TC.appVersion
-    let appId      = config ^. TC.appId
-    let duploPath  = config ^. TC.duploPath
-
-    -- Only some levels are allowed.
-    let bumpLevel = if   bumpLevel' `elem` ["patch", "minor", "major"]
-                    then bumpLevel'
-                    else "patch"
+    let appId = config ^. TC.appId
+    let duploPath = config ^. TC.duploPath
 
     -- What to build and each action's related action
     let targetScript = targetPath </> "index.js"

@@ -1,30 +1,37 @@
+{-# LANGUAGE OverloadedStrings #-}
+
 import Control.Applicative ((<$>))
-import Data.Maybe (fromMaybe)
-import Development.Shake (cmd)
-import Development.Duplo.Shake (shakeMain)
-import qualified Development.Duplo.Types.Options as OP
-import Development.Shake.FilePath ((</>))
-import System.Environment (lookupEnv, getArgs, getExecutablePath)
-import qualified Development.Duplo.Component as CM
-import qualified Development.Duplo.Types.Config as TC
+import Control.Lens.Operators
+import Control.Monad (void, when, unless)
+import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
 import Data.ByteString.Base64 (decode)
 import Data.ByteString.Char8 (pack, unpack)
-import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
-import qualified Development.Duplo.Types.AppInfo as AI
+import Data.Maybe (fromMaybe)
+import Development.Duplo.Server (serve)
+import Development.Duplo.Shake (shakeMain)
 import Development.Duplo.Utilities (getProperty)
-import System.Directory (getCurrentDirectory)
+import Development.Duplo.Watcher (watch)
+import Development.Shake (cmd)
+import Development.Shake.FilePath ((</>))
+import GHC.Conc (forkIO)
 import System.Console.GetOpt (getOpt, OptDescr(..), ArgDescr(..), ArgOrder(..))
-import Control.Monad (when)
+import System.Directory (getCurrentDirectory)
+import System.Environment (lookupEnv, getArgs, getExecutablePath)
 import System.Process (proc, createProcess, waitForProcess)
 import qualified Control.Lens
-import Control.Lens.Operators
+import qualified Development.Duplo.Component as CM
+import qualified Development.Duplo.Types.AppInfo as AI
+import qualified Development.Duplo.Types.Config as TC
+import qualified Development.Duplo.Types.Options as OP
+import qualified Filesystem.Path
+import qualified GHC.IO
 
 main :: IO ()
 main = do
   -- Command-line arguments
   args <- getArgs
 
-  let (cmdName':cmdArgs) =
+  let (cmdName:cmdArgs) =
         if   (length args > 0)
         -- Normal case (with command name)
         then args
@@ -36,7 +43,7 @@ main = do
   options <- foldl (>>=) (return OP.defaultOptions) actions
 
   -- Port for running dev server
-  port      <- fromMaybe "8888" <$> lookupEnv "PORT"
+  port      <- fmap read $ fromMaybe "8888" <$> lookupEnv "PORT"
   -- Environment - e.g. dev, staging, live
   duploEnv  <- fromMaybe "dev" <$> lookupEnv "DUPLO_ENV"
   -- Build mode, for dependency selection
@@ -47,8 +54,6 @@ main = do
   cwd       <- getCurrentDirectory
   -- Duplo directory
   duploPath <- fmap (</> "../../../../") getExecutablePath
-  -- Semantic version bump level: patch, minor, or major
-  bumpLevel <- fromMaybe "" <$> lookupEnv "DUPLO_BUMP_LEVEL"
 
   -- Decode
   let duploIn = case (decode $ pack $ duploIn') of
@@ -72,22 +77,28 @@ main = do
   appVersion <- getProperty AI.version ""
   appId <- getProperty CM.appId ""
 
-  -- Command synonyms
-  let cmdName'' = case cmdName' of
-                    "info" -> "version"
-                    "ver" -> "version"
-                    "new" -> "init"
-                    "release" -> "bump"
-                    "patch" -> "bump"
-                    "minor" -> "bump"
-                    "major" -> "bump"
-                    _ -> cmdName'
+  -- Internal command translation
+  let duploEnv' = duploEnv
+  let (cmdNameTranslated, bumpLevel, duploEnv, toWatch) =
+        case cmdName of
+          "info" -> ("version", "", duploEnv', False)
+          "ver" -> ("version", "", duploEnv', False)
+          "new" -> ("init", "", duploEnv', False)
+          "bump" -> ("bump", "patch", duploEnv', False)
+          "release" -> ("bump", "patch", duploEnv', False)
+          "patch" -> ("bump", "patch", duploEnv', False)
+          "minor" -> ("bump", "minor", duploEnv', False)
+          "major" -> ("bump", "major", duploEnv', False)
+          "dev" -> ("build", "", "dev", True)
+          "live" -> ("build", "", "live", True)
+          "test" -> ("build", "", "test", False)
+          _ -> (cmdName, "", duploEnv', False)
 
   -- Certain flags turn into commands.
-  let cmdName =
+  let cmdNameWithFlags =
         if (OP.optVersion options)
           then "version"
-          else cmdName''
+          else cmdNameTranslated
 
   -- Display additional information when verbose.
   when (OP.optVerbose options) $
@@ -149,7 +160,17 @@ main = do
                                    , TC._depsPath     = depsPath
                                    , TC._targetPath   = targetPath
                                    , TC._bumpLevel    = bumpLevel
+                                   , TC._port         = port
                                    }
 
-  -- Shake should take it from here.
-  shakeMain cmdName cmdArgs buildConfig options
+  -- Construct the Shake command
+  let shake = shakeMain cmdNameTranslated cmdArgs buildConfig options
+
+  -- Watch or just build
+  unless toWatch shake
+  when toWatch $ do
+    -- Start a local server
+    _ <- forkIO $ serve port
+
+    -- Watch for file changes
+    watch shake $ cwd </> "app/"

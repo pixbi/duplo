@@ -5,6 +5,7 @@ module Development.Duplo.Types.Config where
 import Development.Shake
 import Control.Lens hiding (Action)
 import Control.Lens.TH (makeLenses)
+import Network.Wai.Handler.Warp (Port)
 
 data BuildConfig = BuildConfig { _appName      :: String
                                , _appVersion   :: String
@@ -25,6 +26,7 @@ data BuildConfig = BuildConfig { _appName      :: String
                                , _depsPath     :: FilePath
                                , _targetPath   :: FilePath
                                , _bumpLevel    :: String
+                               , _port         :: Port
                                } deriving (Show)
 
 makeLenses ''BuildConfig
