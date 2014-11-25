@@ -9,7 +9,9 @@ A opinionated, framework-less build tool for web applications
 2. Install [Homebrew](http://brew.sh/)
 3. Get [npm](http://npmjs.org/): `brew install npm`
 4. Get [GMP](https://gmplib.org/): `brew install gmp`
-5. Get [duplo](https://github.com/pixbi/duplo): `npm install -g duplo`
+5. Get pre-1.x.x [Component](https://github.com/componentjs): `npm install -g
+   component@0.19.9`
+6. Get [duplo](https://github.com/pixbi/duplo): `npm install -g duplo`
 
 
 ## Usage

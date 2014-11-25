@@ -6,7 +6,6 @@ module Development.Duplo.Utilities
   , FileProcessor
   , createIntermediaryDirectories
   , CompiledContent
-  , getProperty
   ) where
 
 import Prelude hiding (readFile)
@@ -128,16 +127,3 @@ createIntermediaryDirectories path =
     command_ [] "mkdir" ["-p", dir]
   where
     dir = joinPath $ init $ splitPath path
-
--- | Get a particular manifest property property
-            -- Accessor
-getProperty :: (AI.AppInfo -> a)
-            -- Default value
-            -> a
-            -> IO a
-getProperty accessor defValue = do
-    -- TODO: use Lens
-    -- Function that returns default value
-    let retDef _ = defValue
-    appInfo <- liftIO $ runExceptT CM.readManifest
-    return $ either retDef accessor appInfo

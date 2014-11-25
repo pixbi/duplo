@@ -7,7 +7,6 @@ import Data.ByteString.Char8 (pack, unpack)
 import Data.Maybe (fromMaybe)
 import Development.Duplo.Server (serve)
 import Development.Duplo.Shake (shakeMain)
-import Development.Duplo.Utilities (getProperty)
 import Development.Duplo.Watcher (watch)
 import Development.Shake (cmd)
 import Development.Shake.FilePath ((</>))
@@ -71,9 +70,9 @@ main = do
   let targetPath      = cwd </> "public/"
 
   -- Gather information about this project
-  appName <- getProperty AI.name ""
-  appVersion <- getProperty AI.version ""
-  appId <- getProperty CM.appId ""
+  appName <- CM.getProperty AI.name ""
+  appVersion <- CM.getProperty AI.version ""
+  appId <- CM.getProperty CM.appId ""
 
   -- Internal command translation
   let duploEnv' = duploEnv
@@ -97,6 +96,12 @@ main = do
         if (OP.optVersion options)
           then "version"
           else cmdNameTranslated
+
+  -- We may need custom builds with mode
+  let depManifestPath = cwd </> "component.json"
+  dependencies <- CM.getDependencies $ case duploMode of
+                                         "" -> Nothing
+                                         a -> Just a
 
   -- Display additional information when verbose.
   when (OP.optVerbose options) $

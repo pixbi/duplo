@@ -6,6 +6,8 @@ module Development.Duplo.Component
   , readManifest
   , writeManifest
   , extractCompVersions
+  , getDependencies
+  , getProperty
   ) where
 
 import Control.Applicative ((<$>), (<*>))
@@ -29,6 +31,11 @@ import System.FilePath.FilePather.FilterPredicate (filterPredicate)
 import System.FilePath.FilePather.RecursePredicate (recursePredicate)
 import System.FilePath.Posix (takeFileName)
 import Data.Map (fromList)
+import Data.HashMap.Lazy (empty, keys, lookup)
+import Prelude hiding (lookup)
+import Control.Monad.Except (runExceptT)
+import qualified Development.Duplo.Types.Builder as BD
+import Control.Exception (throw)
 
 type Version = (String, String)
 
@@ -77,9 +84,11 @@ parseComponentId cId
 -- | Given a path, find all the `component.json` and return a JSON string
 extractCompVersions :: FilePath -> IO String
 extractCompVersions path = do
-    paths     <- getAllManifestPaths path
+    paths <- getAllManifestPaths path
     manifests <- mapM ((fmap BS.pack) . readFile) paths
-    let decodeManifest = \ x -> fromJust $ (decode x :: Maybe AppInfo)
+    let decodeManifest x = case (decode x :: Maybe AppInfo) of
+                             Just a -> a
+                             Nothing -> throw BD.MalformedManifestException
     let manifests' = fmap (appInfoToVersion . decodeManifest) manifests
     return $ BS.unpack $ encode $ fromList manifests'
 
@@ -91,5 +100,35 @@ getAllManifestPaths :: FilePath -> IO [FilePath]
 getAllManifestPaths path =
     findp filterP always path
   where
-    filterP   = filterPredicate matchName
-    matchName = \ path t -> takeFileName path == takeFileName manifestName
+    filterP = filterPredicate matchName
+    matchName path t = takeFileName path == takeFileName manifestName
+
+-- | Get the component dependency list by providing a mode, or not.
+getDependencies :: Maybe String -> IO [FilePath]
+-- | Simply get all dependencies if no mode is provided.
+getDependencies Nothing = do
+    fullDeps <- getProperty AI.dependencies empty
+    return $ keys fullDeps
+-- | Only select the named dependencies.
+getDependencies (Just mode) = do
+    fullDeps <- getProperty AI.dependencies empty
+    depModes <- getProperty AI.modes Nothing
+    getDependencies' fullDeps $ case depModes of
+                                  Just d -> lookup mode d
+                                  Nothing -> Nothing
+
+-- | Helper function to get the selected dependency list given the full
+-- dependency list, all modes, and the target mode to select the list by.
+getDependencies' :: AI.Dependencies -> Maybe [String] -> IO [FilePath]
+-- If somehow there isn't a mode defined, switch over to `Nothing`.
+getDependencies' deps Nothing = getDependencies Nothing
+-- If there is something, fetch only those dependencies.
+getDependencies' deps (Just modeDeps) = do
+    return modeDeps
+
+-- | Get a particular manifest property property. A default value must be
+-- given.
+getProperty :: (AI.AppInfo -> a) -> a -> IO a
+getProperty accessor defValue = do
+    appInfo <- liftIO $ runExceptT readManifest
+    return $ either (const defValue) accessor appInfo

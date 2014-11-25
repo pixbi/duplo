@@ -24,6 +24,8 @@ import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)
 import Control.Monad.Trans.Class (lift)
 import qualified Development.Duplo.Component as CM
 import Control.Monad.Except (ExceptT(..), runExceptT)
+import Control.Exception (throw)
+import qualified Development.Duplo.Types.Builder as BD
 
 type FileName    = String
 type FileContent = String
@@ -50,11 +52,13 @@ makeLenses ''File
 readFile :: FilePath -> FilePath -> ExceptT String Action File
 readFile cwd path = do
   let (fileDir, fileName) = parseFilePath path
-  fileContent    <- lift $ readFile' path
-  Right appInfo  <- liftIO $ runExceptT $ CM.readManifest
-  let appId'      = appId appInfo
+  fileContent <- lift $ readFile' path
+  appInfo <- liftIO $ runExceptT $ CM.readManifest
+  let appId' = appId $ case appInfo of
+                         Left manifest -> throw BD.MalformedManifestException
+                         Right appInfo' -> appInfo'
   let componentId = parseComponentId cwd appId' fileDir
-  let isRoot      = componentId == appId'
+  let isRoot = componentId == appId'
   return $ File path fileDir fileName componentId fileContent isRoot
 
 parseFilePath :: FilePath -> (FilePath, FileName)

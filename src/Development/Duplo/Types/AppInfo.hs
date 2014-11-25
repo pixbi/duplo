@@ -6,11 +6,15 @@ import Data.Aeson (FromJSON, ToJSON)
 import Data.HashMap.Strict (HashMap, empty)
 import GHC.Generics (Generic)
 
+type Dependencies = HashMap String String
+type Modes = HashMap String [String]
+
 -- | App information extracted from `component.json`
 data AppInfo = AppInfo { name         :: String
                        , repo         :: String
                        , version      :: String
-                       , dependencies :: HashMap String String
+                       , dependencies :: Dependencies
+                       , modes        :: Maybe Modes
                        , images       :: [String]
                        , scripts      :: [String]
                        , styles       :: [String]
