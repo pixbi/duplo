@@ -70,11 +70,6 @@ main = do
   let depsPath        = cwd </> "components/"
   let targetPath      = cwd </> "public/"
 
-  -- Gather information about this project
-  appName <- fmap AI.name CM.readManifest
-  appVersion <- fmap AI.version CM.readManifest
-  appId <- fmap CM.appId CM.readManifest
-
   -- Internal command translation
   let duploEnv' = duploEnv
   let (cmdNameTranslated, bumpLevel, duploEnv, toWatch) =
@@ -93,10 +88,29 @@ main = do
           _ -> (cmdName, "", duploEnv', False)
 
   -- Certain flags turn into commands.
-  let cmdNameWithFlags =
-        if (OP.optVersion options)
-          then "version"
-          else cmdNameTranslated
+  let cmdNameWithFlags = if   (OP.optVersion options)
+                         then "version"
+                         else cmdNameTranslated
+
+  -- Display version either via command or option. We need to do this
+  -- before any `readManifest` as it throws an error when there isn't one,
+  -- as it should.
+  when (cmdNameWithFlags == "version") $ do
+    -- Prefacing space
+    putStr "\n"
+
+    let command = utilPath </> "display-version.sh"
+    let process = createProcess $ proc command [duploPath]
+
+    -- Run the command.
+    (_, _, _, handle) <- process
+    -- Remember to do it synchronously.
+    void $ waitForProcess handle
+
+  -- Gather information about this project
+  appName <- fmap AI.name CM.readManifest
+  appVersion <- fmap AI.version CM.readManifest
+  appId <- fmap CM.appId CM.readManifest
 
   -- We may need custom builds with mode
   let depManifestPath = cwd </> "component.json"
@@ -130,21 +144,6 @@ main = do
           ++ "DUPLO_IN (app parameters)       : "
           ++ duploIn ++ "\n"
 
-  -- Display version either via command or option.
-  when (cmdName == "version") $ do
-    -- Prefacing space
-    putStr "\n"
-
-    let command = utilPath </> "display-version.sh"
-    let process = createProcess $ proc command [duploPath]
-
-    -- Run the command.
-    (_, _, _, handle) <- process
-    -- Remember to do it synchronously.
-    waitForProcess handle
-
-    return ()
-
   -- Construct environment
   let buildConfig = TC.BuildConfig { TC._appName      = appName
                                    , TC._appVersion   = appVersion
@@ -170,7 +169,7 @@ main = do
                                    }
 
   -- Construct the Shake command
-  let shake = shakeMain cmdNameTranslated cmdArgs buildConfig options
+  let shake = shakeMain cmdNameWithFlags cmdArgs buildConfig options
 
   -- Watch or just build
   unless toWatch shake

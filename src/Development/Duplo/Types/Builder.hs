@@ -21,4 +21,4 @@ instance Show BuilderException where
     show (MalformedManifestException path) =
       "The manifest file `" ++ path ++ "` is not a valid duplo JSON."
     show (MissingManifestException path) =
-      "Manifest expected at `" ++ path ++ "`"
+      "`" ++ path ++ "` is expected at the current location."
