@@ -4,24 +4,24 @@ module Development.Duplo.Scripts
   ( build
   ) where
 
+import Control.Applicative ((<*>), (<$>))
+import Control.Exception (throw, SomeException(..))
+import Control.Lens hiding (Action)
 import Control.Monad (filterM)
+import Control.Monad.Trans.Class (lift)
 import Data.List (intercalate)
+import Data.Text.Lazy (Text, pack, unpack, replace, splitOn)
+import Development.Duplo.Component (extractCompVersions)
+import Development.Duplo.Files (File(..), pseudoFile)
+import Development.Duplo.JavaScript.Order (order)
+import Development.Duplo.Types.JavaScript
 import Development.Duplo.Utilities (getDirectoryFilesInOrder, logAction, expandPaths, compile, createIntermediaryDirectories, CompiledContent, expandDeps)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
-import Data.Text.Lazy (Text, pack, unpack, replace, splitOn)
-import Development.Duplo.Files (File(..), pseudoFile)
-import qualified Development.Duplo.Types.Config as TC
-import Control.Lens hiding (Action)
-import Control.Monad.Trans.Class (lift)
-import Development.Duplo.Component (extractCompVersions)
-import qualified Language.JavaScript.Parser as JS
-import Development.Duplo.JavaScript.Order (order)
-import Control.Exception (throw, SomeException(..))
-import Development.Duplo.Types.JavaScript
-import Control.Applicative ((<*>), (<$>))
 import Language.JavaScript.Parser.SrcLocation (TokenPosn(..))
 import Text.Regex (mkRegex, matchRegex)
+import qualified Development.Duplo.Types.Config as TC
+import qualified Language.JavaScript.Parser as JS
 
 -- | How many lines to display around the source of error (both ways).
 errorDisplayRange :: Int

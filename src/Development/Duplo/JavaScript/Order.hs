@@ -5,15 +5,15 @@ module Development.Duplo.JavaScript.Order
   , JSCompilerException(..)
   ) where
 
-import Language.JavaScript.Parser (JSNode(..), Node(..), TokenPosn(..))
-import Control.Monad.Writer.Lazy (Writer, tell, runWriter)
-import Control.Monad.State.Lazy (get, put, state, execState)
-import Data.Maybe (isJust, fromJust)
-import Data.List (findIndex, sortBy, intersperse, nubBy, reverse)
-import Control.Monad (liftM)
-import Control.Lens
 import Control.Exception (throw)
+import Control.Lens
+import Control.Monad (liftM)
+import Control.Monad.State.Lazy (get, put, state, execState)
+import Control.Monad.Writer.Lazy (Writer, tell, runWriter)
+import Data.List (findIndex, sortBy, intersperse, nubBy, reverse)
+import Data.Maybe (isJust, fromJust)
 import Development.Duplo.Types.JavaScript
+import Language.JavaScript.Parser (JSNode(..), Node(..), TokenPosn(..))
 
 makeLenses ''Module
 

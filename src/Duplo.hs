@@ -5,6 +5,7 @@ import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
 import Data.ByteString.Base64 (decode)
 import Data.ByteString.Char8 (pack, unpack)
 import Data.Maybe (fromMaybe)
+import Data.String.Utils (replace)
 import Development.Duplo.Server (serve)
 import Development.Duplo.Shake (shakeMain)
 import Development.Duplo.Watcher (watch)
@@ -22,7 +23,6 @@ import qualified Development.Duplo.Types.Config as TC
 import qualified Development.Duplo.Types.Options as OP
 import qualified Filesystem.Path
 import qualified GHC.IO
-import Data.String.Utils (replace)
 
 main :: IO ()
 main = do

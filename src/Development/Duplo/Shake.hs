@@ -2,26 +2,26 @@ module Development.Duplo.Shake
   ( shakeMain
   ) where
 
+import Control.Exception (throw)
+import Control.Lens hiding (Action)
+import Control.Monad (void)
+import Control.Monad (when)
+import Control.Monad.Except (runExceptT)
+import Development.Duplo.Git as Git
+import Development.Duplo.Markups as Markups
+import Development.Duplo.Scripts as Scripts
+import Development.Duplo.Static as Static
+import Development.Duplo.Styles as Styles
 import Development.Duplo.Utilities (logAction)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
+import System.Console.GetOpt (OptDescr(..), ArgDescr(..))
+import System.IO (readFile)
 import qualified Development.Duplo.Component as CM
-import Control.Monad.Except (runExceptT)
-import qualified Development.Duplo.Types.Config as TC
 import qualified Development.Duplo.Types.AppInfo as AI
 import qualified Development.Duplo.Types.Builder as BD
-import Control.Lens hiding (Action)
-import Development.Duplo.Markups as Markups
-import Development.Duplo.Styles as Styles
-import Development.Duplo.Scripts as Scripts
-import Development.Duplo.Static as Static
-import Development.Duplo.Git as Git
-import Control.Monad (void)
-import System.Console.GetOpt (OptDescr(..), ArgDescr(..))
+import qualified Development.Duplo.Types.Config as TC
 import qualified Development.Duplo.Types.Options as OP
-import System.IO (readFile)
-import Control.Monad (when)
-import Control.Exception (throw)
 
 shakeMain :: String -> [String] -> TC.BuildConfig -> OP.Options -> IO ()
 shakeMain cmdName cmdArgs config options = shake shakeOptions $ do

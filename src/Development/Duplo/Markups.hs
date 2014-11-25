@@ -2,21 +2,20 @@ module Development.Duplo.Markups
   ( build
   ) where
 
+import Control.Applicative ((<$>))
+import Control.Lens hiding (Action)
+import Control.Monad.Trans.Class (lift)
+import Data.Maybe (fromMaybe)
+import Data.String.Utils (replace)
+import Development.Duplo.Component (parseComponentId)
+import Development.Duplo.FileList (collapseFileList, makeFile)
+import Development.Duplo.Files (File(..), filePath, fileDir, fileName, componentId, fileContent, isRoot, ComponentId)
 import Development.Duplo.Utilities (logAction, expandPaths, compile, createIntermediaryDirectories, CompiledContent, expandDeps)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
-import Development.Duplo.Files (File(..), filePath, fileDir, fileName, componentId, fileContent, isRoot, ComponentId)
-import Development.Duplo.Component (parseComponentId)
 import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)
-import Control.Lens hiding (Action)
-import qualified Development.Duplo.Types.Config as TC
-import Control.Lens hiding (Action)
-import Development.Duplo.FileList (collapseFileList, makeFile)
 import qualified Development.Duplo.FileList as FileList (filePath)
-import Data.String.Utils (replace)
-import Data.Maybe (fromMaybe)
-import Control.Applicative ((<$>))
-import Control.Monad.Trans.Class (lift)
+import qualified Development.Duplo.Types.Config as TC
 
 build :: TC.BuildConfig
       -> FilePath

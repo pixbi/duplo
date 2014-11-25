@@ -10,20 +10,20 @@ module Development.Duplo.Utilities
   , expandDeps
   ) where
 
-import Prelude hiding (readFile)
-import Control.Monad (filterM)
-import Data.List (intercalate)
-import Development.Shake hiding (readFile)
-import Development.Duplo.Files (readFile, File(..), fileContent)
-import Development.Shake.FilePath ((</>))
 import Control.Lens hiding (Action)
-import qualified Development.Duplo.Types.Config as TC
+import Control.Monad (filterM)
 import Control.Monad.Except (ExceptT(..))
-import Control.Monad.Trans.Class (lift)
-import System.FilePath.Posix (joinPath, splitPath)
-import qualified Development.Duplo.Types.AppInfo as AI
 import Control.Monad.Except (runExceptT)
+import Control.Monad.Trans.Class (lift)
+import Data.List (intercalate)
+import Development.Duplo.Files (readFile, File(..), fileContent)
+import Development.Shake hiding (readFile)
+import Development.Shake.FilePath ((</>))
+import Prelude hiding (readFile)
+import System.FilePath.Posix (joinPath, splitPath)
 import qualified Development.Duplo.Component as CM
+import qualified Development.Duplo.Types.AppInfo as AI
+import qualified Development.Duplo.Types.Config as TC
 
 type CompiledContent = ExceptT String Action
 type FileProcessor = [File] -> CompiledContent [File]

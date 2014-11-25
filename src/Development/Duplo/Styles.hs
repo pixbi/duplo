@@ -2,12 +2,12 @@ module Development.Duplo.Styles
   ( build
   ) where
 
+import Control.Lens hiding (Action)
+import Control.Monad.Trans.Class (lift)
 import Development.Duplo.Utilities (getDirectoryFilesInOrder, logAction, expandPaths, compile, createIntermediaryDirectories, CompiledContent, expandDeps)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
 import qualified Development.Duplo.Types.Config as TC
-import Control.Lens hiding (Action)
-import Control.Monad.Trans.Class (lift)
 
 build :: TC.BuildConfig
       -> FilePath

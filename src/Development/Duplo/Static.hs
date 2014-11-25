@@ -4,16 +4,16 @@ module Development.Duplo.Static
   , qualify
   ) where
 
+import Control.Lens hiding (Action)
+import Control.Monad (zipWithM_, filterM)
+import Data.List (transpose, nub)
+import Development.Duplo.FileList (makeFile, makeFiles, toCopies, collapseFileLists, Copy)
 import Development.Duplo.Utilities (logAction, createIntermediaryDirectories, createPathDirectories)
 import Development.Shake
-import qualified Development.Duplo.Types.Config as TC
-import Control.Lens hiding (Action)
-import System.FilePath.Posix (splitExtension, splitDirectories, makeRelative)
-import Data.List (transpose, nub)
-import Control.Monad (zipWithM_, filterM)
-import Development.Duplo.FileList (makeFile, makeFiles, toCopies, collapseFileLists, Copy)
-import qualified Development.Duplo.FileList as FileList (filePath)
 import Development.Shake.FilePath ((</>))
+import System.FilePath.Posix (splitExtension, splitDirectories, makeRelative)
+import qualified Development.Duplo.FileList as FileList (filePath)
+import qualified Development.Duplo.Types.Config as TC
 
 build :: TC.BuildConfig
       -> [FilePath]

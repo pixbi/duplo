@@ -11,13 +11,13 @@ module Development.Duplo.FileList
   , fileBase
   ) where
 
-import Development.Shake
-import Data.Maybe (Maybe(..), catMaybes)
-import Control.Monad (liftM, msum)
-import System.FilePath.Posix (makeRelative)
-import Development.Shake.FilePath ((</>))
 import Control.Lens hiding (Action)
 import Control.Lens.TH (makeLenses)
+import Control.Monad (liftM, msum)
+import Data.Maybe (Maybe(..), catMaybes)
+import Development.Shake
+import Development.Shake.FilePath ((</>))
+import System.FilePath.Posix (makeRelative)
 
 data File = File { _filePath :: FilePath
                  , _fileBase :: FilePath
