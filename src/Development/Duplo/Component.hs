@@ -10,32 +10,33 @@ module Development.Duplo.Component
   ) where
 
 import Control.Applicative ((<$>), (<*>))
-import Development.Shake hiding (doesFileExist, getDirectoryContents)
-import Data.Text (breakOn)
-import qualified Data.Text as T (unpack, pack)
-import Data.ByteString.Lazy.Char8 (ByteString)
-import qualified Data.ByteString.Lazy.Char8 as BS (unpack, pack)
-import System.FilePath.Posix (splitDirectories)
+import Control.Exception (throw)
+import Control.Monad (when)
 import Control.Monad.Trans.Class (lift)
-import System.Directory (doesFileExist)
-import Development.Duplo.Types.AppInfo (AppInfo(..))
-import qualified Development.Duplo.Types.AppInfo as AI
 import Data.Aeson (encode, decode)
 import Data.Aeson.Encode.Pretty (encodePretty)
+import Data.ByteString.Lazy.Char8 (ByteString)
+import Data.HashMap.Lazy (empty, keys, lookup)
+import Data.Map (fromList)
 import Data.Maybe (fromJust)
-import System.FilePath.FilePather.Find (findp)
+import Data.Text (breakOn)
+import Development.Duplo.Types.AppInfo (AppInfo(..))
+import Development.Shake hiding (doesFileExist, getDirectoryContents, doesDirectoryExist)
+import Development.Shake.FilePath ((</>))
+import Prelude hiding (lookup)
+import System.Directory (doesFileExist, doesDirectoryExist)
+import System.Directory (getDirectoryContents, getCurrentDirectory)
 import System.FilePath.FilePather.FilePathPredicate (always)
 import System.FilePath.FilePather.FilterPredicate (filterPredicate)
+import System.FilePath.FilePather.Find (findp)
 import System.FilePath.FilePather.RecursePredicate (recursePredicate)
-import System.FilePath.Posix (takeFileName)
-import Data.Map (fromList)
-import Data.HashMap.Lazy (empty, keys, lookup)
-import Prelude hiding (lookup)
-import qualified Development.Duplo.Types.Builder as BD
-import Control.Exception (throw)
-import System.Directory (getDirectoryContents, getCurrentDirectory)
 import System.FilePath.Posix (makeRelative, dropExtension)
-import Development.Shake.FilePath ((</>))
+import System.FilePath.Posix (splitDirectories)
+import System.FilePath.Posix (takeFileName)
+import qualified Data.ByteString.Lazy.Char8 as BS (unpack, pack)
+import qualified Data.Text as T (unpack, pack)
+import qualified Development.Duplo.Types.AppInfo as AI
+import qualified Development.Duplo.Types.Builder as BD
 
 type Version = (String, String)
 
@@ -120,7 +121,13 @@ getDependencies :: Maybe String -> IO [FilePath]
 getDependencies Nothing = do
     cwd <- getCurrentDirectory
     let depDir = cwd </> "components/"
-    fmap (filter isRegularFile) $ getDirectoryContents depDir
+    depDirExists <- doesDirectoryExist depDir
+    let filterRegular = fmap $ filter isRegularFile
+
+    filterRegular $
+      if   depDirExists
+      then (getDirectoryContents depDir)
+      else (return [])
 -- | Only select the named dependencies.
 getDependencies (Just mode) = do
     fullDeps <- fmap AI.dependencies readManifest
