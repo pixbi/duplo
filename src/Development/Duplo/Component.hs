@@ -10,7 +10,7 @@ module Development.Duplo.Component
   ) where
 
 import Control.Applicative ((<$>), (<*>))
-import Development.Shake hiding (doesFileExist)
+import Development.Shake hiding (doesFileExist, getDirectoryContents)
 import Data.Text (breakOn)
 import qualified Data.Text as T (unpack, pack)
 import Data.ByteString.Lazy.Char8 (ByteString)
@@ -33,6 +33,9 @@ import Data.HashMap.Lazy (empty, keys, lookup)
 import Prelude hiding (lookup)
 import qualified Development.Duplo.Types.Builder as BD
 import Control.Exception (throw)
+import System.Directory (getDirectoryContents, getCurrentDirectory)
+import System.FilePath.Posix (makeRelative, dropExtension)
+import Development.Shake.FilePath ((</>))
 
 type Version = (String, String)
 
@@ -114,7 +117,10 @@ getAllManifestPaths path =
 -- | Get the component dependency list by providing a mode, or not.
 getDependencies :: Maybe String -> IO [FilePath]
 -- | Simply get all dependencies if no mode is provided.
-getDependencies Nothing = readManifest >>= (return . keys . AI.dependencies)
+getDependencies Nothing = do
+    cwd <- getCurrentDirectory
+    let depDir = cwd </> "components/"
+    fmap (filter isRegularFile) $ getDirectoryContents depDir
 -- | Only select the named dependencies.
 getDependencies (Just mode) = do
     fullDeps <- fmap AI.dependencies readManifest
@@ -130,3 +136,7 @@ getDependencies' :: AI.Dependencies -> Maybe [String] -> IO [FilePath]
 getDependencies' deps Nothing = getDependencies Nothing
 -- If there is something, fetch only those dependencies.
 getDependencies' deps (Just modeDeps) = return modeDeps
+
+-- | Regular file != hidden file
+isRegularFile :: FilePath -> Bool
+isRegularFile = (> 0) . length . dropExtension
