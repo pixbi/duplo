@@ -71,9 +71,9 @@ main = do
   let targetPath      = cwd </> "public/"
 
   -- Gather information about this project
-  appName <- CM.getProperty AI.name ""
-  appVersion <- CM.getProperty AI.version ""
-  appId <- CM.getProperty CM.appId ""
+  appName <- fmap AI.name CM.readManifest
+  appVersion <- fmap AI.version CM.readManifest
+  appId <- fmap CM.appId CM.readManifest
 
   -- Internal command translation
   let duploEnv' = duploEnv

@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# LANGUAGE TemplateHaskell, TupleSections #-}
 
 module Development.Duplo.Component
   ( appId
@@ -7,7 +7,6 @@ module Development.Duplo.Component
   , writeManifest
   , extractCompVersions
   , getDependencies
-  , getProperty
   ) where
 
 import Control.Applicative ((<$>), (<*>))
@@ -17,7 +16,6 @@ import qualified Data.Text as T (unpack, pack)
 import Data.ByteString.Lazy.Char8 (ByteString)
 import qualified Data.ByteString.Lazy.Char8 as BS (unpack, pack)
 import System.FilePath.Posix (splitDirectories)
-import Control.Monad.Except (ExceptT(..), throwError)
 import Control.Monad.Trans.Class (lift)
 import System.Directory (doesFileExist)
 import Development.Duplo.Types.AppInfo (AppInfo(..))
@@ -33,7 +31,6 @@ import System.FilePath.Posix (takeFileName)
 import Data.Map (fromList)
 import Data.HashMap.Lazy (empty, keys, lookup)
 import Prelude hiding (lookup)
-import Control.Monad.Except (runExceptT)
 import qualified Development.Duplo.Types.Builder as BD
 import Control.Exception (throw)
 
@@ -42,22 +39,22 @@ type Version = (String, String)
 -- | Each application must have a `component.json`
 manifestName = "component.json"
 
-readManifest :: ExceptT String IO AppInfo
+readManifest :: IO AppInfo
 readManifest = do
-    exists <- liftIO $ doesFileExist manifestName
+    exists <- doesFileExist manifestName
 
     if   exists
     then readManifest' manifestName
-    else throwError $ "Manifest expected at " ++ manifestName
+    else throw $ BD.MissingManifestException manifestName
 
-readManifest' :: FilePath -> ExceptT String IO AppInfo
+readManifest' :: FilePath -> IO AppInfo
 readManifest' path = do
-    manifest <- liftIO $ readFile path
+    manifest <- readFile path
     let maybeAppInfo = decode (BS.pack manifest) :: Maybe AppInfo
 
     case maybeAppInfo of
-      Nothing -> ExceptT $ return $ Left $ "Unparsable manifest at " ++ path
-      Just a  -> ExceptT $ return $ Right a
+      Nothing -> throw $ BD.MalformedManifestException path
+      Just a  -> return a
 
 writeManifest :: AppInfo -> IO ()
 writeManifest = (writeFile manifestName) . BS.unpack . encodePretty
@@ -84,13 +81,24 @@ parseComponentId cId
 -- | Given a path, find all the `component.json` and return a JSON string
 extractCompVersions :: FilePath -> IO String
 extractCompVersions path = do
+    -- Get all the relevant paths
     paths <- getAllManifestPaths path
-    manifests <- mapM ((fmap BS.pack) . readFile) paths
-    let decodeManifest x = case (decode x :: Maybe AppInfo) of
-                             Just a -> a
-                             Nothing -> throw BD.MalformedManifestException
-    let manifests' = fmap (appInfoToVersion . decodeManifest) manifests
-    return $ BS.unpack $ encode $ fromList manifests'
+    -- Construct the pipeline
+    let takeVersion path =
+          readFile path >>=
+          return . appInfoToVersion . (decodeManifest path) . BS.pack
+    -- Go through it
+    manifests <- mapM takeVersion paths
+    -- Marshalling
+    return $ BS.unpack $ encode $ fromList manifests
+
+-- | Given a path and the file content that the path points to, return the
+-- manifest in `AppInfo` form.
+decodeManifest :: FilePath -> ByteString -> AppInfo
+decodeManifest path content =
+  case (decode content :: Maybe AppInfo) of
+    Just manifest -> manifest
+    Nothing -> throw $ BD.MalformedManifestException path
 
 appInfoToVersion :: AppInfo -> Version
 appInfoToVersion appInfo = ((AI.name appInfo), (AI.version appInfo))
@@ -106,11 +114,11 @@ getAllManifestPaths path =
 -- | Get the component dependency list by providing a mode, or not.
 getDependencies :: Maybe String -> IO [FilePath]
 -- | Simply get all dependencies if no mode is provided.
-getDependencies Nothing = (getProperty AI.dependencies empty) >>= (return . keys)
+getDependencies Nothing = readManifest >>= (return . keys . AI.dependencies)
 -- | Only select the named dependencies.
 getDependencies (Just mode) = do
-    fullDeps <- getProperty AI.dependencies empty
-    depModes <- getProperty AI.modes Nothing
+    fullDeps <- fmap AI.dependencies readManifest
+    depModes <- fmap AI.modes readManifest
     getDependencies' fullDeps $ case depModes of
                                   Just d -> lookup mode d
                                   Nothing -> Nothing
@@ -122,10 +130,3 @@ getDependencies' :: AI.Dependencies -> Maybe [String] -> IO [FilePath]
 getDependencies' deps Nothing = getDependencies Nothing
 -- If there is something, fetch only those dependencies.
 getDependencies' deps (Just modeDeps) = return modeDeps
-
--- | Get a particular manifest property property. A default value must be
--- given.
-getProperty :: (AI.AppInfo -> a) -> a -> IO a
-getProperty accessor defValue = do
-    appInfo <- liftIO $ runExceptT readManifest
-    return $ either (const defValue) accessor appInfo

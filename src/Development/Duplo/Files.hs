@@ -53,10 +53,8 @@ readFile :: FilePath -> FilePath -> ExceptT String Action File
 readFile cwd path = do
   let (fileDir, fileName) = parseFilePath path
   fileContent <- lift $ readFile' path
-  appInfo <- liftIO $ runExceptT $ CM.readManifest
-  let appId' = appId $ case appInfo of
-                         Left manifest -> throw BD.MalformedManifestException
-                         Right appInfo' -> appInfo'
+  appInfo <- liftIO $ CM.readManifest
+  let appId' = appId appInfo
   let componentId = parseComponentId cwd appId' fileDir
   let isRoot = componentId == appId'
   return $ File path fileDir fileName componentId fileContent isRoot

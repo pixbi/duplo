@@ -31,7 +31,7 @@ commit :: TC.BuildConfig
        -> Action (Version, Version)
 commit config level = do
     let utilPath = config ^. TC.utilPath
-    Right appInfo <- liftIO $ runExceptT $ CM.readManifest
+    appInfo <- liftIO CM.readManifest
     let version = AI.version appInfo
     let cwd = config ^. TC.cwd
     let manifest = cwd </> "component.json"

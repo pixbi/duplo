@@ -114,7 +114,7 @@ shakeMain cmdName cmdArgs config options = shake shakeOptions $ do
       command_ [] (utilPath </> "init-boilerplate.sh") [src, dest]
 
       -- Update fields
-      Right appInfo <- liftIO $ runExceptT $ CM.readManifest
+      appInfo <- liftIO CM.readManifest
       let newAppInfo = appInfo { AI.name = repo
                                , AI.repo = name
                                }
