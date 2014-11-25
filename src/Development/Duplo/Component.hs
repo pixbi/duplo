@@ -106,9 +106,7 @@ getAllManifestPaths path =
 -- | Get the component dependency list by providing a mode, or not.
 getDependencies :: Maybe String -> IO [FilePath]
 -- | Simply get all dependencies if no mode is provided.
-getDependencies Nothing = do
-    fullDeps <- getProperty AI.dependencies empty
-    return $ keys fullDeps
+getDependencies Nothing = (getProperty AI.dependencies empty) >>= (return . keys)
 -- | Only select the named dependencies.
 getDependencies (Just mode) = do
     fullDeps <- getProperty AI.dependencies empty
@@ -123,8 +121,7 @@ getDependencies' :: AI.Dependencies -> Maybe [String] -> IO [FilePath]
 -- If somehow there isn't a mode defined, switch over to `Nothing`.
 getDependencies' deps Nothing = getDependencies Nothing
 -- If there is something, fetch only those dependencies.
-getDependencies' deps (Just modeDeps) = do
-    return modeDeps
+getDependencies' deps (Just modeDeps) = return modeDeps
 
 -- | Get a particular manifest property property. A default value must be
 -- given.
