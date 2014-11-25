@@ -210,6 +210,9 @@ would build with the dependencies specified under `embeddable` while setting
 Note that dependency selection applies at the dependency level but not at the
 file level within the components.
 
+Also note that duplo caches between builds. When you switch dependency
+selection, remember to `duplo clean` your repo first.
+
 Putting it all together, an example of a `component.json`:
 
 ```json
