@@ -2,25 +2,10 @@ module Development.Duplo.Markups
   ( build
   ) where
 
-import Development.Duplo.Utilities
-         ( logAction
-         , expandPaths
-         , compile
-         , createIntermediaryDirectories
-         , CompiledContent
-         )
+import Development.Duplo.Utilities (logAction, expandPaths, compile, createIntermediaryDirectories, CompiledContent, expandDeps)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
-import Development.Duplo.Files
-         ( File(..)
-         , filePath
-         , fileDir
-         , fileName
-         , componentId
-         , fileContent
-         , isRoot
-         , ComponentId
-         )
+import Development.Duplo.Files (File(..), filePath, fileDir, fileName, componentId, fileContent, isRoot, ComponentId)
 import Development.Duplo.Component (parseComponentId)
 import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)
 import Control.Lens hiding (Action)
@@ -52,20 +37,20 @@ build config = \ out -> do
   let refTagsPath   = defaultsPath </> "head.html"
   let devAssetsPath = devPath </> "assets"
   let devCodePath   = devPath </> "modules/index.jade"
+  let depIds      = config ^. TC.dependencies
+  let expandDeps' = expandDeps depIds
 
   -- Preconditions
   lift $ createIntermediaryDirectories devCodePath
 
   -- These paths don't need to be expanded
-  let staticPaths = [ "app/index.jade"
-                    ]
+  let expandDepsStatic id = [ "components/*/app/index.jade" ]
+  let staticPaths = [ "app/index.jade" ] ++ (expandDeps' expandDepsStatic)
 
   -- These paths need to be expanded by Shake
-  let dynamicPaths = [ "components/*/app/index.jade"
-                     -- Compile dev files in dev mode as well.
-                     ] ++ if   TC.isInDev config
-                          then [devCodePath ++ "//*.jade"]
-                          else []
+  let dynamicPaths = if   TC.isInDev config
+                     then [devCodePath ++ "//*.jade"]
+                     else []
 
   -- Merge both types of paths
   paths <- lift $ expandPaths cwd staticPaths dynamicPaths

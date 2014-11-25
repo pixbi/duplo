@@ -4,23 +4,14 @@ module Development.Duplo.Static
   , qualify
   ) where
 
-import Development.Duplo.Utilities
-         ( logAction
-         , createIntermediaryDirectories
-         )
+import Development.Duplo.Utilities (logAction, createIntermediaryDirectories, createPathDirectories)
 import Development.Shake
 import qualified Development.Duplo.Types.Config as TC
 import Control.Lens hiding (Action)
 import System.FilePath.Posix (splitExtension, splitDirectories, makeRelative)
 import Data.List (transpose, nub)
 import Control.Monad (zipWithM_, filterM)
-import Development.Duplo.FileList
-         ( makeFile
-         , makeFiles
-         , toCopies
-         , collapseFileLists
-         , Copy
-         )
+import Development.Duplo.FileList (makeFile, makeFiles, toCopies, collapseFileLists, Copy)
 import qualified Development.Duplo.FileList as FileList (filePath)
 import Development.Shake.FilePath ((</>))
 
@@ -98,10 +89,7 @@ deps config = do
   let devAssetsPath = devPath </> "assets/"
 
   -- Make sure all these directories exist
-  let requiredPaths = [assetsPath, depsPath, targetPath, devAssetsPath]
-  let mkdir = \ dir -> command_ [] "mkdir" ["-p", dir]
-  existing <- filterM ((fmap not) . doesDirectoryExist) requiredPaths
-  mapM_ mkdir existing
+  createPathDirectories [assetsPath, depsPath, targetPath, devAssetsPath]
 
   -- We want all asset files
   assetFiles    <- getDirectoryFiles assetsPath ["//*"]

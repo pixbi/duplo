@@ -27,6 +27,7 @@ data BuildConfig = BuildConfig { _appName      :: String
                                , _targetPath   :: FilePath
                                , _bumpLevel    :: String
                                , _port         :: Port
+                               , _dependencies :: [String]
                                } deriving (Show)
 
 makeLenses ''BuildConfig

@@ -22,6 +22,7 @@ import qualified Development.Duplo.Types.Config as TC
 import qualified Development.Duplo.Types.Options as OP
 import qualified Filesystem.Path
 import qualified GHC.IO
+import Data.String.Utils (replace)
 
 main :: IO ()
 main = do
@@ -102,6 +103,7 @@ main = do
   dependencies <- CM.getDependencies $ case duploMode of
                                          "" -> Nothing
                                          a -> Just a
+  let depIds = fmap (replace "/" "-") dependencies
 
   -- Display additional information when verbose.
   when (OP.optVerbose options) $
@@ -164,6 +166,7 @@ main = do
                                    , TC._targetPath   = targetPath
                                    , TC._bumpLevel    = bumpLevel
                                    , TC._port         = port
+                                   , TC._dependencies = depIds
                                    }
 
   -- Construct the Shake command

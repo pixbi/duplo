@@ -5,18 +5,16 @@ module Development.Duplo.Utilities
   , compile
   , FileProcessor
   , createIntermediaryDirectories
+  , createPathDirectories
   , CompiledContent
+  , expandDeps
   ) where
 
 import Prelude hiding (readFile)
 import Control.Monad (filterM)
 import Data.List (intercalate)
 import Development.Shake hiding (readFile)
-import Development.Duplo.Files
-         ( readFile
-         , File(..)
-         , fileContent
-         )
+import Development.Duplo.Files (readFile, File(..), fileContent)
 import Development.Shake.FilePath ((</>))
 import Control.Lens hiding (Action)
 import qualified Development.Duplo.Types.Config as TC
@@ -119,6 +117,14 @@ expandPaths cwd staticPaths dynamicPaths = do
   dynamicExpanded <- getDirectoryFilesInOrder cwd dynamicPaths
   return $ staticExpanded ++ expand dynamicExpanded
 
+-- | Given a list of paths, make sure all intermediary directories are
+-- there.
+createPathDirectories :: [FilePath] -> Action ()
+createPathDirectories paths = do
+  let mkdir = \ dir -> command_ [] "mkdir" ["-p", dir]
+  existing <- filterM ((fmap not) . doesDirectoryExist) paths
+  mapM_ mkdir existing
+
 -- | Create all the directories within a path if they do not exist. Note
 -- that the last segment is assumed to be the file and therefore not
 -- created.
@@ -127,3 +133,8 @@ createIntermediaryDirectories path =
     command_ [] "mkdir" ["-p", dir]
   where
     dir = joinPath $ init $ splitPath path
+
+-- | Return a list of dynamic paths given a list of dependency ID and
+-- a function to expand one ID into a list of paths.
+expandDeps :: [String] -> (String -> [FilePath]) -> [FilePath]
+expandDeps deps expander = concat $ (fmap expander deps)

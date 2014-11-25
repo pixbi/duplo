@@ -6,14 +6,7 @@ module Development.Duplo.Scripts
 
 import Control.Monad (filterM)
 import Data.List (intercalate)
-import Development.Duplo.Utilities
-         ( getDirectoryFilesInOrder
-         , logAction
-         , expandPaths
-         , compile
-         , createIntermediaryDirectories
-         , CompiledContent
-         )
+import Development.Duplo.Utilities (getDirectoryFilesInOrder, logAction, expandPaths, compile, createIntermediaryDirectories, CompiledContent, expandDeps)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
 import Data.Text.Lazy (Text, pack, unpack, replace, splitOn)
@@ -50,21 +43,21 @@ build config = \ out -> do
   let input       = config ^. TC.input
   let devPath     = config ^. TC.devPath
   let devCodePath = devPath </> "modules/index.js"
+  let depIds      = config ^. TC.dependencies
 
   -- Preconditions
   lift $ createIntermediaryDirectories devCodePath
 
-  -- These paths don't need to be expanded
-  let staticPaths = [ "app/index.js"
-                    ]
+  -- These paths don't need to be expanded.
+  let staticPaths = [ "app/index.js" ]
 
-  -- These paths need to be expanded by Shake
-  let dynamicPaths = [ "app/modules//*.js"
-                     , "components/*/app/modules//*.js"
-                     -- Compile dev files in dev mode as well.
-                     ] ++ if   TC.isInDev config
-                          then ["dev/modules//*.js"]
-                          else []
+  -- These paths need to be expanded by Shake.
+  let expandDepsA id = ["components/" ++ id ++ "/app/modules//*.js"]
+  let dynamicPaths = [ "app/modules//*.js" ]
+                  -- Build list only for dependencies.
+                  ++ expandDeps depIds expandDepsA
+                  -- Compile dev files in dev mode as well.
+                  ++ if TC.isInDev config then ["dev/modules//*.js"] else []
 
   -- Merge both types of paths
   paths <- lift $ expandPaths cwd staticPaths dynamicPaths
