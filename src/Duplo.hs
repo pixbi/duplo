@@ -13,7 +13,7 @@ import Development.Shake (cmd)
 import Development.Shake.FilePath ((</>))
 import GHC.Conc (forkIO)
 import System.Console.GetOpt (getOpt, OptDescr(..), ArgDescr(..), ArgOrder(..))
-import System.Directory (getCurrentDirectory)
+import System.Directory (getCurrentDirectory, createDirectoryIfMissing)
 import System.Environment (lookupEnv, getArgs, getExecutablePath)
 import System.Process (proc, createProcess, waitForProcess)
 import qualified Control.Lens
@@ -177,5 +177,8 @@ main = do
     -- Start a local server
     _ <- forkIO $ serve port
 
+    let targetDirs = [devPath, appPath, depsPath]
+    -- Make sure we have these directories to watch
+    mapM_ (createDirectoryIfMissing True) targetDirs
     -- Watch for file changes
-    watch shake [devPath, appPath, depsPath]
+    watch shake targetDirs
