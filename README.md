@@ -177,6 +177,44 @@ Jade files are concatenated in no particular order as the Jade include system
 is used for explicit ordering.
 
 
+## Automatic rewriting for Jade
+
+duplo does not and cannot peek into Jade's include system. However, it does
+automatically expand paths in include statements to make the inclusion process
+easier. Take this example:
+
+```jade
+include index.jade
+include menu/index.jade
+include pixbi-helper/index.jade
+```
+
+In the absence of a Component repo string (i.e. `<user>-<repo>`), the path is
+assumed to be pointing to a file under the `modules` directory in the current
+repo. With a component repo string, it is assumed to also be pointing to a file
+under the `modules` directory, but in the corresponding component's repo.
+
+The above is effectively rewritten into these paths, relative to the top-level
+repo's directory.
+
+```jade
+include app/modules/index.jade
+include app/modules/menu/index.jade
+include components/pixbi-helper/app/modules/index.jade
+```
+
+
+## A note on the `modules` directory
+
+By now, it should be obvious that there are really two "modes" for any duplo
+repo: an application mode and a library mode. In application mode, duplo acts
+as the top-level program, including other duplo repos via Component as
+libraries. In this scenario, `app/index.js` and `app/index.jade` are included
+into the build. Contrast this to the library mode, where only those in the
+"second" level (e.g. `modules/`, `assets/`, `styl/`) are included into the
+build.
+
+
 ## Component Versions
 
 Each component's version is recorded in the `DUPLO_VERSIONS` global variable,

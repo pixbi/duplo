@@ -116,7 +116,7 @@ rewriteInclude :: ComponentId -> String -> String
 rewriteInclude defaultId line =
   let
     -- Find how many spaces precede the line
-    padLength  = length $ takeWhile (== ' ') line
+    padLength  = length $ takeWhile (' ' ==) line
     padding    = replicate padLength ' '
     -- The statement in tokens
     tokens     = words line
@@ -128,7 +128,7 @@ rewriteInclude defaultId line =
       (("include":_) : (depId:relPath) : _) ->
           padding ++ "include " ++ compPath </> relPath'
         where
-          relPath' = (</>) "app/modules" $ joinPath relPath
+          relPath' = ("app/modules" </>) $ joinPath relPath
           compName = case (parseComponentId depId) of
                        -- There is a component ID
                        Right (user, repo) -> depId
