@@ -74,18 +74,19 @@ main = do
   let duploEnv' = duploEnv
   let (cmdNameTranslated, bumpLevel, duploEnv, toWatch) =
         case cmdName of
-          "info" -> ("version", "", duploEnv', False)
-          "ver" -> ("version", "", duploEnv', False)
-          "new" -> ("init", "", duploEnv', False)
-          "bump" -> ("bump", "patch", duploEnv', False)
+          "info"    -> ("version", "", duploEnv', False)
+          "ver"     -> ("version", "", duploEnv', False)
+          "new"     -> ("init", "", duploEnv', False)
+          "bump"    -> ("bump", "patch", duploEnv', False)
           "release" -> ("bump", "patch", duploEnv', False)
-          "patch" -> ("bump", "patch", duploEnv', False)
-          "minor" -> ("bump", "minor", duploEnv', False)
-          "major" -> ("bump", "major", duploEnv', False)
-          "dev" -> ("build", "", "dev", True)
-          "live" -> ("build", "", "live", True)
-          "test" -> ("build", "", "test", False)
-          _ -> (cmdName, "", duploEnv', False)
+          "patch"   -> ("bump", "patch", duploEnv', False)
+          "minor"   -> ("bump", "minor", duploEnv', False)
+          "major"   -> ("bump", "major", duploEnv', False)
+          "dev"     -> ("build", "", "dev", True)
+          "live"    -> ("build", "", "live", True)
+          "build"   -> ("build", "", "live", False)
+          "test"    -> ("build", "", "test", False)
+          _         -> (cmdName, "", duploEnv', False)
 
   -- Certain flags turn into commands.
   let cmdNameWithFlags = if   (OP.optVersion options)
@@ -108,15 +109,15 @@ main = do
     void $ waitForProcess handle
 
   -- Gather information about this project
-  appName <- fmap AI.name CM.readManifest
+  appName    <- fmap AI.name CM.readManifest
   appVersion <- fmap AI.version CM.readManifest
-  appId <- fmap CM.appId CM.readManifest
+  appId      <- fmap CM.appId CM.readManifest
 
   -- We may need custom builds with mode
   let depManifestPath = cwd </> "component.json"
   dependencies <- CM.getDependencies $ case duploMode of
                                          "" -> Nothing
-                                         a -> Just a
+                                         a  -> Just a
   let depIds = fmap (replace "/" "-") dependencies
 
   -- Display additional information when verbose.
