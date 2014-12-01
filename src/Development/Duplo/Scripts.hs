@@ -53,11 +53,11 @@ build config = \ out -> do
 
   -- These paths need to be expanded by Shake.
   let expandDepsA id = ["components/" ++ id ++ "/app/modules//*.js"]
-  let dynamicPaths = [ "app/modules//*.js" ]
-                  -- Build list only for dependencies.
-                  ++ expandDeps depIds expandDepsA
-                  -- Compile dev files in dev mode as well.
-                  ++ if TC.isInDev config then ["dev/modules//*.js"] else []
+  let dynamicPaths   = [ "app/modules//*.js" ]
+                    -- Build list only for dependencies.
+                    ++ expandDeps depIds expandDepsA
+                    -- Compile dev files in dev mode as well.
+                    ++ if TC.isInDev config then ["dev/modules//*.js"] else []
 
   -- Merge both types of paths
   paths <- lift $ expandPaths cwd staticPaths dynamicPaths
