@@ -116,13 +116,16 @@ main = do
     -- Remember to do it synchronously.
     void $ waitForProcess handle
 
-  -- Helper function to ignore errors, only for this stage, before Shake is
-  -- run.
+  -- Helper function to ignore exceptions, only for this stage, before
+  -- Shake is run.
   let ignoreManifestError io =
         catch io
+              -- We only care about exceptions thrown by the builder.
               (\(e :: TB.BuilderException) ->
                 case e of
+                  -- Only when missing manifest
                   TB.MissingManifestException _ -> return ""
+                  -- Re-throw other builder exceptions.
                   _ -> throw e)
 
   -- Gather information about this project
