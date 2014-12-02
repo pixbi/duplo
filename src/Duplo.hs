@@ -41,17 +41,17 @@ main = do
   options <- foldl (>>=) (return OP.defaultOptions) actions
 
   -- Port for running dev server
-  port      <- fmap read $ fromMaybe "8888" <$> lookupEnv "PORT"
+  port       <- fmap read $ fromMaybe "8888" <$> lookupEnv "PORT"
   -- Environment - e.g. dev, staging, live
-  duploEnv  <- fromMaybe "dev" <$> lookupEnv "DUPLO_ENV"
+  duploEnvMB <- lookupEnv "DUPLO_ENV"
   -- Build mode, for dependency selection
-  duploMode <- fromMaybe "" <$> lookupEnv "DUPLO_MODE"
+  duploMode  <- fromMaybe "" <$> lookupEnv "DUPLO_MODE"
   -- Application parameter
-  duploIn'  <- fromMaybe "" <$> lookupEnv "DUPLO_IN"
+  duploIn'   <- fromMaybe "" <$> lookupEnv "DUPLO_IN"
   -- Current working directory
-  cwd       <- getCurrentDirectory
+  cwd        <- getCurrentDirectory
   -- Duplo directory
-  duploPath <- fmap (</> "../../../../") getExecutablePath
+  duploPath  <- fmap (</> "../../../../") getExecutablePath
 
   -- Decode
   let duploIn = case (decode $ pack $ duploIn') of
@@ -70,8 +70,16 @@ main = do
   let depsPath        = cwd </> "components/"
   let targetPath      = cwd </> "public/"
 
+  -- Extract environment
+  let duploEnv'  = case duploEnvMB of
+                     Nothing  -> "dev"
+                     Just env -> env
+  -- `build` is a special case. It takes live as the default.
+  let duploEnv'' = case cmdName of
+                     "build" -> maybe "live" id duploEnvMB
+                     _       -> duploEnv'
+
   -- Internal command translation
-  let duploEnv' = duploEnv
   let (cmdNameTranslated, bumpLevel, duploEnv, toWatch) =
         case cmdName of
           "info"    -> ("version", "", duploEnv', False)
@@ -84,7 +92,7 @@ main = do
           "major"   -> ("bump", "major", duploEnv', False)
           "dev"     -> ("build", "", "dev", True)
           "live"    -> ("build", "", "live", True)
-          "build"   -> ("build", "", "live", False)
+          "build"   -> ("build", "", duploEnv'', False)
           "test"    -> ("build", "", "test", False)
           _         -> (cmdName, "", duploEnv', False)
 
