@@ -54,7 +54,8 @@ main = do
   duploIn'   <- fromMaybe "" <$> lookupEnv "DUPLO_IN"
   -- Current working directory
   cwd        <- getCurrentDirectory
-  -- Duplo directory
+  -- Duplo directory, assuming this is a build cabal executable (i.e.
+  -- `./dist/build/duplo/duplo`)
   duploPath  <- fmap (</> "../../../../") getExecutablePath
 
   -- Decode
