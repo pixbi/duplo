@@ -1,3 +1,5 @@
+{-# LANGUAGE ScopedTypeVariables #-}
+
 import Control.Applicative ((<$>))
 import Control.Lens.Operators
 import Control.Monad (void, when, unless)
@@ -23,6 +25,8 @@ import qualified Development.Duplo.Types.Config as TC
 import qualified Development.Duplo.Types.Options as OP
 import qualified Filesystem.Path
 import qualified GHC.IO
+import qualified Development.Duplo.Types.Builder as TB
+import Control.Exception.Base (catch, throw)
 
 main :: IO ()
 main = do
@@ -71,13 +75,12 @@ main = do
   let targetPath      = cwd </> "public/"
 
   -- Extract environment
-  let duploEnv'  = case duploEnvMB of
-                     Nothing  -> "dev"
-                     Just env -> env
-  -- `build` is a special case. It takes live as the default.
-  let duploEnv'' = case cmdName of
-                     "build" -> maybe "live" id duploEnvMB
-                     _       -> duploEnv'
+  let duploEnv' = case cmdName of
+                    -- `build` is a special case. It takes `live` as the
+                    -- default.
+                    "build" -> maybe "live" id duploEnvMB
+                    -- By default, `dev` is the default.
+                    _       -> maybe "dev" id duploEnvMB
 
   -- Internal command translation
   let (cmdNameTranslated, bumpLevel, duploEnv, toWatch) =
@@ -92,7 +95,7 @@ main = do
           "major"   -> ("bump", "major", duploEnv', False)
           "dev"     -> ("build", "", "dev", True)
           "live"    -> ("build", "", "live", True)
-          "build"   -> ("build", "", duploEnv'', False)
+          "build"   -> ("build", "", duploEnv', False)
           "test"    -> ("build", "", "test", False)
           _         -> (cmdName, "", duploEnv', False)
 
@@ -105,9 +108,6 @@ main = do
   -- before any `readManifest` as it throws an error when there isn't one,
   -- as it should.
   when (cmdNameWithFlags == "version") $ do
-    -- Prefacing space
-    putStr "\n"
-
     let command = utilPath </> "display-version.sh"
     let process = createProcess $ proc command [duploPath]
 
@@ -116,10 +116,19 @@ main = do
     -- Remember to do it synchronously.
     void $ waitForProcess handle
 
+  -- Helper function to ignore errors, only for this stage, before Shake is
+  -- run.
+  let ignoreManifestError io =
+        catch io
+              (\(e :: TB.BuilderException) ->
+                case e of
+                  TB.MissingManifestException _ -> return ""
+                  _ -> throw e)
+
   -- Gather information about this project
-  appName    <- fmap AI.name CM.readManifest
-  appVersion <- fmap AI.version CM.readManifest
-  appId      <- fmap CM.appId CM.readManifest
+  appName    <- ignoreManifestError $ fmap AI.name CM.readManifest
+  appVersion <- ignoreManifestError $ fmap AI.version CM.readManifest
+  appId      <- ignoreManifestError $ fmap CM.appId CM.readManifest
 
   -- We may need custom builds with mode
   let depManifestPath = cwd </> "component.json"
