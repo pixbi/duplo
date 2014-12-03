@@ -23,6 +23,7 @@ A opinionated, framework-less build tool for web applications
 * `duplo build` builds the project. `DUPLO_ENV` defaults to `dev`.
 * `duplo dev`: starts a webserver, watches for file changes, and builds in
   development environment.
+* `duplo test`: build test cases and you should run it in browser by yourself.
 * `duplo live`: like `duplo dev` but builds in production environment
 * `duplo patch` bumps the patch version.
 * `duplo minor` bumps the minor version.
@@ -271,6 +272,40 @@ Putting it all together, an example of a `component.json`:
 }
 ```
 
+## Unit Test
+
+Follow the below steps:
+
+1. Create the specific directory `test` in your project root, it's same as `dev`
+and `app`.
+
+2. Create your unit test cases in `modules` directory.
+
+3. Create `modules/index.jade` and full in the following source code:
+
+```jade
+html
+  head
+    title Testing Result for SDK
+    link(rel="stylesheet", href="vender/mocha.css")
+    script(src="vender/mocha.js").
+    script.
+      mocha.setup('bdd');
+
+  body
+    div#mocha
+      p
+        a(href=".") Index
+    div#messages
+    div#fixtures
+
+    script(src="./index.js").
+    script.
+      mocha.run()
+```
+
+Then run `duplo test`, once done, open the `public/index.html` in your browser
+to view the test results.
 
 ## Copyright and License
 
