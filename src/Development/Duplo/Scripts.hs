@@ -45,22 +45,29 @@ build config = \ out -> do
   let devCodePath = devPath </> "modules/index.js"
   let depIds      = config ^. TC.dependencies
   let inDev       = TC.isInDev config
+  let inTest      = TC.isInTest config
 
   -- Preconditions
   lift $ createIntermediaryDirectories devCodePath
 
   -- These paths don't need to be expanded.
-  let staticPaths = (if inDev then [ "dev/index.js" ] else [])
-                 ++ [ "app/index.js" ]
+  let staticPaths = (case env of
+                      "dev"  -> [ "dev/index.js" ]
+                      "test" -> [ "test/index.js"]
+                      []     -> [])
+                      ++ [ "app/index.js" ]
 
   -- These paths need to be expanded by Shake.
   let depsToExpand id = [ "components/" ++ id ++ "/app/modules//*.js" ]
   -- Compile dev files in dev mode as well, taking precendence.
-  let dynamicPaths = (if inDev then [ "dev/modules//*.js" ] else [])
-                  -- Then normal scripts
-                  ++ [ "app/modules//*.js" ]
-                  -- Build list only for dependencies.
-                  ++ expandDeps depIds depsToExpand
+  let dynamicPaths = (case env of
+                      "dev"  -> [ "dev/modules//*.js" ]
+                      "test" -> [ "test/modules//*.js"]
+                      []     -> [])
+                      -- Then normal scripts
+                      ++ [ "app/modules//*.js" ]
+                      -- Build list only for dependencies.
+                      ++ expandDeps depIds depsToExpand
 
   -- Merge both types of paths
   paths <- lift $ expandPaths cwd staticPaths dynamicPaths
@@ -79,7 +86,7 @@ build config = \ out -> do
              ++ "var DUPLO_VERSIONS = " ++ compVers ++ ";\n"
 
   -- Configure the compiler
-  let compiler = if   inDev
+  let compiler = if   inDev || inTest
                  then util </> "scripts-dev.sh"
                  else util </> "scripts-optimize.sh"
 

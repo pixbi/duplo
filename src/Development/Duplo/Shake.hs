@@ -126,7 +126,7 @@ shakeMain cmdName cmdArgs config options = shake shakeOptions $ do
 
       logAction $ "Project created at " ++ dest
 
-    -- Version should have already been displayed if requested 
+    -- Version should have already been displayed if requested
     "version" ~> return ()
 
     "help" ~> liftIO ((readFile $ miscPath </> "help.txt") >>= putStr)

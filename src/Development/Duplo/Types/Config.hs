@@ -22,6 +22,7 @@ data BuildConfig = BuildConfig { _appName      :: String
                                , _defaultsPath :: FilePath
                                , _appPath      :: FilePath
                                , _devPath      :: FilePath
+                               , _testPath     :: FilePath
                                , _assetsPath   :: FilePath
                                , _depsPath     :: FilePath
                                , _targetPath   :: FilePath
@@ -34,3 +35,6 @@ makeLenses ''BuildConfig
 
 isInDev :: BuildConfig -> Bool
 isInDev config = config ^. env == "dev"
+
+isInTest :: BuildConfig -> Bool
+isInTest config = config ^. env == "test"
