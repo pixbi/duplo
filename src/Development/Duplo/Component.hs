@@ -17,6 +17,7 @@ import Data.Aeson (encode, decode)
 import Data.Aeson.Encode.Pretty (encodePretty)
 import Data.ByteString.Lazy.Char8 (ByteString)
 import Data.HashMap.Lazy (empty, keys, lookup)
+import Data.List (isPrefixOf)
 import Data.Map (fromList)
 import Data.Maybe (fromJust)
 import Data.Text (breakOn)
@@ -144,6 +145,6 @@ getDependencies' deps Nothing = getDependencies Nothing
 -- If there is something, fetch only those dependencies.
 getDependencies' deps (Just modeDeps) = return modeDeps
 
--- | Regular file != hidden file
+-- | Regular file != *nix-style hidden file
 isRegularFile :: FilePath -> Bool
-isRegularFile = (> 0) . length . dropExtension
+isRegularFile = (isPrefixOf ".") . dropExtension
