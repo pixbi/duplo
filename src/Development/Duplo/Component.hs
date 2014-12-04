@@ -147,4 +147,4 @@ getDependencies' deps (Just modeDeps) = return modeDeps
 
 -- | Regular file != *nix-style hidden file
 isRegularFile :: FilePath -> Bool
-isRegularFile = (isPrefixOf ".") . dropExtension
+isRegularFile = isPrefixOf "."
