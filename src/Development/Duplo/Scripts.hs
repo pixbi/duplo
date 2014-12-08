@@ -51,23 +51,23 @@ build config = \ out -> do
   lift $ createIntermediaryDirectories devCodePath
 
   -- These paths don't need to be expanded.
-  let staticPaths = (case env of
+  let staticPaths = case env of
                       "dev"  -> [ "dev/index.js" ]
                       "test" -> [ "test/index.js"]
-                      []     -> [])
-                      ++ [ "app/index.js" ]
+                      ""     -> []
+                    ++ [ "app/index.js" ]
 
   -- These paths need to be expanded by Shake.
   let depsToExpand id = [ "components/" ++ id ++ "/app/modules//*.js" ]
   -- Compile dev files in dev mode as well, taking precendence.
-  let dynamicPaths = (case env of
-                      "dev"  -> [ "dev/modules//*.js" ]
-                      "test" -> [ "test/modules//*.js"]
-                      []     -> [])
-                      -- Then normal scripts
-                      ++ [ "app/modules//*.js" ]
-                      -- Build list only for dependencies.
-                      ++ expandDeps depIds depsToExpand
+  let dynamicPaths = case env of
+                       "dev"  -> [ "dev/modules//*.js" ]
+                       "test" -> [ "test/modules//*.js"]
+                       ""     -> []
+                     -- Then normal scripts
+                     ++ [ "app/modules//*.js" ]
+                     -- Build list only for dependencies.
+                     ++ expandDeps depIds depsToExpand
 
   -- Merge both types of paths
   paths <- lift $ expandPaths cwd staticPaths dynamicPaths

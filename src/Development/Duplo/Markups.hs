@@ -52,7 +52,7 @@ build config = \ out -> do
   let dynamicPaths = case env of
                       "dev"  -> [ devCodePath ++ "//*.jade" ]
                       "test" -> [ testPath ++ "//*.jade" ]
-                      []     -> []
+                      ""     -> []
 
   -- Merge both types of paths
   paths <- lift $ expandPaths cwd staticPaths dynamicPaths
