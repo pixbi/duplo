@@ -17,8 +17,9 @@ Commands:
     duplo build               Builds the project. `DUPLO_ENV` defaults to `dev`.
     duplo dev                 starts a webserver, watches for file changes,
                               and builds in development environment.
-    duplo live                like `duplo dev` but builds in production
+    duplo production          Like `duplo dev` but builds in production
                               environment
+    duplo live                Just like `duplo production`
 
     duplo patch               Bumps the patch version.
     duplo minor               Bumps the minor version.

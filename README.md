@@ -24,7 +24,7 @@ A opinionated, framework-less build tool for web applications
 * `duplo dev`: starts a webserver, watches for file changes, and builds in
   development environment.
 * `duplo test`: build test cases and you should run it in browser by yourself.
-* `duplo live`: like `duplo dev` but builds in production environment
+* `duplo production`: like `duplo dev` but builds in production environment
 * `duplo patch` bumps the patch version.
 * `duplo minor` bumps the minor version.
 * `duplo major` bumps the major version.

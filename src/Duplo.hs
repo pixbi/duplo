@@ -46,7 +46,7 @@ main = do
 
   -- Port for running dev server
   port       <- fmap read $ fromMaybe "8888" <$> lookupEnv "PORT"
-  -- Environment - e.g. dev, staging, live
+  -- Environment - e.g. dev, staging, production
   duploEnvMB <- lookupEnv "DUPLO_ENV"
   -- Build mode, for dependency selection
   duploMode  <- fromMaybe "" <$> lookupEnv "DUPLO_MODE"
@@ -78,28 +78,29 @@ main = do
 
   -- Extract environment
   let duploEnv' = case cmdName of
-                    -- `build` is a special case. It takes `live` as the
+                    -- `build` is a special case. It takes `production` as the
                     -- default.
-                    "build" -> maybe "live" id duploEnvMB
+                    "build" -> maybe "production" id duploEnvMB
                     -- By default, `dev` is the default.
                     _       -> maybe "dev" id duploEnvMB
 
   -- Internal command translation
   let (cmdNameTranslated, bumpLevel, duploEnv, toWatch) =
         case cmdName of
-          "info"    -> ("version", "", duploEnv', False)
-          "ver"     -> ("version", "", duploEnv', False)
-          "new"     -> ("init", "", duploEnv', False)
-          "bump"    -> ("bump", "patch", duploEnv', False)
-          "release" -> ("bump", "patch", duploEnv', False)
-          "patch"   -> ("bump", "patch", duploEnv', False)
-          "minor"   -> ("bump", "minor", duploEnv', False)
-          "major"   -> ("bump", "major", duploEnv', False)
-          "dev"     -> ("build", "", "dev", True)
-          "live"    -> ("build", "", "live", True)
-          "build"   -> ("build", "", duploEnv', False)
-          "test"    -> ("build", "", "test", False)
-          _         -> (cmdName, "", duploEnv', False)
+          "info"       -> ("version", "", duploEnv', False)
+          "ver"        -> ("version", "", duploEnv', False)
+          "new"        -> ("init", "", duploEnv', False)
+          "bump"       -> ("bump", "patch", duploEnv', False)
+          "release"    -> ("bump", "patch", duploEnv', False)
+          "patch"      -> ("bump", "patch", duploEnv', False)
+          "minor"      -> ("bump", "minor", duploEnv', False)
+          "major"      -> ("bump", "major", duploEnv', False)
+          "dev"        -> ("build", "", "dev", True)
+          "live"       -> ("build", "", "production", True)
+          "production" -> ("build", "", "production", True)
+          "build"      -> ("build", "", duploEnv', False)
+          "test"       -> ("build", "", "test", False)
+          _            -> (cmdName, "", duploEnv', False)
 
   -- Certain flags turn into commands.
   let cmdNameWithFlags = if   (OP.optVersion options)
