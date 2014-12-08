@@ -24,6 +24,7 @@ build config = \ outs -> do
   let depsPath     = config ^. TC.depsPath
   let devPath      = config ^. TC.devPath
   let devAssetPath = devPath </> "assets"
+  let testAssetPath = config ^. TC.duploPath </> "etc/test/"
 
   -- Convert to relative paths for copying
   let filesRel = fmap (makeRelative targetPath) outs
@@ -44,10 +45,12 @@ build config = \ outs -> do
                       ]
   -- Look in the dev directory as well
   let devFiles = makeFiles devAssetPath filesRel
+  -- Look in the test directory as well
+  let testFiles = makeFiles testAssetPath filesRel
 
   -- Combine matching files into lists each pointing to its corresponding
   -- output file. Note that this is in order of precedence.
-  let possibleFiles = transpose [devFiles, assetFiles, depAssetFiles]
+  let possibleFiles = transpose [devFiles, testFiles, assetFiles, depAssetFiles]
   -- Each file list collapses into a path that exists
   cleanedFiles <- collapseFileLists possibleFiles
 
@@ -87,6 +90,7 @@ deps config = do
   let targetPath = config ^. TC.targetPath
   let devPath    = config ^. TC.devPath
   let devAssetsPath = devPath </> "assets/"
+  let testAssetsPath = config ^. TC.duploPath </> "etc/test/"
 
   -- Make sure all these directories exist
   createPathDirectories [assetsPath, depsPath, targetPath, devAssetsPath]
@@ -98,8 +102,11 @@ deps config = do
   -- Add dev files to the mix, if we're in dev mode
   devFiles'     <- getDirectoryFiles devAssetsPath ["//*"]
   let devFiles   = if TC.isInDev config then devFiles' else []
+  -- Add test files to the mix, if we're in test mode
+  testFiles'    <- getDirectoryFiles testAssetsPath ["//*"]
+  let testFiles  = if TC.isInTest config then testFiles' else []
   -- Mix them together
-  let allFiles   = nub $ concat [depAssetFiles, assetFiles, devFiles]
+  let allFiles   = nub $ concat [depAssetFiles, assetFiles, devFiles, testFiles]
   -- We do NOT want index
   let files      = filter ("index.html" /=) allFiles
 

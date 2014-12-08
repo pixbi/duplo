@@ -29,8 +29,10 @@ build config = \ out -> do
   lift $ alwaysRerun
 
   let cwd           = config ^. TC.cwd
+  let env           = config ^. TC.env
   let utilPath      = config ^. TC.utilPath
   let devPath       = config ^. TC.devPath
+  let testPath      = config ^. TC.testPath
   let assetsPath    = config ^. TC.assetsPath
   let defaultsPath  = config ^. TC.defaultsPath
   let refTagsPath   = defaultsPath </> "head.html"
@@ -47,9 +49,10 @@ build config = \ out -> do
   let staticPaths = [ "app/index.jade" ] ++ (expandDeps' expandDepsStatic)
 
   -- These paths need to be expanded by Shake
-  let dynamicPaths = if   TC.isInDev config
-                     then [devCodePath ++ "//*.jade"]
-                     else []
+  let dynamicPaths = case env of
+                      "dev"  -> [ devCodePath ++ "//*.jade" ]
+                      "test" -> [ testPath ++ "//*.jade" ]
+                      ""     -> []
 
   -- Merge both types of paths
   paths <- lift $ expandPaths cwd staticPaths dynamicPaths
