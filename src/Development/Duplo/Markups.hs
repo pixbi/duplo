@@ -45,17 +45,17 @@ build config = \ out -> do
   lift $ createIntermediaryDirectories devCodePath
 
   -- These paths don't need to be expanded
-  let expandDepsStatic id = [ "components/*/app/index.jade" ]
-  let staticPaths = [ "app/index.jade" ] ++ (expandDeps' expandDepsStatic)
+  let expandDepsStatic id = [ "components/*/app/index" ]
+  let staticPaths = [ "app/index" ] ++ (expandDeps' expandDepsStatic)
 
   -- These paths need to be expanded by Shake
   let dynamicPaths = case env of
-                      "dev"  -> [ devCodePath ++ "//*.jade" ]
-                      "test" -> [ testPath ++ "//*.jade" ]
+                      "dev"  -> [ devCodePath ]
+                      "test" -> [ testPath ]
                       ""     -> []
 
   -- Merge both types of paths
-  paths <- lift $ expandPaths cwd staticPaths dynamicPaths
+  paths <- lift $ expandPaths cwd ".jade" staticPaths dynamicPaths
 
   -- Path to the compiler
   let compiler = utilPath </> "markups-compile.sh"

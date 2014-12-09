@@ -4,7 +4,7 @@ module Development.Duplo.Styles
 
 import Control.Lens hiding (Action)
 import Control.Monad.Trans.Class (lift)
-import Development.Duplo.Utilities (getDirectoryFilesInOrder, logAction, expandPaths, compile, createIntermediaryDirectories, CompiledContent, expandDeps)
+import Development.Duplo.Utilities (logAction, expandPaths, compile, createIntermediaryDirectories, CompiledContent, expandDeps)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
 import qualified Development.Duplo.Types.Config as TC
@@ -26,29 +26,29 @@ build config = \ out -> do
   lift $ createIntermediaryDirectories devCodePath
 
   -- These paths don't need to be expanded
-  let expandDepsStatic id = [ "components/" ++ id ++ "/app/styl/variables.styl"
-                            , "components/" ++ id ++ "/app/styl/keyframes.styl"
-                            , "components/" ++ id ++ "/app/styl/fonts.styl"
-                            , "components/" ++ id ++ "/app/styl/reset.styl"
-                            , "components/" ++ id ++ "/app/styl/main.styl"
+  let expandDepsStatic id = [ "components/" ++ id ++ "/app/styl/variables"
+                            , "components/" ++ id ++ "/app/styl/keyframes"
+                            , "components/" ++ id ++ "/app/styl/fonts"
+                            , "components/" ++ id ++ "/app/styl/reset"
+                            , "components/" ++ id ++ "/app/styl/main"
                             ]
-  let staticPaths = [ "app/styl/variables.styl"
-                    , "app/styl/keyframes.styl"
-                    , "app/styl/fonts.styl"
-                    , "app/styl/reset.styl"
-                    , "app/styl/main.styl"
+  let staticPaths = [ "app/styl/variables"
+                    , "app/styl/keyframes"
+                    , "app/styl/fonts"
+                    , "app/styl/reset"
+                    , "app/styl/main"
                     ]
                  ++ (expandDeps' expandDepsStatic)
 
   -- These paths need to be expanded by Shake
-  let expandDepsDynamic id = [ "components/" ++ id ++ "/app/modules//*.styl" ]
-  let dynamicPaths = [ "app/modules//*.styl" ]
+  let expandDepsDynamic id = [ "components/" ++ id ++ "/app/modules" ]
+  let dynamicPaths = [ "app/modules" ]
                   ++ (expandDeps' expandDepsDynamic)
                   -- Compile dev files in dev mode as well.
-                  ++ if TC.isInDev config then ["dev/modules//*.styl"] else []
+                  ++ if TC.isInDev config then ["dev/modules"] else []
 
   -- Merge both types of paths
-  paths <- lift $ expandPaths cwd staticPaths dynamicPaths
+  paths <- lift $ expandPaths cwd ".styl" staticPaths dynamicPaths
 
   -- Path to the compiler
   let compiler = utilPath </> "styles.sh"

@@ -24,22 +24,57 @@ import System.FilePath.Posix (joinPath, splitPath)
 import qualified Development.Duplo.Component as CM
 import qualified Development.Duplo.Types.AppInfo as AI
 import qualified Development.Duplo.Types.Config as TC
+import Control.Monad (zipWithM)
+import Data.List (isSuffixOf)
 
 type CompiledContent = ExceptT String Action
 type FileProcessor = [File] -> CompiledContent [File]
 type StringProcessor = String -> CompiledContent String
 
-getDirectoryFilesInOrder :: FilePath -> [FilePattern] -> Action [FilePath]
-getDirectoryFilesInOrder base patterns =
-    -- Re-package the contents into the list of paths that we've wanted
-    fmap concat files
+-- | Construct a file pattern by providing a base directory and an
+-- extension.
+makePattern :: FilePath -> String -> FilePath
+makePattern base extension = base ++ "//*" ++ extension
+
+-- | Construct and return the given base directory and extension whose base
+-- directory exists.
+makeValidPattern :: FilePath -> String -> Action [FilePath]
+makeValidPattern base extension = do
+    exists <- doesDirectoryExist base
+    let ptrn = makePattern base extension
+    return $ if exists then [ptrn] else []
+
+-- | Splice a list of base directories and their corresponding extensions
+-- for a list of file patterns.
+makeFilePatterns :: [FilePath] -> [String] -> Action [FilePattern]
+makeFilePatterns bases exts = patterns
   where
-    -- We need to turn all elements into lists for each to be run independently
-    patterns' = fmap (replicate 1) patterns
-    -- Curry the function that gets the files given a list of paths
-    getFiles  = getDirectoryFiles base
-    -- Map over the list monadically to get the paths in order
-    files     = mapM getFiles patterns'
+    concat      = foldl1 (++)
+    patternList = zipWithM makeValidPattern bases exts
+    patterns    = fmap concat patternList
+
+-- | Given a working directory and a list of patterns, expand all the
+-- paths, in order.
+getDirectoryFilesInOrder :: FilePath -> String -> [FilePattern] -> Action [FilePath]
+getDirectoryFilesInOrder base extension patterns = do
+    -- Make extension a list of itself.
+    let exts = repeat extension
+    -- Turn file patterns into absolute patterns.
+    let absPatterns = fmap (base </>) patterns
+    -- Make sure we get all valid file patterns for dynamic paths.
+    validPatterns <- makeFilePatterns absPatterns exts
+    -- Remove the prefix that was needed for file pattern construction.
+    let relPatterns = fmap (drop (length base + 1)) validPatterns
+    -- We need to turn all elements into lists for each to be run independently.
+    let patternLists = fmap (replicate 1) relPatterns
+    -- Curry the function that gets the files given a list of paths.
+    let getFiles = getDirectoryFiles base
+    -- Map over the list monadically to get the paths in order.
+    allFiles <- mapM getFiles patternLists
+    -- Re-package the contents into the list of paths that we've wanted.
+    let files = concat $ filter (not . null) allFiles
+    -- We're all set
+    return files
 
 logAction :: String -> Action ()
 logAction log = do
@@ -110,12 +145,13 @@ compile config compiler params paths preprocess postprocess = do
 
 -- | Given a list of static and a list of dynamic paths, return a list of
 -- all paths, resolved to absolute paths.
-expandPaths :: String -> [String] -> [String] -> Action [String]
-expandPaths cwd staticPaths dynamicPaths = do
-  let expand = map (cwd </>)
-  staticExpanded <- filterM doesFileExist $ expand staticPaths
-  dynamicExpanded <- getDirectoryFilesInOrder cwd dynamicPaths
-  return $ staticExpanded ++ expand dynamicExpanded
+expandPaths :: FilePath -> String -> [FilePath] -> [FilePath] -> Action [FilePath]
+expandPaths cwd extension staticPaths dynamicPaths = do
+  let expandStatic  =  map (\p -> cwd </> p </> extension)
+  let expandDynamic =  map (cwd </>)
+  staticExpanded    <- filterM doesFileExist $ expandStatic staticPaths
+  dynamicExpanded   <- getDirectoryFilesInOrder cwd extension dynamicPaths
+  return $ staticExpanded ++ expandDynamic dynamicExpanded
 
 -- | Given a list of paths, make sure all intermediary directories are
 -- there.

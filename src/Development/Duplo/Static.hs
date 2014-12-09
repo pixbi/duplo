@@ -114,7 +114,7 @@ deps config = do
   let getFilename = last . splitDirectories
   let firstFilenameChar = head . getFilename
   -- Only visible files (UNIX-style with leading dot)
-  let onlyVisible = filter $ \ x -> '.' /= firstFilenameChar x
+  let onlyVisible = filter (('.' /=) . firstFilenameChar)
   let staticFiles = onlyVisible files
   -- Map to output equivalents
   let filesOut    = fmap (targetPath ++) staticFiles

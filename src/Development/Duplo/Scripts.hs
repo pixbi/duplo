@@ -15,7 +15,7 @@ import Development.Duplo.Component (extractCompVersions)
 import Development.Duplo.Files (File(..), pseudoFile)
 import Development.Duplo.JavaScript.Order (order)
 import Development.Duplo.Types.JavaScript
-import Development.Duplo.Utilities (getDirectoryFilesInOrder, logAction, expandPaths, compile, createIntermediaryDirectories, CompiledContent, expandDeps)
+import Development.Duplo.Utilities (logAction, expandPaths, compile, createIntermediaryDirectories, CompiledContent, expandDeps)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
 import Language.JavaScript.Parser.SrcLocation (TokenPosn(..))
@@ -52,25 +52,25 @@ build config = \ out -> do
 
   -- These paths don't need to be expanded.
   let staticPaths = case env of
-                      "dev"  -> [ "dev/index.js" ]
-                      "test" -> [ "test/index.js"]
+                      "dev"  -> [ "dev/index" ]
+                      "test" -> [ "test/index"]
                       ""     -> []
-                    ++ [ "app/index.js" ]
+                    ++ [ "app/index" ]
 
   -- These paths need to be expanded by Shake.
-  let depsToExpand id = [ "components/" ++ id ++ "/app/modules//*.js" ]
+  let depsToExpand id = [ "components/" ++ id ++ "/app/modules" ]
   -- Compile dev files in dev mode as well, taking precendence.
   let dynamicPaths = case env of
-                       "dev"  -> [ "dev/modules//*.js" ]
-                       "test" -> [ "test/modules//*.js"]
+                       "dev"  -> [ "dev/modules" ]
+                       "test" -> [ "test/modules"]
                        ""     -> []
                      -- Then normal scripts
-                     ++ [ "app/modules//*.js" ]
+                     ++ [ "app/modules" ]
                      -- Build list only for dependencies.
                      ++ expandDeps depIds depsToExpand
 
   -- Merge both types of paths
-  paths <- lift $ expandPaths cwd staticPaths dynamicPaths
+  paths <- lift $ expandPaths cwd ".js" staticPaths dynamicPaths
 
   -- Sanitize input
   let duploIn = sanitize input
