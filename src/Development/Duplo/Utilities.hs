@@ -47,18 +47,23 @@ makeValidPattern base extension = do
 -- | Splice a list of base directories and their corresponding extensions
 -- for a list of file patterns.
 makeFilePatterns :: [FilePath] -> [String] -> Action [FilePattern]
-makeFilePatterns bases exts = patterns
-  where
-    concat      = foldl1 (++)
-    patternList = zipWithM makeValidPattern bases exts
-    patterns    = fmap concat patternList
+makeFilePatterns bases exts = do
+    patternList  <- zipWithM makeValidPattern bases exts
+    let concat   =  foldl1 (++)
+    -- Avoid infinite list.
+    let patterns =  if   null patternList
+                    then return []
+                    else concat patternList
+    return patterns
 
 -- | Given a working directory and a list of patterns, expand all the
 -- paths, in order.
 getDirectoryFilesInOrder :: FilePath -> String -> [FilePattern] -> Action [FilePath]
 getDirectoryFilesInOrder base extension patterns = do
+    -- We need to terminate the infinite list.
+    let listSize = length patterns
     -- Make extension a list of itself.
-    let exts = repeat extension
+    let exts = take listSize $ repeat extension
     -- Turn file patterns into absolute patterns.
     let absPatterns = fmap (base </>) patterns
     -- Make sure we get all valid file patterns for dynamic paths.
@@ -147,7 +152,7 @@ compile config compiler params paths preprocess postprocess = do
 -- all paths, resolved to absolute paths.
 expandPaths :: FilePath -> String -> [FilePath] -> [FilePath] -> Action [FilePath]
 expandPaths cwd extension staticPaths dynamicPaths = do
-  let expandStatic  =  map (\p -> cwd </> p </> extension)
+  let expandStatic  =  map (\p -> cwd </> p ++ extension)
   let expandDynamic =  map (cwd </>)
   staticExpanded    <- filterM doesFileExist $ expandStatic staticPaths
   dynamicExpanded   <- getDirectoryFilesInOrder cwd extension dynamicPaths

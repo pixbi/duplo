@@ -37,25 +37,24 @@ build config = \ out -> do
   let defaultsPath  = config ^. TC.defaultsPath
   let refTagsPath   = defaultsPath </> "head.html"
   let devAssetsPath = devPath </> "assets"
-  let devCodePath   = devPath </> "modules/index.jade"
-  let depIds      = config ^. TC.dependencies
-  let expandDeps' = expandDeps depIds
+  let devCodePath   = devPath </> "modules/index"
+  let depIds        = config ^. TC.dependencies
 
   -- Preconditions
   lift $ createIntermediaryDirectories devCodePath
 
-  -- These paths don't need to be expanded
-  let expandDepsStatic id = [ "components/*/app/index" ]
-  let staticPaths = [ "app/index" ] ++ (expandDeps' expandDepsStatic)
-
-  -- These paths need to be expanded by Shake
-  let dynamicPaths = case env of
-                      "dev"  -> [ devCodePath ]
-                      "test" -> [ testPath ]
-                      ""     -> []
+  -- Expand all paths
+  let depExpander id = ["components" </> id </> "app/index"]
+  let expanded       = expandDeps depIds depExpander
+  let allPaths       = [ "app/index" ] ++ expanded
+  let absPaths       = case env of
+                         "dev"  -> [ devCodePath ]
+                         "test" -> [ testPath ]
+                         ""     -> []
+                       ++ map (cwd </>) allPaths
 
   -- Merge both types of paths
-  paths <- lift $ expandPaths cwd ".jade" staticPaths dynamicPaths
+  paths <- lift $ expandPaths cwd ".jade" absPaths []
 
   -- Path to the compiler
   let compiler = utilPath </> "markups-compile.sh"
