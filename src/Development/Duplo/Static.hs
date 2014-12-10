@@ -8,8 +8,8 @@ import Control.Lens hiding (Action)
 import Control.Monad (zipWithM_, filterM)
 import Data.List (transpose, nub)
 import Development.Duplo.FileList (makeFile, makeFiles, toCopies, collapseFileLists, Copy)
-import Development.Duplo.Utilities (logAction, createIntermediaryDirectories, createPathDirectories)
-import Development.Shake
+import Development.Duplo.Utilities (logAction, createIntermediaryDirectories, createPathDirectories, getDirectoryFiles)
+import Development.Shake hiding (getDirectoryFiles)
 import Development.Shake.FilePath ((</>))
 import System.FilePath.Posix (splitExtension, splitDirectories, makeRelative)
 import qualified Development.Duplo.FileList as FileList (filePath)
@@ -19,11 +19,11 @@ build :: TC.BuildConfig
       -> [FilePath]
       -> Action ()
 build config = \ outs -> do
-  let targetPath   = config ^. TC.targetPath
-  let assetsPath   = config ^. TC.assetsPath
-  let depsPath     = config ^. TC.depsPath
-  let devPath      = config ^. TC.devPath
-  let devAssetPath = devPath </> "assets"
+  let targetPath    = config ^. TC.targetPath
+  let assetsPath    = config ^. TC.assetsPath
+  let depsPath      = config ^. TC.depsPath
+  let devPath       = config ^. TC.devPath
+  let devAssetPath  = devPath </> "assets"
   let testAssetPath = config ^. TC.duploPath </> "etc/test/"
 
   -- Convert to relative paths for copying

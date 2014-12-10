@@ -2,6 +2,8 @@ module Development.Duplo.Markups
   ( build
   ) where
 
+import qualified Development.Duplo.Types.Builder as BD
+import Control.Exception (throw)
 import Control.Applicative ((<$>))
 import Control.Lens hiding (Action)
 import Control.Monad.Trans.Class (lift)
@@ -50,7 +52,7 @@ build config = \ out -> do
   let absPaths       = case env of
                          "dev"  -> [ devCodePath ]
                          "test" -> [ testPath ]
-                         ""     -> []
+                         _      -> []
                        ++ map (cwd </>) allPaths
 
   -- Merge both types of paths
@@ -64,11 +66,11 @@ build config = \ out -> do
   compiled <- compile config compiler [] paths preCompile (return . id)
 
   -- Pull index page from dev, assets, then default otherwise, in that order.
-  let defaultIndex    = makeFile defaultsPath "index.html"
-  let possibleSources = [devAssetsPath, assetsPath]
-  let possibleIndexes = fmap (flip makeFile "index.html") possibleSources
-  fromIndex <- lift $ fromMaybe defaultIndex <$> collapseFileList possibleIndexes
-  indexContent <- lift $ readFile' $ fromIndex ^. FileList.filePath
+  let defaultIndex    =  makeFile defaultsPath "index.html"
+  let possibleSources =  [devAssetsPath, assetsPath]
+  let possibleIndexes =  fmap (flip makeFile "index.html") possibleSources
+  fromIndex           <- lift $ fromMaybe defaultIndex <$> collapseFileList possibleIndexes
+  indexContent        <- lift $ readFile' $ fromIndex ^. FileList.filePath
 
   -- Inject compiled code into the index
   let indexWithMarkup = replace "<body>" ("<body>" ++ compiled) indexContent

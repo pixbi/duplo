@@ -53,8 +53,8 @@ build config = \ out -> do
   -- These paths don't need to be expanded.
   let staticPaths = case env of
                       "dev"  -> [ "dev/index" ]
-                      "test" -> [ "test/index"]
-                      ""     -> []
+                      "test" -> [ "test/index" ]
+                      _      -> []
                     ++ [ "app/index" ]
 
   -- These paths need to be expanded by Shake.
@@ -95,6 +95,7 @@ build config = \ out -> do
   let pre = return . (:) (pseudoFile { _fileContent = envVars })
   -- Reorder modules and print as string
   let prepareJs = JS.renderToString . order
+
   let post content = return
                    -- Handle error
                    $ either (handleParseError content) prepareJs

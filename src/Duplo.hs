@@ -13,6 +13,7 @@ import Development.Duplo.Shake (shakeMain)
 import Development.Duplo.Watcher (watch)
 import Development.Shake (cmd)
 import Development.Shake.FilePath ((</>))
+import System.FilePath.Posix (takeDirectory)
 import GHC.Conc (forkIO)
 import System.Console.GetOpt (getOpt, OptDescr(..), ArgDescr(..), ArgOrder(..))
 import System.Directory (getCurrentDirectory, createDirectoryIfMissing)
@@ -26,9 +27,8 @@ import qualified Development.Duplo.Types.Options as OP
 import qualified Filesystem.Path
 import qualified GHC.IO
 import qualified Development.Duplo.Types.Builder as TB
-import Control.Exception.Base (catch, throw)
+import Control.Exception (catches, catch, handle, throw, Exception, SomeException(..), Handler(..))
 
-main :: IO ()
 main = do
   -- Command-line arguments
   args <- getArgs
@@ -56,7 +56,7 @@ main = do
   cwd        <- getCurrentDirectory
   -- Duplo directory, assuming this is a build cabal executable (i.e.
   -- `./dist/build/duplo/duplo`)
-  duploPath  <- fmap (</> "../../../../") getExecutablePath
+  duploPath  <- fmap ((</> "../../../") . takeDirectory) getExecutablePath
 
   -- Decode
   let duploIn = case (decode $ pack $ duploIn') of
@@ -192,10 +192,11 @@ main = do
                                    }
 
   -- Construct the Shake command
-  let shake = shakeMain cmdNameWithFlags cmdArgs buildConfig options
+  let shake' = shakeMain cmdNameWithFlags cmdArgs buildConfig options
+  let shake  = shake' `catch` handleExc
 
   -- Watch or just build
-  unless toWatch shake
+  unless toWatch $ shake
   when toWatch $ do
     -- Start a local server
     _ <- forkIO $ serve port
@@ -205,3 +206,9 @@ main = do
     mapM_ (createDirectoryIfMissing True) targetDirs
     -- Watch for file changes
     watch shake targetDirs
+
+-- | Handle all errors
+handleExc e = do
+    putStrLn $ show (e :: SomeException)
+    putStrLn ">> Build FAILED"
+    putStrLn ""

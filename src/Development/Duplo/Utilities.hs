@@ -1,23 +1,14 @@
-module Development.Duplo.Utilities
-  ( getDirectoryFilesInOrder
-  , logAction
-  , expandPaths
-  , compile
-  , FileProcessor
-  , createIntermediaryDirectories
-  , createPathDirectories
-  , CompiledContent
-  , expandDeps
-  ) where
+module Development.Duplo.Utilities where
 
-import Control.Lens hiding (Action)
+import qualified Development.Shake as DS
+import qualified Control.Lens as CL
+import Control.Lens.Operators
 import Control.Monad (filterM)
 import Control.Monad.Except (ExceptT(..))
 import Control.Monad.Except (runExceptT)
 import Control.Monad.Trans.Class (lift)
 import Data.List (intercalate)
 import Development.Duplo.Files (readFile, File(..), fileContent)
-import Development.Shake hiding (readFile)
 import Development.Shake.FilePath ((</>))
 import Prelude hiding (readFile)
 import System.FilePath.Posix (joinPath, splitPath)
@@ -27,7 +18,7 @@ import qualified Development.Duplo.Types.Config as TC
 import Control.Monad (zipWithM)
 import Data.List (isSuffixOf)
 
-type CompiledContent = ExceptT String Action
+type CompiledContent = ExceptT String DS.Action
 type FileProcessor = [File] -> CompiledContent [File]
 type StringProcessor = String -> CompiledContent String
 
@@ -38,15 +29,15 @@ makePattern base extension = base ++ "//*" ++ extension
 
 -- | Construct and return the given base directory and extension whose base
 -- directory exists.
-makeValidPattern :: FilePath -> String -> Action [FilePath]
+makeValidPattern :: FilePath -> String -> DS.Action [FilePath]
 makeValidPattern base extension = do
-    exists <- doesDirectoryExist base
+    exists <- DS.doesDirectoryExist base
     let ptrn = makePattern base extension
     return $ if exists then [ptrn] else []
 
 -- | Splice a list of base directories and their corresponding extensions
 -- for a list of file patterns.
-makeFilePatterns :: [FilePath] -> [String] -> Action [FilePattern]
+makeFilePatterns :: [FilePath] -> [String] -> DS.Action [DS.FilePattern]
 makeFilePatterns bases exts = do
     patternList  <- zipWithM makeValidPattern bases exts
     let concat   =  foldl1 (++)
@@ -58,7 +49,7 @@ makeFilePatterns bases exts = do
 
 -- | Given a working directory and a list of patterns, expand all the
 -- paths, in order.
-getDirectoryFilesInOrder :: FilePath -> String -> [FilePattern] -> Action [FilePath]
+getDirectoryFilesInOrder :: FilePath -> String -> [DS.FilePattern] -> DS.Action [FilePath]
 getDirectoryFilesInOrder base extension patterns = do
     -- We need to terminate the infinite list.
     let listSize = length patterns
@@ -81,9 +72,9 @@ getDirectoryFilesInOrder base extension patterns = do
     -- We're all set
     return files
 
-logAction :: String -> Action ()
+logAction :: String -> DS.Action ()
 logAction log = do
-  putNormal $ "\n>> " ++ log
+  DS.putNormal $ "\n>> " ++ log
 
 -- | Given the path to a compiler, parameters to the compiler, a list of
 -- paths of to-be-compiled files, the output file path, and a processing
@@ -110,7 +101,7 @@ compile :: TC.BuildConfig
         -- The compiled content
         -> CompiledContent String
 compile config compiler params paths preprocess postprocess = do
-  mapM (lift . putNormal . ("Including " ++)) paths
+  mapM (lift . DS.putNormal . ("Including " ++)) paths
 
   let cwd    = config ^. TC.cwd
   let util   = config ^. TC.utilPath
@@ -133,45 +124,46 @@ compile config compiler params paths preprocess postprocess = do
   postprocessed <- fmap (++ "\n") $ postprocess concatenated
 
   -- Paths should be available as environment variables
-  envOpt <- addEnv [ ("DUPLO_UTIL", util)
-                   , ("DUPLO_NODEJS", nodejs)
-                   , ("DUPLO_CWD", cwd)
-                   ]
+  envOpt <- DS.addEnv [ ("DUPLO_UTIL", util)
+                      , ("DUPLO_NODEJS", nodejs)
+                      , ("DUPLO_CWD", cwd)
+                      ]
 
-  lift $ putNormal $ "Compiling with: "
-                  ++ compiler
-                  ++ " "
-                  ++ intercalate " " params
+  lift $ DS.putNormal $  "Compiling with: "
+                      ++ compiler
+                      ++ " "
+                      ++ intercalate " " params
   -- Pass it through the compiler
-  Stdout compiled <- lift $ command [Stdin postprocessed, envOpt] compiler params
+  DS.Stdout compiled <-
+    lift $ DS.command [DS.Stdin postprocessed, envOpt] compiler params
 
   -- The output
   return compiled
 
 -- | Given a list of static and a list of dynamic paths, return a list of
 -- all paths, resolved to absolute paths.
-expandPaths :: FilePath -> String -> [FilePath] -> [FilePath] -> Action [FilePath]
+expandPaths :: FilePath -> String -> [FilePath] -> [FilePath] -> DS.Action [FilePath]
 expandPaths cwd extension staticPaths dynamicPaths = do
   let expandStatic  =  map (\p -> cwd </> p ++ extension)
   let expandDynamic =  map (cwd </>)
-  staticExpanded    <- filterM doesFileExist $ expandStatic staticPaths
+  staticExpanded    <- filterM DS.doesFileExist $ expandStatic staticPaths
   dynamicExpanded   <- getDirectoryFilesInOrder cwd extension dynamicPaths
   return $ staticExpanded ++ expandDynamic dynamicExpanded
 
 -- | Given a list of paths, make sure all intermediary directories are
 -- there.
-createPathDirectories :: [FilePath] -> Action ()
+createPathDirectories :: [FilePath] -> DS.Action ()
 createPathDirectories paths = do
-  let mkdir = \ dir -> command_ [] "mkdir" ["-p", dir]
-  existing <- filterM ((fmap not) . doesDirectoryExist) paths
+  let mkdir = \ dir -> DS.command_ [] "mkdir" ["-p", dir]
+  existing <- filterM ((fmap not) . DS.doesDirectoryExist) paths
   mapM_ mkdir existing
 
 -- | Create all the directories within a path if they do not exist. Note
 -- that the last segment is assumed to be the file and therefore not
 -- created.
-createIntermediaryDirectories :: String -> Action ()
+createIntermediaryDirectories :: String -> DS.Action ()
 createIntermediaryDirectories path =
-    command_ [] "mkdir" ["-p", dir]
+    DS.command_ [] "mkdir" ["-p", dir]
   where
     dir = joinPath $ init $ splitPath path
 
@@ -179,3 +171,12 @@ createIntermediaryDirectories path =
 -- a function to expand one ID into a list of paths.
 expandDeps :: [String] -> (String -> [FilePath]) -> [FilePath]
 expandDeps deps expander = concat $ (fmap expander deps)
+
+-- | Shake hangs when the path given to `getDirectoryFiles` doesn't exist.
+-- This is a safe version of that.
+getDirectoryFiles :: FilePath -> [DS.FilePattern] -> DS.Action [FilePath]
+getDirectoryFiles base patterns = do
+    exist <- DS.doesDirectoryExist base
+    if   exist
+    then DS.getDirectoryFiles base patterns
+    else return []

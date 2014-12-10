@@ -36,7 +36,7 @@ executable duplo
                     , process ==1.2.*
                     , regex-compat ==0.95.*
                     , scotty ==0.9.*
-                    , shake ==0.13.*
+                    , shake ==0.14.*
                     , system-fileio ==0.3.*
                     , system-filepath ==0.4.*
                     , text ==1.1.*

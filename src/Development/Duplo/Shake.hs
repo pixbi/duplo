@@ -90,7 +90,7 @@ shakeMain cmdName cmdArgs config options = shake shakeOptions $ do
       -- Then compile
       need [targetScript, targetStyle, targetMarkup]
 
-      logAction "Build completed"
+      logAction "Build COMPLETED"
 
     "bump" ~> do
       (oldVersion, newVersion) <- Git.commit config bumpLevel

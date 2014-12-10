@@ -83,8 +83,7 @@ runModule mod = _node mod
 
 -- | Reorder all the applicable modules
 reorder :: [Module] -> [Module]
-reorder mods =
-    nubbed
+reorder mods = nubbed
   where
     -- Score all the modules
     scored = execState computeScores mods
@@ -128,7 +127,7 @@ getDepScore history modName = do
     -- Assume module exist, as it should at this point.
     let maybeIndex = findIndex ((modName ==) . _name) mods
     let index = case maybeIndex of
-                  Just i -> i
+                  Just i  -> i
                   Nothing -> throw $ ModuleNotFoundException modName
     -- Get the actual module.
     let mod = fromJust $ mods ^? ix index
