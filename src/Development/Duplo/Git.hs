@@ -1,7 +1,4 @@
-module Development.Duplo.Git
-  ( commit
-  , Level
-  ) where
+module Development.Duplo.Git where
 
 import Control.Applicative ((<$>))
 import Control.Lens hiding (Action, Level)

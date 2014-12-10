@@ -1,17 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Development.Duplo.Files
-  ( File(..)
-  , readFile
-  , filePath
-  , fileDir
-  , fileName
-  , componentId
-  , fileContent
-  , isRoot
-  , ComponentId
-  , pseudoFile
-  ) where
+module Development.Duplo.Files where
 
 import Control.Exception (throw)
 import Control.Lens hiding (Action)

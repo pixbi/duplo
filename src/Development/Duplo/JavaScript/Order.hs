@@ -1,9 +1,6 @@
 {-# LANGUAGE TemplateHaskell, BangPatterns #-}
 
-module Development.Duplo.JavaScript.Order
-  ( order
-  , JSCompilerException(..)
-  ) where
+module Development.Duplo.JavaScript.Order where
 
 import Control.Exception (throw)
 import Control.Lens

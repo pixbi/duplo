@@ -1,6 +1,4 @@
-module Development.Duplo.Styles
-  ( build
-  ) where
+module Development.Duplo.Styles where
 
 import Control.Lens hiding (Action)
 import Control.Monad.Trans.Class (lift)

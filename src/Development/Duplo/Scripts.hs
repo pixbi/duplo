@@ -1,8 +1,6 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
-module Development.Duplo.Scripts
-  ( build
-  ) where
+module Development.Duplo.Scripts where
 
 import Control.Applicative ((<*>), (<$>))
 import Control.Exception (throw, SomeException(..))

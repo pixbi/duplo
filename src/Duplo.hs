@@ -11,6 +11,7 @@ import Data.Maybe (fromMaybe)
 import Data.String.Utils (replace)
 import Development.Duplo.Server (serve)
 import Development.Duplo.Shake (shakeMain)
+import Development.Duplo.Utilities (logStatus, errorPrintSetter)
 import Development.Duplo.Watcher (watch)
 import Development.Shake (cmd, ShakeException(..))
 import Development.Shake.FilePath ((</>))
@@ -28,7 +29,6 @@ import qualified Development.Duplo.Types.Config as TC
 import qualified Development.Duplo.Types.Options as OP
 import qualified Filesystem.Path
 import qualified GHC.IO
-import Development.Duplo.Utilities (logStatus, errorPrintSetter)
 
 main = do
   -- Command-line arguments

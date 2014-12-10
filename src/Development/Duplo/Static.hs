@@ -1,8 +1,4 @@
-module Development.Duplo.Static
-  ( build
-  , deps
-  , qualify
-  ) where
+module Development.Duplo.Static where
 
 import Control.Lens hiding (Action)
 import Control.Monad (zipWithM_, filterM)

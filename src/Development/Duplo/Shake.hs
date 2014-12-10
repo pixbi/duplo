@@ -1,6 +1,4 @@
-module Development.Duplo.Shake
-  ( shakeMain
-  ) where
+module Development.Duplo.Shake where
 
 import Control.Exception (throw)
 import Control.Lens hiding (Action)

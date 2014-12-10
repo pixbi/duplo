@@ -1,15 +1,6 @@
 {-# LANGUAGE TemplateHaskell #-}
 
-module Development.Duplo.FileList
-  ( Copy
-  , makeFile
-  , makeFiles
-  , toCopies
-  , collapseFileLists
-  , collapseFileList
-  , filePath
-  , fileBase
-  ) where
+module Development.Duplo.FileList where
 
 import Control.Lens hiding (Action)
 import Control.Lens.TH (makeLenses)

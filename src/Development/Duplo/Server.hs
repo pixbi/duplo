@@ -1,6 +1,4 @@
-module Development.Duplo.Server
-  ( serve
-  ) where
+module Development.Duplo.Server where
 
 import Control.Monad.Trans (liftIO)
 import Data.List (intercalate)

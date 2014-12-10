@@ -1,6 +1,4 @@
-module Development.Duplo.Watcher
-  ( watch
-  ) where
+module Development.Duplo.Watcher where
 
 import Control.Concurrent (threadDelay, forkIO, forkFinally, ThreadId(..), killThread)
 import Control.Concurrent.Chan (Chan, newChan, readChan, getChanContents)

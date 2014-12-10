@@ -1,10 +1,7 @@
-module Development.Duplo.Markups
-  ( build
-  ) where
+module Development.Duplo.Markups where
 
-import qualified Development.Duplo.Types.Builder as BD
-import Control.Exception (throw)
 import Control.Applicative ((<$>))
+import Control.Exception (throw)
 import Control.Lens hiding (Action)
 import Control.Monad.Trans.Class (lift)
 import Data.Maybe (fromMaybe)
@@ -17,6 +14,7 @@ import Development.Shake
 import Development.Shake.FilePath ((</>))
 import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)
 import qualified Development.Duplo.FileList as FileList (filePath)
+import qualified Development.Duplo.Types.Builder as BD
 import qualified Development.Duplo.Types.Config as TC
 
 build :: TC.BuildConfig

@@ -1,13 +1,6 @@
 {-# LANGUAGE TemplateHaskell, TupleSections #-}
 
-module Development.Duplo.Component
-  ( appId
-  , parseComponentId
-  , readManifest
-  , writeManifest
-  , extractCompVersions
-  , getDependencies
-  ) where
+module Development.Duplo.Component where
 
 import Control.Applicative ((<$>), (<*>))
 import Control.Exception (throw)
