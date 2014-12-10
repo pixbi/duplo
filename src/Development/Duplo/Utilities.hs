@@ -1,22 +1,23 @@
 module Development.Duplo.Utilities where
 
-import qualified Development.Shake as DS
-import qualified Control.Lens as CL
 import Control.Lens.Operators
 import Control.Monad (filterM)
+import Control.Monad (zipWithM)
 import Control.Monad.Except (ExceptT(..))
 import Control.Monad.Except (runExceptT)
 import Control.Monad.Trans.Class (lift)
 import Data.List (intercalate)
+import Data.List (isSuffixOf)
 import Development.Duplo.Files (readFile, File(..), fileContent)
 import Development.Shake.FilePath ((</>))
 import Prelude hiding (readFile)
+import System.Console.ANSI (setSGR, SGR(..), ConsoleLayer(..), ColorIntensity(..), Color(..))
 import System.FilePath.Posix (joinPath, splitPath)
+import qualified Control.Lens as CL
 import qualified Development.Duplo.Component as CM
 import qualified Development.Duplo.Types.AppInfo as AI
 import qualified Development.Duplo.Types.Config as TC
-import Control.Monad (zipWithM)
-import Data.List (isSuffixOf)
+import qualified Development.Shake as DS
 
 type CompiledContent = ExceptT String DS.Action
 type FileProcessor = [File] -> CompiledContent [File]
@@ -71,10 +72,6 @@ getDirectoryFilesInOrder base extension patterns = do
     let files = concat $ filter (not . null) allFiles
     -- We're all set
     return files
-
-logAction :: String -> DS.Action ()
-logAction log = do
-  DS.putNormal $ "\n>> " ++ log
 
 -- | Given the path to a compiler, parameters to the compiler, a list of
 -- paths of to-be-compiled files, the output file path, and a processing
@@ -180,3 +177,31 @@ getDirectoryFiles base patterns = do
     if   exist
     then DS.getDirectoryFiles base patterns
     else return []
+
+-- | Error printer: white text over red background.
+errorPrintSetter :: IO ()
+errorPrintSetter = do
+    setSGR [ SetColor Background Vivid Red
+           , SetColor Foreground Vivid White
+           ]
+
+-- | Header printer: blue text
+headerPrintSetter :: IO ()
+headerPrintSetter = do
+    setSGR [ SetColor Foreground Vivid Magenta
+           ]
+
+-- | Success printer: white text over green background
+successPrintSetter :: IO ()
+successPrintSetter = do
+    setSGR [ SetColor Background Vivid Green
+           , SetColor Foreground Vivid White
+           ]
+
+-- | Log a message with a provided print configuration setter.
+logStatus :: IO () -> String -> IO ()
+logStatus printSetter message = do
+  printSetter
+  putStr $ "\n>> " ++ message
+  setSGR [Reset]
+  putStrLn ""

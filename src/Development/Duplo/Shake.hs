@@ -12,7 +12,7 @@ import Development.Duplo.Markups as Markups
 import Development.Duplo.Scripts as Scripts
 import Development.Duplo.Static as Static
 import Development.Duplo.Styles as Styles
-import Development.Duplo.Utilities (logAction)
+import Development.Duplo.Utilities (logStatus, headerPrintSetter, successPrintSetter)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
 import System.Console.GetOpt (OptDescr(..), ArgDescr(..))
@@ -25,6 +25,9 @@ import qualified Development.Duplo.Types.Options as OP
 
 shakeMain :: String -> [String] -> TC.BuildConfig -> OP.Options -> IO ()
 shakeMain cmdName cmdArgs config options = shake shakeOptions $ do
+    let headerPrinter  = liftIO . (logStatus headerPrintSetter)
+    let successPrinter = liftIO . (logStatus successPrintSetter)
+
     let port       = config ^. TC.port
     let cwd        = config ^. TC.cwd
     let utilPath   = config ^. TC.utilPath
@@ -77,7 +80,7 @@ shakeMain cmdName cmdArgs config options = shake shakeOptions $ do
       then liftIO $ removeFiles targetPath ["//*"]
       else return ()
 
-      logAction "Clean completed"
+      successPrinter "Clean completed"
 
     "build" ~> do
       -- Always rebuild if we're building for production.
@@ -90,12 +93,12 @@ shakeMain cmdName cmdArgs config options = shake shakeOptions $ do
       -- Then compile
       need [targetScript, targetStyle, targetMarkup]
 
-      logAction "Build COMPLETED"
+      successPrinter "Build completed"
 
     "bump" ~> do
       (oldVersion, newVersion) <- Git.commit config bumpLevel
 
-      logAction $ "Bumped version from " ++ oldVersion ++ " to " ++ newVersion
+      successPrinter $ "Bumped version from " ++ oldVersion ++ " to " ++ newVersion
 
     "init" ~> do
       let user = cmdArgs ^. element 0
@@ -108,7 +111,7 @@ shakeMain cmdName cmdArgs config options = shake shakeOptions $ do
       when (length user == 0) $ throw BD.MissingGithubUserException
       when (length repo == 0) $ throw BD.MissingGithubRepoException
 
-      logAction $ "Creating new duplo project " ++ name
+      headerPrinter $ "Creating new duplo project " ++ name
 
       -- Initialize with boilerplate
       command_ [] (utilPath </> "init-boilerplate.sh") [src, dest]
@@ -124,7 +127,7 @@ shakeMain cmdName cmdArgs config options = shake shakeOptions $ do
       -- Initalize git
       command_ [] (utilPath </> "init-git.sh") [name]
 
-      logAction $ "Project created at " ++ dest
+      successPrinter $ "Project created at " ++ dest
 
     -- Version should have already been displayed if requested
     "version" ~> return ()

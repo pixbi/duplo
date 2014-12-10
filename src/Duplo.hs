@@ -1,6 +1,7 @@
 {-# LANGUAGE ScopedTypeVariables #-}
 
 import Control.Applicative ((<$>))
+import Control.Exception (catch, handle, throw, Exception)
 import Control.Lens.Operators
 import Control.Monad (void, when, unless)
 import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
@@ -11,23 +12,23 @@ import Data.String.Utils (replace)
 import Development.Duplo.Server (serve)
 import Development.Duplo.Shake (shakeMain)
 import Development.Duplo.Watcher (watch)
-import Development.Shake (cmd)
+import Development.Shake (cmd, ShakeException(..))
 import Development.Shake.FilePath ((</>))
-import System.FilePath.Posix (takeDirectory)
 import GHC.Conc (forkIO)
 import System.Console.GetOpt (getOpt, OptDescr(..), ArgDescr(..), ArgOrder(..))
 import System.Directory (getCurrentDirectory, createDirectoryIfMissing)
 import System.Environment (lookupEnv, getArgs, getExecutablePath)
+import System.FilePath.Posix (takeDirectory)
 import System.Process (proc, createProcess, waitForProcess)
 import qualified Control.Lens
 import qualified Development.Duplo.Component as CM
 import qualified Development.Duplo.Types.AppInfo as AI
+import qualified Development.Duplo.Types.Builder as TB
 import qualified Development.Duplo.Types.Config as TC
 import qualified Development.Duplo.Types.Options as OP
 import qualified Filesystem.Path
 import qualified GHC.IO
-import qualified Development.Duplo.Types.Builder as TB
-import Control.Exception (catches, catch, handle, throw, Exception, SomeException(..), Handler(..))
+import Development.Duplo.Utilities (logStatus, errorPrintSetter)
 
 main = do
   -- Command-line arguments
@@ -208,7 +209,7 @@ main = do
     watch shake targetDirs
 
 -- | Handle all errors
-handleExc e = do
-    putStrLn $ show (e :: SomeException)
-    putStrLn ">> Build FAILED"
+handleExc (e :: ShakeException) = do
+    putStr $ show e
+    logStatus errorPrintSetter "Build failed"
     putStrLn ""

@@ -4,7 +4,7 @@ module Development.Duplo.Styles
 
 import Control.Lens hiding (Action)
 import Control.Monad.Trans.Class (lift)
-import Development.Duplo.Utilities (logAction, expandPaths, compile, createIntermediaryDirectories, CompiledContent, expandDeps)
+import Development.Duplo.Utilities (logStatus, headerPrintSetter, expandPaths, compile, createIntermediaryDirectories, CompiledContent, expandDeps)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
 import qualified Development.Duplo.Types.Config as TC
@@ -13,7 +13,7 @@ build :: TC.BuildConfig
       -> FilePath
       -> CompiledContent ()
 build config = \ out -> do
-  lift $ logAction "Building styles"
+  liftIO $ logStatus headerPrintSetter "Building styles"
 
   let cwd         = config ^. TC.cwd
   let utilPath    = config ^. TC.utilPath

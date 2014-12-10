@@ -8,7 +8,7 @@ import Control.Lens hiding (Action)
 import Control.Monad (zipWithM_, filterM)
 import Data.List (transpose, nub)
 import Development.Duplo.FileList (makeFile, makeFiles, toCopies, collapseFileLists, Copy)
-import Development.Duplo.Utilities (logAction, createIntermediaryDirectories, createPathDirectories, getDirectoryFiles)
+import Development.Duplo.Utilities (logStatus, headerPrintSetter, createIntermediaryDirectories, createPathDirectories, getDirectoryFiles)
 import Development.Shake hiding (getDirectoryFiles)
 import Development.Shake.FilePath ((</>))
 import System.FilePath.Posix (splitExtension, splitDirectories, makeRelative)
@@ -83,7 +83,7 @@ build config = \ outs -> do
 deps :: TC.BuildConfig
      -> Action ()
 deps config = do
-  logAction "Copying static files"
+  liftIO $ logStatus headerPrintSetter "Copying static files"
 
   let assetsPath = config ^. TC.assetsPath
   let depsPath   = config ^. TC.depsPath

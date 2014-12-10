@@ -12,7 +12,7 @@ import Data.String.Utils (replace)
 import Development.Duplo.Component (parseComponentId)
 import Development.Duplo.FileList (collapseFileList, makeFile)
 import Development.Duplo.Files (File(..), filePath, fileDir, fileName, componentId, fileContent, isRoot, ComponentId)
-import Development.Duplo.Utilities (logAction, expandPaths, compile, createIntermediaryDirectories, CompiledContent, expandDeps)
+import Development.Duplo.Utilities (logStatus, headerPrintSetter, expandPaths, compile, createIntermediaryDirectories, CompiledContent, expandDeps)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
 import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)
@@ -23,7 +23,7 @@ build :: TC.BuildConfig
       -> FilePath
       -> CompiledContent ()
 build config = \ out -> do
-  lift $ logAction "Building markups"
+  liftIO $ logStatus headerPrintSetter "Building markups"
   -- TODO: using Jade's include system means that all files are loaded by
   -- the Jade compiler and Shake has no visibility into file state. We
   -- cannot cache anything that is Jade. Perhaps we could compile the Jade

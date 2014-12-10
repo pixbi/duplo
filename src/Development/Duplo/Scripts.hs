@@ -15,7 +15,7 @@ import Development.Duplo.Component (extractCompVersions)
 import Development.Duplo.Files (File(..), pseudoFile)
 import Development.Duplo.JavaScript.Order (order)
 import Development.Duplo.Types.JavaScript
-import Development.Duplo.Utilities (logAction, expandPaths, compile, createIntermediaryDirectories, CompiledContent, expandDeps)
+import Development.Duplo.Utilities (logStatus, headerPrintSetter, expandPaths, compile, createIntermediaryDirectories, CompiledContent, expandDeps)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
 import Language.JavaScript.Parser.SrcLocation (TokenPosn(..))
@@ -35,7 +35,7 @@ build :: TC.BuildConfig
       -- Doesn't need anything in return
       -> CompiledContent ()
 build config = \ out -> do
-  lift $ logAction "Building scripts"
+  liftIO $ logStatus headerPrintSetter "Building scripts"
 
   let cwd         = config ^. TC.cwd
   let util        = config ^. TC.utilPath

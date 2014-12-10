@@ -8,7 +8,6 @@ import Control.Lens hiding (Action, Level)
 import Control.Monad.Except (runExceptT)
 import Data.List (intercalate, filter)
 import Data.Text (unpack, pack, splitOn)
-import Development.Duplo.Utilities (logAction)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
 import System.FilePath.Posix (makeRelative)
