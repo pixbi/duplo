@@ -54,7 +54,7 @@ build config = \ out -> do
   let staticPaths = case env of
                       "dev"  -> [ "dev/index" ]
                       "test" -> [ "test/index"]
-                      ""     -> []
+                      _      -> []
                     ++ [ "app/index" ]
 
   -- These paths need to be expanded by Shake.
@@ -63,7 +63,7 @@ build config = \ out -> do
   let dynamicPaths = case env of
                        "dev"  -> [ "dev/modules" ]
                        "test" -> [ "test/modules"]
-                       ""     -> []
+                       _      -> []
                      -- Then normal scripts
                      ++ [ "app/modules" ]
                      -- Build list only for dependencies.

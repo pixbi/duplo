@@ -50,7 +50,7 @@ build config = \ out -> do
   let absPaths       = case env of
                          "dev"  -> [ devCodePath ]
                          "test" -> [ testPath ]
-                         ""     -> []
+                         _      -> []
                        ++ map (cwd </>) allPaths
 
   -- Merge both types of paths
