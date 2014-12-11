@@ -61,7 +61,7 @@ build config = \ out -> do
   let dynamicPaths = case env of
                        "dev"  -> [ "dev/modules" ]
                        "test" -> [ "test/modules"]
-                       ""     -> []
+                       _      -> []
                      -- Then normal scripts
                      ++ [ "app/modules" ]
                      -- Build list only for dependencies.

@@ -29,12 +29,12 @@ data File        = File { _filePath    :: FilePath
                         } deriving (Show)
 
 pseudoFile = File { _filePath    = ""
-                   , _fileDir     = ""
-                   , _fileName    = ""
-                   , _componentId = ""
-                   , _fileContent = ""
-                   , _isRoot      = False
-                   }
+                  , _fileDir     = ""
+                  , _fileName    = ""
+                  , _componentId = ""
+                  , _fileContent = ""
+                  , _isRoot      = False
+                  }
 
 makeLenses ''File
 
