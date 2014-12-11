@@ -32,6 +32,7 @@ build config = \ out -> do
   let env           = config ^. TC.env
   let utilPath      = config ^. TC.utilPath
   let devPath       = config ^. TC.devPath
+  let appPath       = config ^. TC.appPath
   let testPath      = config ^. TC.testPath
   let assetsPath    = config ^. TC.assetsPath
   let defaultsPath  = config ^. TC.defaultsPath
@@ -65,7 +66,7 @@ build config = \ out -> do
 
   -- Pull index page from dev, assets, then default otherwise, in that order.
   let defaultIndex    =  makeFile defaultsPath "index.html"
-  let possibleSources =  [devAssetsPath, assetsPath]
+  let possibleSources =  [devPath, appPath]
   let possibleIndexes =  fmap (flip makeFile "index.html") possibleSources
   fromIndex           <- lift $ fromMaybe defaultIndex <$> collapseFileList possibleIndexes
   indexContent        <- lift $ readFile' $ fromIndex ^. FileList.filePath
