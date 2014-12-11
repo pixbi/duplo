@@ -32,8 +32,8 @@ build config = \ out -> do
   let env           = config ^. TC.env
   let utilPath      = config ^. TC.utilPath
   let devPath       = config ^. TC.devPath
-  let testPath      = config ^. TC.testPath
   let assetsPath    = config ^. TC.assetsPath
+  let targetPath    = config ^. TC.targetPath
   let defaultsPath  = config ^. TC.defaultsPath
   let refTagsPath   = defaultsPath </> "head.html"
   let devAssetsPath = devPath </> "assets"
@@ -49,7 +49,7 @@ build config = \ out -> do
   let allPaths       = [ "app/index" ] ++ expanded
   let absPaths       = case env of
                          "dev"  -> [ devCodePath ]
-                         "test" -> [ testPath ]
+                         "test" -> [ targetPath </> "vendor/mocha" ]
                          _      -> []
                        ++ map (cwd </>) allPaths
 

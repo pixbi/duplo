@@ -1,0 +1,22 @@
+doctype html
+
+html
+  head
+    meta(charset="utf-8")
+    link(rel="stylesheet", href="vendor/mocha.css")
+    script(src="vendor/mocha.js").
+    script.
+      mocha.setup('bdd')
+
+  body
+    div#mocha
+      p
+        a(href=".")
+        | Index
+    
+    div#messages
+    div#fixtures
+
+    script(src="index.js").
+    script.
+      mocha.run()
