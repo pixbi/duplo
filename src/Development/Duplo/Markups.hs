@@ -45,9 +45,9 @@ build config = \ out -> do
   lift $ createIntermediaryDirectories devCodePath
 
   -- Expand all paths
-  let depExpander id = ["components" </> id </> "app/index"]
+  let depExpander id = [ "components" </> id </> "app/modules/index" ]
   let expanded       = expandDeps depIds depExpander
-  let allPaths       = [ "app/index" ] ++ expanded
+  let allPaths       = [ "app/modules/index" ] ++ expanded
   let absPaths       = case env of
                          "dev"  -> [ devCodePath ]
                          "test" -> [ testPath ]
@@ -57,22 +57,25 @@ build config = \ out -> do
   -- Merge both types of paths
   paths <- lift $ expandPaths cwd ".jade" absPaths []
 
-  -- Path to the compiler
+  -- Compiler details
   let compiler = utilPath </> "markups-compile.sh"
-
-  -- Compile it
   let preCompile files = return $ fmap (rewriteIncludes cwd files) files
+
+  -- Compile content
   compiled <- compile config compiler [] paths preCompile (return . id)
 
-  -- Pull index page from dev, assets, then default otherwise, in that order.
-  let defaultIndex    =  makeFile defaultsPath "index.html"
-  let possibleSources =  [devPath, appPath]
-  let possibleIndexes =  fmap (flip makeFile "index.html") possibleSources
-  fromIndex           <- lift $ fromMaybe defaultIndex <$> collapseFileList possibleIndexes
-  indexContent        <- lift $ readFile' $ fromIndex ^. FileList.filePath
+  -- Pull index page from either dev, assets, or default otherwise, in that
+  -- order.
+  let possibleSources =  fmap (</> "index.jade") [ devPath
+                                                 , appPath
+                                                 , defaultsPath
+                                                 ]
+
+  -- Compile the index file
+  compiledIndex <- compile config compiler [] ["app/index.jade"] preCompile (return . id)
 
   -- Inject compiled code into the index
-  let indexWithMarkup = replace "<body>" ("<body>" ++ compiled) indexContent
+  let indexWithMarkup = replace "<body>" ("<body>" ++ compiled) compiledIndex
 
   -- Inject CSS/JS references
   refTags <- lift $ readFile' refTagsPath
@@ -128,15 +131,19 @@ rewriteInclude defaultId line =
   in
     case tokenPaths of
       -- Deconstruct an include statement
+      -- TODO: the following needs some refactoring and/or comments. This
+      -- section is very confusing.
       (("include":_) : (depId:relPath) : _) ->
           padding ++ "include " ++ compPath </> relPath'
         where
-          relPath' = ("app/modules" </>) $ joinPath relPath
           compName = case (parseComponentId depId) of
                        -- There is a component ID
                        Right (user, repo) -> depId
                        -- Use default component ID
                        Left _ -> defaultId
+          relPath' = if   length compName > 0
+                     then ("app/modules" </>) $ joinPath relPath
+                     else (("app/modules" </> depId) </>) $ joinPath relPath
           compPath = if   length compName > 0
                      then "components" </> compName
                      else ""
