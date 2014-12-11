@@ -16,6 +16,7 @@ import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)
 import qualified Development.Duplo.FileList as FileList (filePath)
 import qualified Development.Duplo.Types.Builder as BD
 import qualified Development.Duplo.Types.Config as TC
+import System.Directory (findFile)
 
 build :: TC.BuildConfig
       -> FilePath
@@ -66,13 +67,13 @@ build config = \ out -> do
 
   -- Pull index page from either dev, assets, or default otherwise, in that
   -- order.
-  let possibleSources =  fmap (</> "index.jade") [ devPath
-                                                 , appPath
-                                                 , defaultsPath
-                                                 ]
+  let possibleSources = [ devPath, appPath, defaultsPath ]
+  -- We know at least one would satisfy because there's always one in
+  -- the default path
+  Just indexFile <- liftIO $ findFile possibleSources "index.jade"
 
   -- Compile the index file
-  compiledIndex <- compile config compiler [] ["app/index.jade"] preCompile (return . id)
+  compiledIndex <- compile config compiler [] [indexFile] preCompile (return . id)
 
   -- Inject compiled code into the index
   let indexWithMarkup = replace "<body>" ("<body>" ++ compiled) compiledIndex
