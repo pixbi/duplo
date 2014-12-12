@@ -3,3 +3,4 @@ node_modules/
 dist/
 cabal.sandbox.config
 .cabal-sandbox/
+.shake*

@@ -5,7 +5,7 @@ description:           Intuitive, simple building blocks for building composable
 license:               MIT
 license-file:          LICENSE
 author:                Kenneth Kan
-maintainer:            kenhkan@gmail.com
+maintainer:            ken@pixbi.com
 category:              Web
 build-type:            Simple
 extra-source-files:    README.md
