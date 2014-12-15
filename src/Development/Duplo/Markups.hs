@@ -42,6 +42,7 @@ build config = \ out -> do
   let devAssetsPath = devPath </> "assets"
   let devCodePath   = devPath </> "modules/index"
   let depIds        = config ^. TC.dependencies
+  let inTest        = TC.isInTest config
 
   -- Preconditions
   lift $ createIntermediaryDirectories devCodePath
@@ -80,10 +81,11 @@ build config = \ out -> do
   let indexWithMarkup = replace "<body>" ("<body>" ++ compiled) compiledIndex
 
   -- Inject CSS/JS references
-  refTagsInTest <- lift $ readFile' (targetPath </> "vendor/head.html")
-  let indexWithTestRefs = if env == "test"
-                          then replace "</head>" (refTagsInTest ++ "</head>") indexWithMarkup
-                          else indexWithMarkup
+  refTagsInTest <- lift $ readFile' $ targetPath </> "vendor/head.html"
+  let indexWithTestRefs =
+        if   inTest
+        then replace "</head>" (refTagsInTest ++ "</head>") indexWithMarkup
+        else indexWithMarkup
 
   refTags <- lift $ readFile' refTagsPath
   let indexWithRefs = replace "</head>" (refTags ++ "</head>") indexWithTestRefs
