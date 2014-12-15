@@ -3,7 +3,8 @@
   "version": "1.4.6",
   "homepage": "https://github.com/pixbi/duplo",
   "scripts": {
-    "prepublish": "util/publish.sh"
+    "prepublish": "util/publish.sh",
+    "postinstall": "util/post-install.sh"
   },
   "bin": {
     "duplo": "dist/build/duplo/duplo"
@@ -14,6 +15,9 @@
     "clean-css": "^2.2.17",
     "html-minifier": "^0.6.9",
     "jade": "^1.7.0",
+    "mocha": "^2.0.1",
+    "should": "^4.4.1",
+    "sinon": "^1.12.2",
     "stylus": "^0.49.1",
     "uglify-js": "^2.4.15"
   },
