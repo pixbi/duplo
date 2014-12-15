@@ -272,21 +272,19 @@ Putting it all together, an example of a `component.json`:
 }
 ```
 
-## Unit Test
+## Testing
 
-Follow the below steps:
+Follow these steps:
 
-1. Create the specific directory `test` in your project root, it's same as `dev`
-and `app`.
-
-2. Create your unit test cases in `modules` directory.
-
-3. Create `modules/index.jade` and full in the following source code:
+1. Create the directory `test` in your project root directory, alongside with
+   `dev` and `app`.
+2. Create your unit test cases in the directory `test/modules`.
+3. Put the following in the file `test/modules/index.jade`:
 
 ```jade
 html
   head
-    title Testing Result for SDK
+    title Testing Result
     link(rel="stylesheet", href="vender/mocha.css")
     script(src="vender/mocha.js").
     script.
@@ -304,8 +302,8 @@ html
       mocha.run()
 ```
 
-Then run `duplo test`, once done, open the `public/index.html` in your browser
-to view the test results.
+Then run `duplo test`. Open `public/index.html` in your browser for the test
+results.
 
 ## Copyright and License
 
