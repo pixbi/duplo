@@ -77,7 +77,7 @@ build config = \ out -> do
   let duploIn' = if length duploIn > 0 then duploIn else "{}"
 
   -- Figure out each component's version
-  compVers <- liftIO $ extractCompVersions depsPath
+  compVers <- liftIO $ extractCompVersions cwd
 
   -- Inject global/environment variables
   let envVars = "var DUPLO_ENV = '" ++ env ++ "';\n"
