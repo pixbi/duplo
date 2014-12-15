@@ -40,6 +40,7 @@ build config = \ out -> do
   let env         = config ^. TC.env
   let input       = config ^. TC.input
   let devPath     = config ^. TC.devPath
+  let depsPath    = config ^. TC.depsPath
   let devCodePath = devPath </> "modules/index.js"
   let depIds      = config ^. TC.dependencies
   let inDev       = TC.isInDev config
@@ -76,7 +77,7 @@ build config = \ out -> do
   let duploIn' = if length duploIn > 0 then duploIn else "{}"
 
   -- Figure out each component's version
-  compVers <- liftIO $ extractCompVersions cwd
+  compVers <- liftIO $ extractCompVersions depsPath
 
   -- Inject global/environment variables
   let envVars = "var DUPLO_ENV = '" ++ env ++ "';\n"

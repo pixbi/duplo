@@ -32,7 +32,7 @@ serve' = do
 
       if   exists
       then normalFile path'
-      else defaultFile
+      else returnDefault path'
 
 normalFile :: FilePath -> ActionM ()
 normalFile path = do
@@ -40,10 +40,21 @@ normalFile path = do
     file path
     setHeader "Content-Type" $ LT.pack contentType
 
-defaultFile :: ActionM ()
-defaultFile = do
-    file "public/index.html"
-    setHeader "Content-Type" "text/html"
+-- | Return a default file depending on file type. Return the default HTML
+-- file otherwise.
+returnDefault :: FilePath -> ActionM ()
+returnDefault path = do
+    let extension = takeExtension path
+
+    file $ case extension of
+             ".css" -> "public/index.css"
+             ".js"  -> "public/index.js"
+             _      -> "public/index.html"
+
+    setHeader "Content-Type" $ case extension of
+                                 ".css" -> "text/css"
+                                 ".js"  -> "text/javascript"
+                                 _      -> "text/html"
 
 -- | "Guess" the content type from the path's file type
 guessType :: String -> String

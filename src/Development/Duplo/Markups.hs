@@ -16,6 +16,7 @@ import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)
 import qualified Development.Duplo.FileList as FileList (filePath)
 import qualified Development.Duplo.Types.Builder as BD
 import qualified Development.Duplo.Types.Config as TC
+import System.Directory (findFile)
 
 build :: TC.BuildConfig
       -> FilePath
@@ -32,6 +33,11 @@ build config = \ out -> do
   let env           = config ^. TC.env
   let utilPath      = config ^. TC.utilPath
   let devPath       = config ^. TC.devPath
+<<<<<<< HEAD
+=======
+  let appPath       = config ^. TC.appPath
+  let testPath      = config ^. TC.testPath
+>>>>>>> cf267d4b5a7e91d0625f30aa19a9c6f9a6fca704
   let assetsPath    = config ^. TC.assetsPath
   let targetPath    = config ^. TC.targetPath
   let defaultsPath  = config ^. TC.defaultsPath
@@ -44,9 +50,9 @@ build config = \ out -> do
   lift $ createIntermediaryDirectories devCodePath
 
   -- Expand all paths
-  let depExpander id = ["components" </> id </> "app/index"]
+  let depExpander id = [ "components" </> id </> "app/modules/index" ]
   let expanded       = expandDeps depIds depExpander
-  let allPaths       = [ "app/index" ] ++ expanded
+  let allPaths       = [ "app/modules/index" ] ++ expanded
   let absPaths       = case env of
                          "dev"  -> [ devCodePath ]
                          "test" -> [ targetPath </> "vendor/mocha" ]
@@ -56,22 +62,25 @@ build config = \ out -> do
   -- Merge both types of paths
   paths <- lift $ expandPaths cwd ".jade" absPaths []
 
-  -- Path to the compiler
+  -- Compiler details
   let compiler = utilPath </> "markups-compile.sh"
-
-  -- Compile it
   let preCompile files = return $ fmap (rewriteIncludes cwd files) files
+
+  -- Compile content
   compiled <- compile config compiler [] paths preCompile (return . id)
 
-  -- Pull index page from dev, assets, then default otherwise, in that order.
-  let defaultIndex    =  makeFile defaultsPath "index.html"
-  let possibleSources =  [devAssetsPath, assetsPath]
-  let possibleIndexes =  fmap (flip makeFile "index.html") possibleSources
-  fromIndex           <- lift $ fromMaybe defaultIndex <$> collapseFileList possibleIndexes
-  indexContent        <- lift $ readFile' $ fromIndex ^. FileList.filePath
+  -- Pull index page from either dev, assets, or default otherwise, in that
+  -- order.
+  let possibleSources = [ devPath, appPath, defaultsPath ]
+  -- We know at least one would satisfy because there's always one in
+  -- the default path
+  Just indexFile <- liftIO $ findFile possibleSources "index.jade"
+
+  -- Compile the index file
+  compiledIndex <- compile config compiler [] [indexFile] preCompile (return . id)
 
   -- Inject compiled code into the index
-  let indexWithMarkup = replace "<body>" ("<body>" ++ compiled) indexContent
+  let indexWithMarkup = replace "<body>" ("<body>" ++ compiled) compiledIndex
 
   -- Inject CSS/JS references
   refTagsInTest <- lift $ readFile' (targetPath </> "vendor/head.html")
@@ -132,15 +141,19 @@ rewriteInclude defaultId line =
   in
     case tokenPaths of
       -- Deconstruct an include statement
+      -- TODO: the following needs some refactoring and/or comments. This
+      -- section is very confusing.
       (("include":_) : (depId:relPath) : _) ->
           padding ++ "include " ++ compPath </> relPath'
         where
-          relPath' = ("app/modules" </>) $ joinPath relPath
           compName = case (parseComponentId depId) of
                        -- There is a component ID
                        Right (user, repo) -> depId
                        -- Use default component ID
                        Left _ -> defaultId
+          relPath' = if   length compName > 0
+                     then ("app/modules" </>) $ joinPath relPath
+                     else (("app/modules" </> depId) </>) $ joinPath relPath
           compPath = if   length compName > 0
                      then "components" </> compName
                      else ""
