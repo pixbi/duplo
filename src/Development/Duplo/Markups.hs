@@ -140,22 +140,24 @@ rewriteInclude defaultId line =
   in
     case tokenPaths of
       -- Deconstruct an include statement
-      -- TODO: the following needs some refactoring and/or comments. This
-      -- section is very confusing.
-      (("include":_) : (depId:relPath) : _) ->
-          padding ++ "include " ++ compPath </> relPath'
+      (("include":_) : fullPath@(prefix:relPath) : _) ->
+          padding ++ "include " ++ resolvedPath
         where
-          compName = case (parseComponentId depId) of
-                       -- There is a component ID
-                       Right (user, repo) -> depId
-                       -- Use default component ID
-                       Left _ -> defaultId
-          relPath' = if   length compName > 0
-                     then ("app/modules" </>) $ joinPath relPath
-                     else (("app/modules" </> depId) </>) $ joinPath relPath
-          compPath = if   length compName > 0
-                     then "components" </> compName
-                     else ""
+          -- We need to figure out which component's name to use to prefix
+          -- the include path. Also get the path prefix in case we're using
+          -- the default ID.
+          (compName, relPathBase) = case (parseComponentId prefix) of
+                                      -- There is a component ID.
+                                      Right (user, repo) -> (prefix, "")
+                                      -- Use default component ID
+                                      -- otherwise.
+                                      Left _ -> (defaultId, prefix)
+          resolvedPath = if   length compName > 0
+                         -- It's referring to a file inside a component.
+                         then "components" </> compName </> "app/modules" </>
+                              relPathBase </> joinPath relPath
+                         -- It's not referring to a file at the top-level.
+                         else "app/modules" </> joinPath fullPath
 
       -- If it's not an include statement, just pass it thru
       _ -> line
