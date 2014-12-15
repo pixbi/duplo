@@ -3,3 +3,8 @@ node_modules/
 dist/
 cabal.sandbox.config
 .cabal-sandbox/
+.shake.database
+
+etc/test/vendor/mocha*
+etc/test/vendor/should*
+etc/test/vendor/sinon*
