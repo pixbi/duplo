@@ -33,11 +33,8 @@ build config = \ out -> do
   let env           = config ^. TC.env
   let utilPath      = config ^. TC.utilPath
   let devPath       = config ^. TC.devPath
-<<<<<<< HEAD
-=======
   let appPath       = config ^. TC.appPath
   let testPath      = config ^. TC.testPath
->>>>>>> cf267d4b5a7e91d0625f30aa19a9c6f9a6fca704
   let assetsPath    = config ^. TC.assetsPath
   let targetPath    = config ^. TC.targetPath
   let defaultsPath  = config ^. TC.defaultsPath
