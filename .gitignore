@@ -4,3 +4,7 @@ dist/
 cabal.sandbox.config
 .cabal-sandbox/
 .shake*
+
+etc/test/vendor/mocha*
+etc/test/vendor/should*
+etc/test/vendor/sinon*

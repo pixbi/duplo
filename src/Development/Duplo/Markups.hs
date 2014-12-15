@@ -36,6 +36,7 @@ build config = \ out -> do
   let appPath       = config ^. TC.appPath
   let testPath      = config ^. TC.testPath
   let assetsPath    = config ^. TC.assetsPath
+  let targetPath    = config ^. TC.targetPath
   let defaultsPath  = config ^. TC.defaultsPath
   let refTagsPath   = defaultsPath </> "head.html"
   let devAssetsPath = devPath </> "assets"
@@ -51,7 +52,7 @@ build config = \ out -> do
   let allPaths       = [ "app/modules/index" ] ++ expanded
   let absPaths       = case env of
                          "dev"  -> [ devCodePath ]
-                         "test" -> [ testPath ]
+                         "test" -> [ targetPath </> "vendor/mocha" ]
                          _      -> []
                        ++ map (cwd </>) allPaths
 
@@ -79,8 +80,13 @@ build config = \ out -> do
   let indexWithMarkup = replace "<body>" ("<body>" ++ compiled) compiledIndex
 
   -- Inject CSS/JS references
+  refTagsInTest <- lift $ readFile' (targetPath </> "vendor/head.html")
+  let indexWithTestRefs = if env == "test"
+                          then replace "</head>" (refTagsInTest ++ "</head>") indexWithMarkup
+                          else indexWithMarkup
+
   refTags <- lift $ readFile' refTagsPath
-  let indexWithRefs = replace "</head>" (refTags ++ "</head>") indexWithMarkup
+  let indexWithRefs = replace "</head>" (refTags ++ "</head>") indexWithTestRefs
 
   -- Path to the minifier
   let minifier = utilPath </> "markups-minify.sh"

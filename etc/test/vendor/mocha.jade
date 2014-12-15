@@ -1,0 +1,12 @@
+
+div#mocha
+  p
+    a(href=".")
+    | Index
+  
+div#messages
+div#fixtures
+script(type="text/javascript" defer).
+  document.addEventListener("DOMContentLoaded", function () {
+    mocha.run();
+  });
