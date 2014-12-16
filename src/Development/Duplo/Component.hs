@@ -24,9 +24,7 @@ import System.FilePath.FilePather.RecursePredicate (recursePredicate)
 import System.FilePath.FilePather.FilterPredicate (filterPredicate)
 import System.FilePath.FilePather.Find (findp)
 import System.FilePath.FilePather.RecursePredicate (recursePredicate)
-import System.FilePath.Posix (makeRelative, dropExtension)
-import System.FilePath.Posix (splitDirectories)
-import System.FilePath.Posix (takeFileName)
+import System.FilePath.Posix (makeRelative, dropExtension, splitDirectories, equalFilePath, takeFileName, dropTrailingPathSeparator)
 import qualified Data.ByteString.Lazy.Char8 as BS (unpack, pack)
 import qualified Data.Text as T (unpack, pack)
 import qualified Development.Duplo.Types.AppInfo as AI
@@ -103,16 +101,18 @@ appInfoToVersion appInfo = ((AI.name appInfo), (AI.version appInfo))
 
 -- | Given a path, find all the `component.json`s
 getAllManifestPaths :: FilePath -> IO [FilePath]
-getAllManifestPaths path = allPaths
+getAllManifestPaths root = allPaths
   where
-    -- Filter for `component.json`
+    -- Filter for `component.json`.
     matchName path t = takeFileName path == takeFileName manifestName
     filterP          = filterPredicate matchName
-    -- We only care about the `components/` directory
-    proceed path     = "components/" `isPrefixOf` path
+    -- We only care about the root directory and the `components/` directory.
+    componentsPath   = dropTrailingPathSeparator $ root </> "components/"
+    proceed absPath  = equalFilePath root absPath
+                    || componentsPath `isPrefixOf` absPath
     recurseP         = recursePredicate proceed
-    -- Collect the paths here
-    allPaths         = findp filterP recurseP path
+    -- Collect the paths here.
+    allPaths         = findp filterP recurseP root
 
 -- | Get the component dependency list by providing a mode, or not.
 getDependencies :: Maybe String -> IO [FilePath]
