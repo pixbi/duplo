@@ -20,7 +20,7 @@ import Development.Shake.FilePath ((</>))
 import Prelude hiding (lookup)
 import System.Directory (doesFileExist, doesDirectoryExist)
 import System.Directory (getDirectoryContents, getCurrentDirectory)
-import System.FilePath.FilePather.FilePathPredicate (always)
+import System.FilePath.FilePather.RecursePredicate (recursePredicate)
 import System.FilePath.FilePather.FilterPredicate (filterPredicate)
 import System.FilePath.FilePather.Find (findp)
 import System.FilePath.FilePather.RecursePredicate (recursePredicate)
@@ -103,11 +103,16 @@ appInfoToVersion appInfo = ((AI.name appInfo), (AI.version appInfo))
 
 -- | Given a path, find all the `component.json`s
 getAllManifestPaths :: FilePath -> IO [FilePath]
-getAllManifestPaths path =
-    findp filterP always path
+getAllManifestPaths path = allPaths
   where
-    filterP = filterPredicate matchName
+    -- Filter for `component.json`
     matchName path t = takeFileName path == takeFileName manifestName
+    filterP          = filterPredicate matchName
+    -- We only care about the `components/` directory
+    proceed path     = "components/" `isPrefixOf` path
+    recurseP         = recursePredicate proceed
+    -- Collect the paths here
+    allPaths         = findp filterP recurseP path
 
 -- | Get the component dependency list by providing a mode, or not.
 getDependencies :: Maybe String -> IO [FilePath]
