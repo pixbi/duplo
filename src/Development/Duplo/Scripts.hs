@@ -20,6 +20,8 @@ import Language.JavaScript.Parser.SrcLocation (TokenPosn(..))
 import Text.Regex (mkRegex, matchRegex)
 import qualified Development.Duplo.Types.Config as TC
 import qualified Language.JavaScript.Parser as JS
+import Data.Text.Format (left)
+import Data.Text.Lazy.Builder (toLazyText)
 
 -- | How many lines to display around the source of error (both ways).
 errorDisplayRange :: Int
@@ -71,17 +73,17 @@ build config = \ out -> do
   -- Merge both types of paths
   paths <- lift $ expandPaths cwd ".js" staticPaths dynamicPaths
 
-  -- Sanitize input
-  let duploIn = sanitize input
   -- Make sure we hvae at least something
-  let duploIn' = if length duploIn > 0 then duploIn else "{}"
+  let duploIn = if length input > 0 then input else ""
 
   -- Figure out each component's version
   compVers <- liftIO $ extractCompVersions cwd
 
   -- Inject global/environment variables
   let envVars = "var DUPLO_ENV = '" ++ env ++ "';\n"
-             ++ "var DUPLO_IN = " ++ duploIn' ++ ";\n"
+             -- Decode and parse in runtime to avoid having to deal with
+             -- escaping.
+             ++ "var DUPLO_IN = JSON.parse(window.atob('" ++ duploIn ++ "'));\n"
              ++ "var DUPLO_VERSIONS = " ++ compVers ++ ";\n"
 
   -- Configure the compiler
@@ -106,17 +108,6 @@ build config = \ out -> do
 
   -- Write it to disk
   lift $ writeFileChanged out compiled
-
--- | Sanitize script input
-sanitize :: String -> String
-sanitize = unpack . sanitize' . pack
-
--- | Text version of `sanitize`
-sanitize' :: Text -> Text
-sanitize' input = foldr id input
-                -- Curry sanitizing functions
-                $ replace <$> ["\n", "'", "\\"]
-                          <*> ["", "\\", "\\\\"]
 
 -- | Given the original content as string and an error message that is
 -- produced by `language-javascript` parser, throw an error.
@@ -157,7 +148,8 @@ showBadLine allLines badLineNum lineNum = (lineNum, line')
   where
     line     = allLines !! lineNum
     -- Natural numbering for humans
-    lineNum' = show $ lineNum + 1
+    toString = unpack . toLazyText
+    lineNum' = toString $ left 4 ' ' $ lineNum + 1
     marker   = if   lineNum == badLineNum
                then ">> " ++ lineNum'
                else "   " ++ lineNum'

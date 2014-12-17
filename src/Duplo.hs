@@ -52,17 +52,17 @@ main = do
   -- Build mode, for dependency selection
   duploMode  <- fromMaybe "" <$> lookupEnv "DUPLO_MODE"
   -- Application parameter
-  duploIn'   <- fromMaybe "" <$> lookupEnv "DUPLO_IN"
+  duploIn    <- fromMaybe "" <$> lookupEnv "DUPLO_IN"
   -- Current working directory
   cwd        <- getCurrentDirectory
   -- Duplo directory, assuming this is a build cabal executable (i.e.
   -- `./dist/build/duplo/duplo`)
   duploPath  <- fmap ((</> "../../../") . takeDirectory) getExecutablePath
 
-  -- Decode
-  let duploIn = case (decode $ pack $ duploIn') of
-                  Left _ -> ""
-                  Right input -> unpack input
+  -- Base64 decode
+  let duploInDecoded = case (decode $ pack $ duploIn) of
+                         Left _      -> ""
+                         Right input -> unpack input
 
   -- Paths to various relevant directories
   let nodeModulesPath = duploPath </> "node_modules/.bin/"
@@ -165,7 +165,7 @@ main = do
           ++ "DUPLO_MODE (build mode)         : "
           ++ duploMode ++ "\n"
           ++ "DUPLO_IN (app parameters)       : "
-          ++ duploIn ++ "\n"
+          ++ duploInDecoded ++ "\n"
 
   -- Construct environment
   let buildConfig = TC.BuildConfig { TC._appName      = appName
