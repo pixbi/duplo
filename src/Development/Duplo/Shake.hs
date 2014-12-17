@@ -21,8 +21,10 @@ import qualified Development.Duplo.Types.Builder as BD
 import qualified Development.Duplo.Types.Config as TC
 import qualified Development.Duplo.Types.Options as OP
 
+shakeOpts = shakeOptions { shakeThreads = 4 }
+
 shakeMain :: String -> [String] -> TC.BuildConfig -> OP.Options -> IO ()
-shakeMain cmdName cmdArgs config options = shake shakeOptions $ do
+shakeMain cmdName cmdArgs config options = shake shakeOpts $ do
     let headerPrinter  = liftIO . (logStatus headerPrintSetter)
     let successPrinter = liftIO . (logStatus successPrintSetter)
 
