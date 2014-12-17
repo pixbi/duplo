@@ -7,6 +7,10 @@ div#mocha
 div#messages
 div#fixtures
 script(type="text/javascript" defer).
+
   document.addEventListener("DOMContentLoaded", function () {
-    mocha.run();
+    if (window.mochaPhantomJS)
+      mochaPhantomJS.run();
+    else
+      mocha.run();
   });
