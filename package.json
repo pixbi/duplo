@@ -1,6 +1,6 @@
 {
   "name": "duplo",
-  "version": "1.5.7",
+  "version": "1.5.8",
   "homepage": "https://github.com/pixbi/duplo",
   "scripts": {
     "prepublish": "util/publish.sh",
