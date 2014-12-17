@@ -272,6 +272,13 @@ Putting it all together, an example of a `component.json`:
 }
 ```
 
+
+## Duplo Log
+
+Note that tasks are run in parallel so the display log may look scrambled from
+line to line. This is normal.
+
+
 ## Testing
 
 Follow these steps:
