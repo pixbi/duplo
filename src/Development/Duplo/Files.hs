@@ -49,15 +49,13 @@ readFile cwd path = do
   return $ File path fileDir fileName componentId fileContent isRoot
 
 parseFilePath :: FilePath -> (FilePath, FileName)
-parseFilePath path =
-  let
+parseFilePath path = (fileDir, fileName)
+  where
     segments  = splitDirectories path
     segLength = length segments
     dirLength = segLength - 1
     fileDir   = joinPath $ take dirLength segments
     fileName  = segments !! dirLength
-  in
-    (fileDir, fileName)
 
 -- | Given a default component ID (usually the ID of the project on which
 -- duplo is run) and the file path, deduce the component ID of a particular

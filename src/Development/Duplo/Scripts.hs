@@ -114,20 +114,14 @@ sanitize = unpack . sanitize' . pack
 -- | Text version of `sanitize`
 sanitize' :: Text -> Text
 sanitize' input = foldr id input
-               -- Curry sanitizing functions
-               $ replace <$> ["\n", "'", "\\"]
-                         <*> ["", "\\", "\\\\"]
+                -- Curry sanitizing functions
+                $ replace <$> ["\n", "'", "\\"]
+                          <*> ["", "\\", "\\\\"]
 
 -- | Given the original content as string and an error message that is
 -- produced by `language-javascript` parser, throw an error.
 handleParseError :: String -> String -> String
-handleParseError content e =
-    throw $ ShakeException { shakeExceptionTarget = ""
-                           , shakeExceptionStack = []
-                           , shakeExceptionInner = SomeException
-                                                 $ ParseException
-                                                 $ badLinesDeduped
-                           }
+handleParseError content e = exception
   where
     linedContent = fmap unpack $ splitOn "\n" $ pack content
     lineCount = length linedContent
@@ -145,28 +139,36 @@ handleParseError content e =
     badLines = fmap (showBadLine' . keepInRange) lineRange
     -- Make sure we de-duplicate the lines.
     dedupe = nubBy $ \x y -> fst x == fst y
-    -- Extract just the lines for display
+    -- Extract just the lines for display.
     badLinesDeduped = map snd $ dedupe badLines
+    -- Construct the exception.
+    exception = throw $
+      ShakeException { shakeExceptionTarget = ""
+                     , shakeExceptionStack  = []
+                     , shakeExceptionInner  = SomeException
+                                            $ ParseException
+                                            $ badLinesDeduped
+                     }
 
 -- | Given a file's lines, its line number, and the "target" line number
 -- that caused the parse error, format it for human-readable output.
 showBadLine :: [String] -> LineNumber -> LineNumber -> (LineNumber, String)
-showBadLine allLines badLineNum lineNum =
-    (lineNum, marker ++ " | " ++ line)
+showBadLine allLines badLineNum lineNum = (lineNum, line')
   where
-    line = allLines !! lineNum
+    line     = allLines !! lineNum
     -- Natural numbering for humans
     lineNum' = show $ lineNum + 1
-    marker = if   lineNum == badLineNum
-             then ">> " ++ lineNum'
-             else "   " ++ lineNum'
+    marker   = if   lineNum == badLineNum
+               then ">> " ++ lineNum'
+               else "   " ++ lineNum'
+    line'    = marker ++ " | " ++ line
 
 -- | Because the parser's error isn't readable, we need to use RegExp to
 -- extract what we need for debugging.
 readParseError :: String -> LineNumber
 readParseError e =
     case match of
-      Just m -> (read $ head m) :: Int
+      Just m  -> (read $ head m) :: Int
       Nothing -> throw $ InternalParserException e
   where
     regex = mkRegex "TokenPn [0-9]+ ([0-9]+) [0-9]+"
