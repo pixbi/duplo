@@ -7,7 +7,7 @@ import Control.Exception (throw, SomeException(..))
 import Control.Lens hiding (Action)
 import Control.Monad (filterM)
 import Control.Monad.Trans.Class (lift)
-import Data.List (intercalate)
+import Data.List (intercalate, nubBy)
 import Data.Text.Lazy (Text, pack, unpack, replace, splitOn)
 import Development.Duplo.Component (extractCompVersions)
 import Development.Duplo.Files (File(..), pseudoFile)
@@ -126,10 +126,11 @@ handleParseError content e =
                            , shakeExceptionStack = []
                            , shakeExceptionInner = SomeException
                                                  $ ParseException
-                                                 $ badLines
+                                                 $ badLinesDeduped
                            }
   where
     linedContent = fmap unpack $ splitOn "\n" $ pack content
+    lineCount = length linedContent
     lineNum = readParseError e
     -- Display surrounding lines
               -- Construct a list of target line numbers
@@ -138,16 +139,24 @@ handleParseError content e =
               $ iterate (+ 1)
               -- Position the starting point
               $ lineNum - errorDisplayRange `div` 2
-    badLines = fmap (showBadLine linedContent lineNum) lineRange
+    showBadLine' = showBadLine linedContent lineNum
+    -- Keep the line number in the possible domain.
+    keepInRange = (max 0) . (min lineCount)
+    badLines = fmap (showBadLine' . keepInRange) lineRange
+    -- Make sure we de-duplicate the lines.
+    dedupe = nubBy $ \x y -> fst x == fst y
+    -- Extract just the lines for display
+    badLinesDeduped = map snd $ dedupe badLines
 
 -- | Given a file's lines, its line number, and the "target" line number
 -- that caused the parse error, format it for human-readable output.
-showBadLine :: [String] -> LineNumber -> LineNumber -> String
+showBadLine :: [String] -> LineNumber -> LineNumber -> (LineNumber, String)
 showBadLine allLines badLineNum lineNum =
-    marker ++ " | " ++ line
+    (lineNum, marker ++ " | " ++ line)
   where
     line = allLines !! lineNum
-    lineNum' = show lineNum
+    -- Natural numbering for humans
+    lineNum' = show $ lineNum + 1
     marker = if   lineNum == badLineNum
              then ">> " ++ lineNum'
              else "   " ++ lineNum'
