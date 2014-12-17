@@ -83,7 +83,7 @@ build config = \ out -> do
   let envVars = "var DUPLO_ENV = '" ++ env ++ "';\n"
              -- Decode and parse in runtime to avoid having to deal with
              -- escaping.
-             ++ "var DUPLO_IN = JSON.parse(window.atob('" ++ duploIn ++ "'));\n"
+             ++ "var DUPLO_IN = JSON.parse(window.atob('" ++ duploIn ++ "') || '{}' );\n"
              ++ "var DUPLO_VERSIONS = " ++ compVers ++ ";\n"
 
   -- Configure the compiler
