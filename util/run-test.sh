@@ -1,6 +1,7 @@
 #!/usr/bin/env sh
 
 MOCHA_PHANTOMJS=$1/node_modules/.bin/mocha-phantomjs
+BROWSERSTACK=$1/node_modules/.bin/browserstack-runner
 RUNNER_PATH=public/index.html
 
 run_headless () {
@@ -8,7 +9,7 @@ run_headless () {
 }
 
 run_cross_browsers () {
-  echo 'TODO(Yorkie): to be implemented'
+  cd public && $BROWSERSTACK
 }
 
 # main process

@@ -99,7 +99,7 @@ deps config = do
   devFiles'     <- getDirectoryFiles devAssetsPath ["//*"]
   let devFiles   = if TC.isInDev config then devFiles' else []
   -- Add test files to the mix, if we're in test mode
-  testFiles'    <- getDirectoryFiles testAssetsPath ["vendor//*"]
+  testFiles'    <- getDirectoryFiles testAssetsPath ["vendor//*", "browserstack.json"]
   let testFiles  = if TC.isInTest config then testFiles' else []
   -- Mix them together
   let allFiles   = nub $ concat [depAssetFiles, assetFiles, devFiles, testFiles]
