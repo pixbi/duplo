@@ -35,6 +35,7 @@ build config = \ out -> do
   let devPath       = config ^. TC.devPath
   let appPath       = config ^. TC.appPath
   let testPath      = config ^. TC.testPath
+  let duploPath     = config ^. TC.duploPath
   let assetsPath    = config ^. TC.assetsPath
   let targetPath    = config ^. TC.targetPath
   let defaultsPath  = config ^. TC.defaultsPath
@@ -81,7 +82,7 @@ build config = \ out -> do
   let indexWithMarkup = replace "<body>" ("<body>" ++ compiled) compiledIndex
 
   -- Inject CSS/JS references
-  refTagsInTest <- lift $ readFile' $ targetPath </> "vendor/head.html"
+  refTagsInTest <- lift $ readFile' $ duploPath </> "etc/test/head.html"
   let indexWithTestRefs =
         if   inTest
         then replace "</head>" (refTagsInTest ++ "</head>") indexWithMarkup

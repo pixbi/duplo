@@ -20,7 +20,7 @@ build config = \ outs -> do
   let depsPath      = config ^. TC.depsPath
   let devPath       = config ^. TC.devPath
   let devAssetPath  = devPath </> "assets"
-  let testAssetPath = config ^. TC.duploPath </> "etc/test/"
+  let testAssetPath = config ^. TC.duploPath </> "etc/test"
 
   -- Convert to relative paths for copying
   let filesRel = fmap (makeRelative targetPath) outs
@@ -86,7 +86,7 @@ deps config = do
   let targetPath = config ^. TC.targetPath
   let devPath    = config ^. TC.devPath
   let devAssetsPath = devPath </> "assets/"
-  let testAssetsPath = config ^. TC.duploPath </> "etc/test/"
+  let testAssetsPath = config ^. TC.duploPath </> "etc/test"
 
   -- Make sure all these directories exist
   createPathDirectories [assetsPath, depsPath, targetPath, devAssetsPath]
@@ -99,7 +99,7 @@ deps config = do
   devFiles'     <- getDirectoryFiles devAssetsPath ["//*"]
   let devFiles   = if TC.isInDev config then devFiles' else []
   -- Add test files to the mix, if we're in test mode
-  testFiles'    <- getDirectoryFiles testAssetsPath ["//*"]
+  testFiles'    <- getDirectoryFiles testAssetsPath ["vendor//*"]
   let testFiles  = if TC.isInTest config then testFiles' else []
   -- Mix them together
   let allFiles   = nub $ concat [depAssetFiles, assetFiles, devFiles, testFiles]
