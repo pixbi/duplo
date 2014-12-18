@@ -91,6 +91,58 @@ Anything under `dev/modules/` would be treated just like those under
 output files (i.e. `index.html`, `index.css`, or `index.js`).
 
 
+## Test Suite
+
+```sh
+$ duplo test
+```
+
+The current test suite contains:
+
+- headless browser based on PhantomJS and Mocha-Phantomjs
+- cross-browser based on [browserstack-runner](https://github.com/browserstack/browserstack-runner)
+
+#### Write a test suite for your [duplo](https://github.com/pixbi/duplo) project
+
+```
+root
+|-- app/modules
+    |-- a.js
+    |-- b.js
+|-- test/modules
+    |-- test-a.js
+    |-- test-b.js
+```
+
+At the initial stage of testing your codebase, structe like the above in your project. And then, we take a look at how to write a test file in directory `test/modules`:
+
+```js
+define('whatever you name this but do not make conflicts with your module, example: test-a',
+['moduleA'],
+function (a) {
+  
+  describe('some text', function () {
+    it('should ...', function () {
+      // now you can use:
+      //  expect()....
+      //  assert()....
+    });
+  });
+
+});
+```
+
+As you learned before, duplo's test suite has included [mocha](http://mochajs.org/) and [chai.js](http://chaijs.com/).
+
+By the way, it support another powerful testing tool [SinonJS](http://sinonjs.org/) to let you fake/mock any functions, ajax requests and timers by yourself.
+
+As so far, Duplo's test environment includes these 3 modules:
+
+- mocha: `describe`, `it` and etc.
+- chai.js: `expect` and `assert`.
+- sinon.js: `sinon.spy`, `sinon.stub`, `sinon.useFakeTimers` and etc.
+
+
 ## Environment
 
 duplo injects the `DUPLO_ENV` global variable with the value from the
