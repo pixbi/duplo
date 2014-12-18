@@ -43,6 +43,7 @@ build config = \ out -> do
   let input       = config ^. TC.input
   let devPath     = config ^. TC.devPath
   let depsPath    = config ^. TC.depsPath
+  let duploPath   = config ^. TC.duploPath
   let devCodePath = devPath </> "modules/index.js"
   let depIds      = config ^. TC.dependencies
   let inDev       = TC.isInDev config
@@ -54,7 +55,7 @@ build config = \ out -> do
   -- These paths don't need to be expanded.
   let staticPaths = case env of
                       "dev"  -> [ "dev/index" ]
-                      "test" -> [ "test/index" ]
+                      "test" -> [ duploPath </> "etc/test/index" ]
                       _      -> []
                     ++ [ "app/index" ]
 
@@ -63,7 +64,7 @@ build config = \ out -> do
   -- Compile dev files in dev mode as well, taking precendence.
   let dynamicPaths = case env of
                        "dev"  -> [ "dev/modules" ]
-                       "test" -> [ "test/modules"]
+                       "test" -> [ "test/modules" ]
                        _      -> []
                      -- Then normal scripts
                      ++ [ "app/modules" ]
