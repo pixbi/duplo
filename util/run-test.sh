@@ -9,9 +9,8 @@ run_headless () {
 }
 
 run_cross_browsers () {
-  cd public && $BROWSERSTACK
+  cd public && $BROWSERSTACK --verbose
 }
 
 # main process
-run_headless
-run_cross_browsers
+run_headless && run_cross_browsers
