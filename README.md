@@ -134,7 +134,7 @@ function (a) {
 
 As you learned before, duplo's test suite has included [mocha](http://mochajs.org/) and [chai.js](http://chaijs.com/).
 
-By the way, it support another powerful testing tool [SinonJS](http://sinonjs.org/) to let you fake/mock any functions, ajax requests and timers by yourself.
+By the way, it supports another powerful testing tool [SinonJS](http://sinonjs.org/) to let you fake/mock any functions, ajax requests and timers by yourself.
 
 As so far, Duplo's test environment includes these 3 modules:
 
