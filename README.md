@@ -104,7 +104,7 @@ The test suite contains:
 * a cross-browser runner based on
   [browserstack-runner](https://github.com/browserstack/browserstack-runner)
 
-#### Write a test suite for your [duplo](https://github.com/pixbi/duplo) project
+### Write a test suite for your [duplo](https://github.com/pixbi/duplo) project
 
 ```
 root
@@ -147,6 +147,29 @@ As so far, Duplo's test environment includes these 3 modules:
 * mocha: `describe`, `it` and etc.
 * chai.js: `expect` and `assert`.
 * sinon.js: `sinon.spy`, `sinon.stub`, `sinon.useFakeTimers` and etc.
+
+### BrowserStack
+
+To make your repo BrowserStack-runnable, modify this template and save it to
+`etc/test/browserstack.json` (which is added to `.gitignore` to prevent
+information leakage into your git history):
+
+```json
+{
+  "username": "your-username-here",
+  "key": "your-key-here",
+  "test_path": "index.html",
+  "test_framework": "mocha",
+  "browsers": [
+    {
+      "browser": "chrome",
+      "browser_version": "latest",
+      "os": "OS X",
+      "os_version": "Mountain Lion"
+    }
+  ]
+}
+```
 
 
 ## Environment
