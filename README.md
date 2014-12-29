@@ -23,7 +23,7 @@ A opinionated, framework-less build tool for web applications
 * `duplo build` builds the project. `DUPLO_ENV` defaults to `dev`.
 * `duplo dev`: starts a webserver, watches for file changes, and builds in
   development environment.
-* `duplo test`: build test cases and you should run it in browser by yourself.
+* `duplo test` builds test cases and run it in a browser.
 * `duplo production`: like `duplo dev` but builds in production environment
 * `duplo patch` bumps the patch version.
 * `duplo minor` bumps the minor version.
@@ -91,16 +91,18 @@ Anything under `dev/modules/` would be treated just like those under
 output files (i.e. `index.html`, `index.css`, or `index.js`).
 
 
-## Test Suite
+## Testing
 
 ```sh
 $ duplo test
 ```
 
-The current test suite contains:
+The test suite contains:
 
-- headless browser based on PhantomJS and Mocha-Phantomjs
-- cross-browser based on [browserstack-runner](https://github.com/browserstack/browserstack-runner)
+* a headless browser based on [PhantomJS](http://phantomjs.org/) and
+  [Mocha-Phantomjs](https://github.com/metaskills/mocha-phantomjs).
+* a cross-browser runner based on
+  [browserstack-runner](https://github.com/browserstack/browserstack-runner)
 
 #### Write a test suite for your [duplo](https://github.com/pixbi/duplo) project
 
@@ -114,13 +116,14 @@ root
     |-- test-b.js
 ```
 
-At the initial stage of testing your codebase, structe like the above in your project. And then, we take a look at how to write a test file in directory `test/modules`:
+When testing your codebase, structure your project like the above. And then, we
+take a look at how to write a test file in directory `test/modules`:
 
 ```js
-define('whatever you name this but do not make conflicts with your module, example: test-a',
+define('name this to whatever but do not conflict with your module (e.g. test-a)',
 ['moduleA'],
 function (a) {
-  
+
   describe('some text', function () {
     it('should ...', function () {
       // now you can use:
@@ -132,15 +135,18 @@ function (a) {
 });
 ```
 
-As you learned before, duplo's test suite has included [mocha](http://mochajs.org/) and [chai.js](http://chaijs.com/).
+Duplo's test suite includes [mocha](http://mochajs.org/) and
+[chai.js](http://chaijs.com/).
 
-By the way, it supports another powerful testing tool [SinonJS](http://sinonjs.org/) to let you fake/mock any functions, ajax requests and timers by yourself.
+By the way, it supports another powerful testing tool,
+[SinonJS](http://sinonjs.org/), so you may fake/mock any functions, ajax
+requests and timers yourself.
 
 As so far, Duplo's test environment includes these 3 modules:
 
-- mocha: `describe`, `it` and etc.
-- chai.js: `expect` and `assert`.
-- sinon.js: `sinon.spy`, `sinon.stub`, `sinon.useFakeTimers` and etc.
+* mocha: `describe`, `it` and etc.
+* chai.js: `expect` and `assert`.
+* sinon.js: `sinon.spy`, `sinon.stub`, `sinon.useFakeTimers` and etc.
 
 
 ## Environment
