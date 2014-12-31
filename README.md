@@ -5,6 +5,8 @@ A opinionated, framework-less build tool for web applications
 
 ## Installation
 
+If "npm" sounds familiar:
+
 1. Get a [Mac](http://www.apple.com/mac/)
 2. Install [Homebrew](http://brew.sh/)
 3. Get [npm](http://npmjs.org/): `brew install npm`
@@ -12,6 +14,10 @@ A opinionated, framework-less build tool for web applications
 5. Get pre-1.x.x [Component](https://github.com/componentjs): `npm install -g
    component@0.19.9`
 6. Get [duplo](https://github.com/pixbi/duplo): `npm install -g duplo`
+
+If "cabal" sounds more familiar:
+
+1. `cabal install duplo`
 
 
 ## Usage
