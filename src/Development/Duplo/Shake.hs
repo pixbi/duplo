@@ -73,8 +73,14 @@ shakeMain cmdName cmdArgs config options = shake shakeOpts $ do
 
     "static" ~> Static.deps config
 
+    -- Install dependencies.
+    "deps" ~> do
+      liftIO $ logStatus headerPrintSetter "Installing dependencies"
+
+      command_ [] (utilPath </> "install-deps.sh") []
+
     "clean" ~> do
-      -- Clean only when the target is there
+      -- Clean only when the target is there.
       needCleaning <- doesDirectoryExist targetPath
       if   needCleaning
       then liftIO $ removeFiles targetPath ["//*"]
@@ -88,9 +94,9 @@ shakeMain cmdName cmdArgs config options = shake shakeOpts $ do
       then return ()
       else need ["clean"]
 
-      -- Copy over static files first
-      need ["static"]
-      -- Then compile
+      -- Make sure all static files and dependencies are there.
+      need ["static", "deps"]
+      -- Then compile, in parallel.
       need [targetScript, targetStyle, targetMarkup]
 
       successPrinter "Build completed"
