@@ -63,7 +63,7 @@ build config = \ out -> do
   -- Compile dev files in dev mode as well, taking precendence.
   let dynamicPaths = case env of
                        "dev"  -> [ "dev/modules" ]
-                       "test" -> [ "test/modules"]
+                       "test" -> [ "test/modules" ]
                        _      -> []
                      -- Then normal scripts
                      ++ [ "app/modules" ]

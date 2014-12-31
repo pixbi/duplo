@@ -22,18 +22,18 @@ If "cabal" sounds more familiar:
 
 ## Usage
 
-* `duplo help` displays all commands.
-* `duplo info` displays the version for this duplo installation.
-* `duplo init <user> <repo>` scaffolds a new duplo repo in the current
+- `duplo help` displays all commands.
+- `duplo info` displays the version for this duplo installation.
+- `duplo init <user> <repo>` scaffolds a new duplo repo in the current
   directory.
-* `duplo build` builds the project. `DUPLO_ENV` defaults to `dev`.
-* `duplo dev`: starts a webserver, watches for file changes, and builds in
+- `duplo build` builds the project. `DUPLO_ENV` defaults to `dev`.
+- `duplo dev`: starts a webserver, watches for file changes, and builds in
   development environment.
-* `duplo test`: build test cases and you should run it in browser by yourself.
-* `duplo production`: like `duplo dev` but builds in production environment
-* `duplo patch` bumps the patch version.
-* `duplo minor` bumps the minor version.
-* `duplo major` bumps the major version.
+- `duplo test` builds test cases and run it in a browser.
+- `duplo production`: like `duplo dev` but builds in production environment
+- `duplo patch` bumps the patch version.
+- `duplo minor` bumps the minor version.
+- `duplo major` bumps the major version.
 
 
 ## Guiding Principle
@@ -44,13 +44,13 @@ structure on your application.
 
 However, it does have opinions, specifically:
 
-* [Jade](http://jade-lang.com/) over HTML
-* [Stylus](http://learnboost.github.io/stylus/) over CSS
-* [GitHub](http://github.com/) and by extension [git](http://git-scm.com/) for
+- [Jade](http://jade-lang.com/) over HTML
+- [Stylus](http://learnboost.github.io/stylus/) over CSS
+- [GitHub](http://github.com/) and by extension [git](http://git-scm.com/) for
   source code management
-* [Heroku](https://www.heroku.com/) for application deployment
-* [Selenium](http://docs.seleniumhq.org/) for automated browser testing
-* [CircleCI](https://circleci.com/) for continuous integration
+- [Heroku](https://www.heroku.com/) for application deployment
+- [Selenium](http://docs.seleniumhq.org/) for automated browser testing
+- [CircleCI](https://circleci.com/) for continuous integration
 
 The idea is to manage and deploy your code exclusively with git and have
 CircleCI deals with deployment for you. However, duplo is a build tool; it
@@ -95,6 +95,87 @@ at their respective locations.
 Anything under `dev/modules/` would be treated just like those under
 `app/modules/`, that they would be concatenated/compiled into the respective
 output files (i.e. `index.html`, `index.css`, or `index.js`).
+
+
+## Testing
+
+```sh
+$ duplo test
+```
+
+The test suite contains:
+
+- a headless browser based on [PhantomJS](http://phantomjs.org/) and
+  [Mocha-Phantomjs](https://github.com/metaskills/mocha-phantomjs).
+- a cross-browser runner based on
+  [browserstack-runner](https://github.com/browserstack/browserstack-runner)
+
+### Write a test suite for your [duplo](https://github.com/pixbi/duplo) project
+
+```
+root
+|-- app/modules
+    |-- a.js
+    |-- b.js
+|-- test/modules
+    |-- test-a.js
+    |-- test-b.js
+```
+
+When testing your codebase, structure your project like the above. And then, we
+take a look at how to write a test file in directory `test/modules`:
+
+```js
+define('name this to whatever but do not conflict with your module (e.g. test-a)',
+['moduleA'],
+function (a) {
+
+  describe('some text', function () {
+    it('should ...', function () {
+      // now you can use:
+      //  expect()....
+      //  assert()....
+    });
+  });
+
+});
+```
+
+Duplo's test suite includes [mocha](http://mochajs.org/) and
+[chai.js](http://chaijs.com/).
+
+By the way, it supports another powerful testing tool,
+[SinonJS](http://sinonjs.org/), so you may fake/mock any functions, ajax
+requests and timers yourself.
+
+As so far, Duplo's test environment includes these 3 modules:
+
+- mocha: `describe`, `it` and etc.
+- chai.js: `expect` and `assert`.
+- sinon.js: `sinon.spy`, `sinon.stub`, `sinon.useFakeTimers` and etc.
+
+### BrowserStack
+
+To make your repo BrowserStack-runnable, modify this template and save it to
+the root directory of your project (which is added to `.gitignore` to prevent
+information leakage into your git history):
+
+```json
+{
+  "username": "your-username-here",
+  "key": "your-key-here",
+  "test_path": "index.html",
+  "test_framework": "mocha",
+  "browsers": [
+    {
+      "browser": "chrome",
+      "browser_version": "latest",
+      "os": "OS X",
+      "os_version": "Mountain Lion"
+    }
+  ]
+}
+```
 
 
 ## Environment
@@ -283,40 +364,6 @@ Putting it all together, an example of a `component.json`:
 
 Note that tasks are run in parallel so the display log may look scrambled from
 line to line. This is normal.
-
-
-## Testing
-
-Follow these steps:
-
-1. Create the directory `test` in your project root directory, alongside with
-   `dev` and `app`.
-2. Create your unit test cases in the directory `test/modules`.
-3. Put the following in the file `test/modules/index.jade`:
-
-```jade
-html
-  head
-    title Testing Result
-    link(rel="stylesheet", href="vender/mocha.css")
-    script(src="vender/mocha.js").
-    script.
-      mocha.setup('bdd');
-
-  body
-    div#mocha
-      p
-        a(href=".") Index
-    div#messages
-    div#fixtures
-
-    script(src="./index.js").
-    script.
-      mocha.run()
-```
-
-Then run `duplo test`. Open `public/index.html` in your browser for the test
-results.
 
 ## Copyright and License
 

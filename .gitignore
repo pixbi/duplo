@@ -5,6 +5,9 @@ cabal.sandbox.config
 .cabal-sandbox/
 .shake*
 
+etc/test/vendor/chai*
 etc/test/vendor/mocha*
-etc/test/vendor/should*
 etc/test/vendor/sinon*
+etc/test/vendor/should*
+
+etc/test/browserstack.json

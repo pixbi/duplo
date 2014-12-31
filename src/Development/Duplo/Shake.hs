@@ -95,6 +95,10 @@ shakeMain cmdName cmdArgs config options = shake shakeOpts $ do
 
       successPrinter "Build completed"
 
+      if   TC.isInTest config
+      then need ["test"]
+      else return ()
+
     "bump" ~> do
       (oldVersion, newVersion) <- Git.commit config bumpLevel
 
@@ -128,6 +132,10 @@ shakeMain cmdName cmdArgs config options = shake shakeOpts $ do
       command_ [] (utilPath </> "init-git.sh") [name]
 
       successPrinter $ "Project created at " ++ dest
+
+    "test" ~> do
+      let duploPath = config ^. TC.duploPath
+      command_ [] (utilPath </> "run-test.sh") [duploPath]
 
     -- Version should have already been displayed if requested
     "version" ~> return ()
