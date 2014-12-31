@@ -151,7 +151,7 @@ As so far, Duplo's test environment includes these 3 modules:
 ### BrowserStack
 
 To make your repo BrowserStack-runnable, modify this template and save it to
-`etc/test/browserstack.json` (which is added to `.gitignore` to prevent
+the root directory of your project (which is added to `.gitignore` to prevent
 information leakage into your git history):
 
 ```json
@@ -358,40 +358,6 @@ Putting it all together, an example of a `component.json`:
 
 Note that tasks are run in parallel so the display log may look scrambled from
 line to line. This is normal.
-
-
-## Testing
-
-Follow these steps:
-
-1. Create the directory `test` in your project root directory, alongside with
-   `dev` and `app`.
-2. Create your unit test cases in the directory `test/modules`.
-3. Put the following in the file `test/modules/index.jade`:
-
-```jade
-html
-  head
-    title Testing Result
-    link(rel="stylesheet", href="vender/mocha.css")
-    script(src="vender/mocha.js").
-    script.
-      mocha.setup('bdd');
-
-  body
-    div#mocha
-      p
-        a(href=".") Index
-    div#messages
-    div#fixtures
-
-    script(src="./index.js").
-    script.
-      mocha.run()
-```
-
-Then run `duplo test`. Open `public/index.html` in your browser for the test
-results.
 
 ## Copyright and License
 
