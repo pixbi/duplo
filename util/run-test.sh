@@ -9,7 +9,11 @@ run_headless () {
 }
 
 run_cross_browsers () {
-  cd public && $BROWSERSTACK --verbose
+  if [ -a ./browserstack.json ]; then
+    cp -r ./browserstack.json public/browserstack.json && cd public && $BROWSERSTACK --verbose
+  else
+    echo "skiped, reason: could not get browserstack.json from your project"
+  fi
 }
 
 # main process

@@ -8,5 +8,6 @@ cabal.sandbox.config
 etc/test/vendor/chai*
 etc/test/vendor/mocha*
 etc/test/vendor/sinon*
+etc/test/vendor/should*
 
 etc/test/browserstack.json
