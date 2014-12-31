@@ -16,18 +16,18 @@ A opinionated, framework-less build tool for web applications
 
 ## Usage
 
-* `duplo help` displays all commands.
-* `duplo info` displays the version for this duplo installation.
-* `duplo init <user> <repo>` scaffolds a new duplo repo in the current
+- `duplo help` displays all commands.
+- `duplo info` displays the version for this duplo installation.
+- `duplo init <user> <repo>` scaffolds a new duplo repo in the current
   directory.
-* `duplo build` builds the project. `DUPLO_ENV` defaults to `dev`.
-* `duplo dev`: starts a webserver, watches for file changes, and builds in
+- `duplo build` builds the project. `DUPLO_ENV` defaults to `dev`.
+- `duplo dev`: starts a webserver, watches for file changes, and builds in
   development environment.
-* `duplo test` builds test cases and run it in a browser.
-* `duplo production`: like `duplo dev` but builds in production environment
-* `duplo patch` bumps the patch version.
-* `duplo minor` bumps the minor version.
-* `duplo major` bumps the major version.
+- `duplo test` builds test cases and run it in a browser.
+- `duplo production`: like `duplo dev` but builds in production environment
+- `duplo patch` bumps the patch version.
+- `duplo minor` bumps the minor version.
+- `duplo major` bumps the major version.
 
 
 ## Guiding Principle
@@ -38,13 +38,13 @@ structure on your application.
 
 However, it does have opinions, specifically:
 
-* [Jade](http://jade-lang.com/) over HTML
-* [Stylus](http://learnboost.github.io/stylus/) over CSS
-* [GitHub](http://github.com/) and by extension [git](http://git-scm.com/) for
+- [Jade](http://jade-lang.com/) over HTML
+- [Stylus](http://learnboost.github.io/stylus/) over CSS
+- [GitHub](http://github.com/) and by extension [git](http://git-scm.com/) for
   source code management
-* [Heroku](https://www.heroku.com/) for application deployment
-* [Selenium](http://docs.seleniumhq.org/) for automated browser testing
-* [CircleCI](https://circleci.com/) for continuous integration
+- [Heroku](https://www.heroku.com/) for application deployment
+- [Selenium](http://docs.seleniumhq.org/) for automated browser testing
+- [CircleCI](https://circleci.com/) for continuous integration
 
 The idea is to manage and deploy your code exclusively with git and have
 CircleCI deals with deployment for you. However, duplo is a build tool; it
@@ -99,9 +99,9 @@ $ duplo test
 
 The test suite contains:
 
-* a headless browser based on [PhantomJS](http://phantomjs.org/) and
+- a headless browser based on [PhantomJS](http://phantomjs.org/) and
   [Mocha-Phantomjs](https://github.com/metaskills/mocha-phantomjs).
-* a cross-browser runner based on
+- a cross-browser runner based on
   [browserstack-runner](https://github.com/browserstack/browserstack-runner)
 
 ### Write a test suite for your [duplo](https://github.com/pixbi/duplo) project
@@ -144,9 +144,9 @@ requests and timers yourself.
 
 As so far, Duplo's test environment includes these 3 modules:
 
-* mocha: `describe`, `it` and etc.
-* chai.js: `expect` and `assert`.
-* sinon.js: `sinon.spy`, `sinon.stub`, `sinon.useFakeTimers` and etc.
+- mocha: `describe`, `it` and etc.
+- chai.js: `expect` and `assert`.
+- sinon.js: `sinon.spy`, `sinon.stub`, `sinon.useFakeTimers` and etc.
 
 ### BrowserStack
 
