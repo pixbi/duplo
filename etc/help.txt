@@ -21,6 +21,8 @@ Commands:
                               environment
     duplo live                Just like `duplo production`
 
+    duplo test                Run test suite.
+
     duplo patch               Bumps the patch version.
     duplo minor               Bumps the minor version.
     duplo major               Bumps the major version.
