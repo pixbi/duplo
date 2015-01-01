@@ -27,7 +27,7 @@ If "cabal" sounds more familiar:
 - `duplo info` displays the version for this duplo installation.
 - `duplo init <user> <repo>` scaffolds a new duplo repo in the current
   directory.
-- `duplo build` builds the project. `DUPLO_ENV` defaults to `dev`.
+- `duplo build` builds the project. `DUPLO_ENV` defaults to `developoment`.
 - `duplo dev`: starts a webserver, watches for file changes, and builds in
   development environment.
 - `duplo test` builds test cases and run it in a browser.

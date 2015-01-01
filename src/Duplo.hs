@@ -83,7 +83,7 @@ main = do
                     -- default.
                     "build" -> maybe "production" id duploEnvMB
                     -- By default, `dev` is the default.
-                    _       -> maybe "dev" id duploEnvMB
+                    _       -> maybe "development" id duploEnvMB
 
   -- Internal command translation
   let (cmdNameTranslated, bumpLevel, duploEnv, toWatch) =
@@ -96,7 +96,7 @@ main = do
           "patch"      -> ("bump", "patch", duploEnv', False)
           "minor"      -> ("bump", "minor", duploEnv', False)
           "major"      -> ("bump", "major", duploEnv', False)
-          "dev"        -> ("build", "", "dev", True)
+          "dev"        -> ("build", "", "development", True)
           "live"       -> ("build", "", "production", True)
           "production" -> ("build", "", "production", True)
           "build"      -> ("build", "", duploEnv', False)
@@ -193,7 +193,7 @@ main = do
                                    }
 
   -- If there is a Makefile, run that as well, with the environment as the
-  -- target (e.g. `duplo dev` would run `make dev` and `duplo build` would
+  -- target (e.g. `duplo dev` would run `make development` and `duplo build` would
   -- run `make production`).
   makefileExists <- doesFileExist $ cwd </> "Makefile"
   if   makefileExists
