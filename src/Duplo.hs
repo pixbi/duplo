@@ -202,7 +202,10 @@ main = do
     -- Start a local server
     _ <- forkIO $ serve port
 
-    let targetDirs = [devPath, appPath, depsPath]
+    -- Only watch the dev and the app directories. We're not watching the
+    -- dependency directory because it triggers a race condition with
+    -- componentjs.
+    let targetDirs = [devPath, appPath]
     -- Make sure we have these directories to watch
     mapM_ (createDirectoryIfMissing True) targetDirs
     -- Watch for file changes

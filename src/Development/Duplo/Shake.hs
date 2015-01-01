@@ -10,7 +10,7 @@ import Development.Duplo.Markups as Markups
 import Development.Duplo.Scripts as Scripts
 import Development.Duplo.Static as Static
 import Development.Duplo.Styles as Styles
-import Development.Duplo.Utilities (logStatus, headerPrintSetter, successPrintSetter)
+import Development.Duplo.Utilities (logStatus, headerPrintSetter, successPrintSetter, createStdEnv)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
 import System.Console.GetOpt (OptDescr(..), ArgDescr(..))
@@ -20,6 +20,7 @@ import qualified Development.Duplo.Types.AppInfo as AI
 import qualified Development.Duplo.Types.Builder as BD
 import qualified Development.Duplo.Types.Config as TC
 import qualified Development.Duplo.Types.Options as OP
+import qualified Development.Shake as DS
 
 shakeOpts = shakeOptions { shakeThreads = 4 }
 
@@ -77,7 +78,9 @@ shakeMain cmdName cmdArgs config options = shake shakeOpts $ do
     "deps" ~> do
       liftIO $ logStatus headerPrintSetter "Installing dependencies"
 
-      command_ [] (utilPath </> "install-deps.sh") []
+      envOpt <- createStdEnv config
+
+      command_ [envOpt] (utilPath </> "install-deps.sh") []
 
     "clean" ~> do
       -- Clean only when the target is there.

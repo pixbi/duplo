@@ -5,10 +5,12 @@ import Control.Monad (filterM)
 import Control.Monad (zipWithM)
 import Control.Monad.Except (ExceptT(..))
 import Control.Monad.Except (runExceptT)
+import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Trans.Class (lift)
 import Data.List (intercalate)
 import Data.List (isSuffixOf)
 import Development.Duplo.Files (readFile, File(..), fileContent)
+import Development.Shake (CmdOption(..))
 import Development.Shake.FilePath ((</>))
 import Prelude hiding (readFile)
 import System.Console.ANSI (setSGR, SGR(..), ConsoleLayer(..), ColorIntensity(..), Color(..))
@@ -100,9 +102,7 @@ compile :: TC.BuildConfig
 compile config compiler params paths preprocess postprocess = do
   mapM (lift . DS.putNormal . ("Including " ++)) paths
 
-  let cwd    = config ^. TC.cwd
-  let util   = config ^. TC.utilPath
-  let nodejs = config ^. TC.nodejsPath
+  let cwd = config ^. TC.cwd
 
   -- Construct files
   files <- mapM (readFile cwd) paths
@@ -121,10 +121,7 @@ compile config compiler params paths preprocess postprocess = do
   postprocessed <- fmap (++ "\n") $ postprocess concatenated
 
   -- Paths should be available as environment variables
-  envOpt <- DS.addEnv [ ("DUPLO_UTIL", util)
-                      , ("DUPLO_NODEJS", nodejs)
-                      , ("DUPLO_CWD", cwd)
-                      ]
+  envOpt <- createStdEnv config
 
   lift $ DS.putNormal $  "Compiling with: "
                       ++ compiler
@@ -205,3 +202,15 @@ logStatus printSetter message = do
   putStr $ "\n>> " ++ message
   setSGR [Reset]
   putStrLn ""
+
+-- | Put together common (i.e. standard) environment variables.
+createStdEnv :: MonadIO m => TC.BuildConfig -> m CmdOption
+createStdEnv config = do
+  let cwd    = config ^. TC.cwd
+  let util   = config ^. TC.utilPath
+  let nodejs = config ^. TC.nodejsPath
+
+  DS.addEnv [ ("DUPLO_UTIL", util)
+            , ("DUPLO_NODEJS", nodejs)
+            , ("DUPLO_CWD", cwd)
+            ]
