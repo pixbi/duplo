@@ -12,7 +12,10 @@ data BuildConfig = BuildConfig { _appName      :: String
                                , _appId        :: String
                                , _cwd          :: String
                                , _duploPath    :: FilePath
+                               -- The "environment" that can be queried at
+                               -- runtime.
                                , _env          :: String
+                               -- Instruct duplo what to build.
                                , _mode         :: String
                                , _dist         :: FilePath
                                , _input        :: String
@@ -29,12 +32,15 @@ data BuildConfig = BuildConfig { _appName      :: String
                                , _bumpLevel    :: String
                                , _port         :: Port
                                , _dependencies :: [String]
+                               -- `dev`, `test`, or otherwise. Only
+                               -- concerns duplo.
+                               , _buildMode    :: String
                                } deriving (Show)
 
 makeLenses ''BuildConfig
 
 isInDev :: BuildConfig -> Bool
-isInDev config = config ^. env == "dev"
+isInDev config = config ^. buildMode == "development"
 
 isInTest :: BuildConfig -> Bool
-isInTest config = config ^. env == "test"
+isInTest config = config ^. buildMode == "test"
