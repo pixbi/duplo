@@ -1,3 +1,6 @@
 #!/usr/bin/env bash
 
-echo "$(cat)" | $DUPLO_UTIL"amd.js" | cat
+# Minimal AMD implementation
+cat $DUPLO_MISC"static/almond.js"
+# User code
+cat
