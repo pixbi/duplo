@@ -17,7 +17,7 @@ If "npm" sounds familiar:
 
 If "cabal" sounds more familiar:
 
-1. `cabal install alex`. This must run globally.
+1. `cabal install alex`. This must be run globally.
 2. `cabal install duplo`. This can be run in a sandbox.
 
 
@@ -196,11 +196,13 @@ project.
 
 Note that duplo only inspects the *top-level* `define()`. If you use
 `require()`, your program may not execute as duplo is not aware of anything
-other `define()` declarations. The proper way to declare an entry point in
+other than `define()` declarations. The proper way to declare an entry point in
 `app/index.js` is:
 
 ```js
-define('main', [/* ... dependencies ... */], function (/* ... dependencies ... */) {
+define('anyNameHere',
+[/* ... dependencies ... */],
+function (/* ... dependencies ... */) {
   // Code here ...
 });
 ```
