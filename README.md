@@ -17,8 +17,11 @@ If "npm" sounds familiar:
 
 If "cabal" sounds more familiar:
 
-1. `cabal install alex`. This must be run globally.
-2. `cabal install duplo`. This can be run in a sandbox.
+```sh
+$ git clone git@github.com:pixbi/duplo.git
+$ cd duplo
+$ cabal install
+```
 
 
 ## Usage
