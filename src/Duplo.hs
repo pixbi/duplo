@@ -17,7 +17,7 @@ import Development.Shake (cmd, ShakeException(..))
 import Development.Shake.FilePath ((</>))
 import GHC.Conc (forkIO)
 import System.Console.GetOpt (getOpt, OptDescr(..), ArgDescr(..), ArgOrder(..))
-import System.Directory (getCurrentDirectory, createDirectoryIfMissing)
+import System.Directory (getCurrentDirectory, createDirectoryIfMissing, doesFileExist)
 import System.Environment (lookupEnv, getArgs, getExecutablePath)
 import System.FilePath.Posix (takeDirectory)
 import System.Process (proc, createProcess, waitForProcess)
@@ -192,26 +192,34 @@ main = do
                                    , TC._dependencies = depIds
                                    }
 
-  -- Construct the Shake command
+  -- If there is a Makefile, run that as well, with the environment as the
+  -- target (e.g. `duplo dev` would run `make dev` and `duplo build` would
+  -- run `make production`).
+  makefileExists <- doesFileExist $ cwd </> "Makefile"
+  if   makefileExists
+  then (createProcess $ proc "make" [duploEnv]) >> return ()
+  else return ()
+
+  -- Construct the Shake command.
   let shake' = shakeMain cmdNameWithFlags cmdArgs buildConfig options
   let shake  = shake' `catch` handleExc
 
-  -- Watch or just build
+  -- Watch or just build.
   unless toWatch $ shake
   when toWatch $ do
-    -- Start a local server
+    -- Start a local server.
     _ <- forkIO $ serve port
 
     -- Only watch the dev and the app directories. We're not watching the
     -- dependency directory because it triggers a race condition with
     -- componentjs.
     let targetDirs = [devPath, appPath]
-    -- Make sure we have these directories to watch
+    -- Make sure we have these directories to watch.
     mapM_ (createDirectoryIfMissing True) targetDirs
-    -- Watch for file changes
+    -- Watch for file changes.
     watch shake targetDirs
 
--- | Handle all errors
+-- | Handle all errors.
 handleExc (e :: ShakeException) = do
     putStr $ show e
     logStatus errorPrintSetter "Build failed"
