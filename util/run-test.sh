@@ -2,6 +2,10 @@
 
 MOCHA_PHANTOMJS=$1/node_modules/.bin/mocha-phantomjs
 BROWSERSTACK=$1/node_modules/.bin/browserstack-runner
+
+JSCOVERAGE=$1/node_modules/.bin/jscoverage
+MOCHA_BROWSER=$1/node_modules/.bin/mocha-browser
+
 RUNNER_PATH=public/index.html
 
 run_headless () {
@@ -16,5 +20,11 @@ run_cross_browsers () {
   fi
 }
 
+gen_coverage () {
+  $JSCOVERAGE public/index.js public/index.js
+  $MOCHA_BROWSER index.html -R html-cov > coverage.html
+  echo "successed, public/coverage generated"
+}
+
 # main process
-run_headless && run_cross_browsers
+run_headless && run_cross_browsers && gen_coverage
