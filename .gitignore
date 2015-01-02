@@ -5,9 +5,10 @@ cabal.sandbox.config
 .cabal-sandbox/
 .shake*
 
+etc/static/almond.js
+
 etc/test/vendor/chai*
 etc/test/vendor/mocha*
 etc/test/vendor/sinon*
 etc/test/vendor/should*
-
 etc/test/browserstack.json
