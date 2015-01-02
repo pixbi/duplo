@@ -21,10 +21,12 @@ run_cross_browsers () {
 }
 
 gen_coverage () {
+  echo "generating coverage page..."
   $JSCOVERAGE public/index.js public/index.js
-  $MOCHA_BROWSER index.html -R html-cov > coverage.html
+  $MOCHA_BROWSER public/index.html -R html-cov > public/coverage.html
   echo "successed, public/coverage generated"
 }
 
 # main process
-run_headless && run_cross_browsers && gen_coverage
+gen_coverage
+run_headless && run_cross_browsers
