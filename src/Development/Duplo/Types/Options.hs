@@ -1,5 +1,3 @@
-{-# LANGUAGE TemplateHaskell #-}
-
 module Development.Duplo.Types.Options where
 
 import System.Console.GetOpt (OptDescr(..), ArgDescr(..))

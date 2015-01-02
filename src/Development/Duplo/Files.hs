@@ -42,7 +42,7 @@ readFile :: FilePath -> FilePath -> ExceptT String Action File
 readFile cwd path = do
   let (fileDir, fileName) = parseFilePath path
   fileContent <- lift $ readFile' path
-  appInfo <- liftIO $ CM.readManifest
+  appInfo <- liftIO CM.readManifest
   let appId' = appId appInfo
   let componentId = parseComponentId cwd appId' fileDir
   let isRoot = componentId == appId'

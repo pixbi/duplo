@@ -7,10 +7,12 @@ import Control.Lens
 import Control.Monad (liftM)
 import Control.Monad.State.Lazy (get, put, state, execState)
 import Control.Monad.Writer.Lazy (Writer, tell, runWriter)
+import Data.Function (on)
 import Data.List (findIndex, sortBy, intersperse, nubBy, reverse)
-import Data.Maybe (isJust, fromJust)
+import Data.Maybe (isJust, fromJust, fromMaybe)
 import Development.Duplo.Types.JavaScript
 import Language.JavaScript.Parser (JSNode(..), Node(..), TokenPosn(..))
+import Control.Applicative ((<$>))
 
 makeLenses ''Module
 
@@ -27,7 +29,7 @@ order node =
     -- written-to nodes are of course the extracted ones.
     (naNodes, aNodes) = runWriter $ extract node
     -- Reorder modules
-    orderedANodes = fmap runModule $ reorder aNodes
+    orderedANodes = _node <$> reorder aNodes
     -- Insert separators
     aNodesWithSep = concat $ fmap (\n -> [n, separator]) orderedANodes
 
@@ -38,9 +40,9 @@ extract node@(NN (JSSourceElementsTop elements)) = mapM extract' elements
 
 extract' :: JSNode -> Writer [Module] JSNode
 -- We are looking for a `define`!
-extract' node@(NN (JSExpression ((NT (JSIdentifier "define") _ _):args:_))) = do
+extract' node@(NN (JSExpression (NT (JSIdentifier "define") _ _:args:_))) = do
   -- Save the module for processing.
-  tell $ [makeModule node args]
+  tell [makeModule node args]
   -- Just return an empty string in place of the module.
   return $ NT (JSIdentifier "") (TokenPn 0 0 0) []
 -- Just pass everything else through.
@@ -74,10 +76,6 @@ stringLiteralNT :: JSNode -> Maybe String
 stringLiteralNT (NT (JSStringLiteral _ string) _ _) = Just string
 stringLiteralNT _ = Nothing
 
--- | Turn a module into a node
-runModule :: Module -> JSNode
-runModule mod = _node mod
-
 -- | Reorder all the applicable modules
 reorder :: [Module] -> [Module]
 reorder mods = nubbed
@@ -89,7 +87,7 @@ reorder mods = nubbed
     -- Sort by score
     sorted = sortBy byDepScore filtered
     -- Deduplicate, keeping the higher score ones
-    nubbed = reverse $ nubBy (\x y -> _name x == _name y) $ reverse sorted
+    nubbed = reverse $ nubBy ((==) `on` _name) $ reverse sorted
 
 withScore :: Module -> Bool
 withScore mod = case _score mod of
@@ -112,7 +110,7 @@ computeScores = do
 getDepScore :: [ModuleName] -> ModuleName -> OrderedModules DepScore
 getDepScore history modName = do
     -- We go nuclear when there's circular dependency.
-    let history' = (modName:history)
+    let history' = modName : history
              -- If it's in the recorded modules
     let !_ = if   modName `elem` history
              -- Display the duplicate module
@@ -123,9 +121,7 @@ getDepScore history modName = do
     mods <- get
     -- Assume module exist, as it should at this point.
     let maybeIndex = findIndex ((modName ==) . _name) mods
-    let index = case maybeIndex of
-                  Just i  -> i
-                  Nothing -> throw $ ModuleNotFoundException modName
+    let index = fromMaybe (throw $ ModuleNotFoundException modName) maybeIndex
     -- Get the actual module.
     let mod = fromJust $ mods ^? ix index
     -- The dependency list
@@ -133,13 +129,13 @@ getDepScore history modName = do
     -- If there is a score, use it; otherwise, obviously go get it.
     depScore <- case _score mod of
                   -- Re-wrap with the score as the result.
-                  Just score -> state $ \_ -> (score, mods)
+                  Just score -> state $ const (score, mods)
                   -- Go through the dependencies' individual scores.
                   Nothing -> getDepScore' history' modDeps
     -- Update the score.
-    let newMod = mod & score .~ (Just depScore)
+    let newMod = mod & score .~ Just depScore
     -- TODO: somehow can't get Lens to work. Doing the old fashion way.
-    let newMods = (take index mods) ++ [newMod] ++ (drop (index + 1) mods)
+    let newMods = take index mods ++ [newMod] ++ drop (index + 1) mods
     put newMods
     -- Return the score.
     return depScore

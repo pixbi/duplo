@@ -21,16 +21,17 @@ import System.Directory (findFile)
 build :: TC.BuildConfig
       -> FilePath
       -> CompiledContent ()
-build config = \ out -> do
+build config out = do
   liftIO $ logStatus headerPrintSetter "Building markups"
   -- TODO: using Jade's include system means that all files are loaded by
   -- the Jade compiler and Shake has no visibility into file state. We
   -- cannot cache anything that is Jade. Perhaps we could compile the Jade
   -- ourselves?
-  lift $ alwaysRerun
+  lift alwaysRerun
 
   let cwd           = config ^. TC.cwd
   let env           = config ^. TC.env
+  let buildMode   = config ^. TC.buildMode
   let utilPath      = config ^. TC.utilPath
   let devPath       = config ^. TC.devPath
   let appPath       = config ^. TC.appPath
@@ -51,11 +52,11 @@ build config = \ out -> do
   -- Expand all paths
   let depExpander id = [ "components" </> id </> "app/modules/index" ]
   let expanded       = expandDeps depIds depExpander
-  let allPaths       = [ "app/modules/index" ] ++ expanded
-  let absPaths       = case env of
-                         "dev"  -> [ devCodePath ]
-                         "test" -> [ targetPath </> "vendor/mocha" ]
-                         _      -> []
+  let allPaths       = "app/modules/index" : expanded
+  let absPaths       = case buildMode of
+                         "developmoent" -> [ devCodePath ]
+                         "test"         -> [ targetPath </> "vendor/mocha" ]
+                         _              -> []
                        ++ map (cwd </>) allPaths
 
   -- Merge both types of paths
@@ -66,7 +67,7 @@ build config = \ out -> do
   let preCompile files = return $ fmap (rewriteIncludes cwd files) files
 
   -- Compile content
-  compiled <- compile config compiler [] paths preCompile (return . id)
+  compiled <- compile config compiler [] paths preCompile return
 
   -- Pull index page from either dev, assets, or default otherwise, in that
   -- order.
@@ -76,7 +77,7 @@ build config = \ out -> do
   Just indexFile <- liftIO $ findFile possibleSources "index.jade"
 
   -- Compile the index file
-  compiledIndex <- compile config compiler [] [indexFile] preCompile (return . id)
+  compiledIndex <- compile config compiler [] [indexFile] preCompile return
 
   -- Inject compiled code into the index
   let indexWithMarkup = replace "<body>" ("<body>" ++ compiled) compiledIndex
@@ -95,7 +96,7 @@ build config = \ out -> do
   let minifier = utilPath </> "markups-minify.sh"
   -- Minify it
   let postMinify _ = return indexWithRefs
-  minified <- compile config minifier [] paths (return . id) postMinify
+  minified <- compile config minifier [] paths return postMinify
 
   -- Write it to disk
   lift $ writeFileChanged out minified
@@ -147,13 +148,13 @@ rewriteInclude defaultId line =
           -- We need to figure out which component's name to use to prefix
           -- the include path. Also get the path prefix in case we're using
           -- the default ID.
-          (compName, relPathBase) = case (parseComponentId prefix) of
+          (compName, relPathBase) = case parseComponentId prefix of
                                       -- There is a component ID.
                                       Right (user, repo) -> (prefix, "")
                                       -- Use default component ID
                                       -- otherwise.
                                       Left _ -> (defaultId, prefix)
-          resolvedPath = if   length compName > 0
+          resolvedPath = if   not (null compName)
                          -- It's referring to a file inside a component.
                          then "components" </> compName </> "app/modules" </>
                               relPathBase </> joinPath relPath

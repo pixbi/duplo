@@ -7,6 +7,7 @@ import Control.Exception (throw, SomeException(..))
 import Control.Lens hiding (Action)
 import Control.Monad (filterM)
 import Control.Monad.Trans.Class (lift)
+import Data.Function (on)
 import Data.List (intercalate, nubBy)
 import Data.Text.Lazy (Text, pack, unpack, replace, splitOn)
 import Development.Duplo.Component (extractCompVersions)
@@ -34,12 +35,13 @@ build :: TC.BuildConfig
       -> FilePath
       -- Doesn't need anything in return
       -> CompiledContent ()
-build config = \ out -> do
+build config out = do
   liftIO $ logStatus headerPrintSetter "Building scripts"
 
   let cwd         = config ^. TC.cwd
   let util        = config ^. TC.utilPath
   let env         = config ^. TC.env
+  let buildMode   = config ^. TC.buildMode
   let input       = config ^. TC.input
   let devPath     = config ^. TC.devPath
   let depsPath    = config ^. TC.depsPath
@@ -52,19 +54,19 @@ build config = \ out -> do
   lift $ createIntermediaryDirectories devCodePath
 
   -- These paths don't need to be expanded.
-  let staticPaths = case env of
-                      "dev"  -> [ "dev/index" ]
-                      "test" -> [ "test/index" ]
-                      _      -> []
+  let staticPaths = case buildMode of
+                      "development" -> [ "dev/index" ]
+                      "test"        -> [ "test/index" ]
+                      _             -> []
                     ++ [ "app/index" ]
 
   -- These paths need to be expanded by Shake.
   let depsToExpand id = [ "components/" ++ id ++ "/app/modules" ]
   -- Compile dev files in dev mode as well, taking precendence.
-  let dynamicPaths = case env of
-                       "dev"  -> [ "dev/modules" ]
-                       "test" -> [ "test/modules" ]
-                       _      -> []
+  let dynamicPaths = case buildMode of
+                       "development" -> [ "dev/modules" ]
+                       "test"        -> [ "test/modules" ]
+                       _             -> []
                      -- Then normal scripts
                      ++ [ "app/modules" ]
                      -- Build list only for dependencies.
@@ -74,7 +76,7 @@ build config = \ out -> do
   paths <- lift $ expandPaths cwd ".js" staticPaths dynamicPaths
 
   -- Make sure we hvae at least something
-  let duploIn = if length input > 0 then input else ""
+  let duploIn = if not (null input) then input else ""
 
   -- Figure out each component's version
   compVers <- liftIO $ extractCompVersions cwd
@@ -87,9 +89,9 @@ build config = \ out -> do
              ++ "var DUPLO_VERSIONS = " ++ compVers ++ ";\n"
 
   -- Configure the compiler
-  let compiler = if   inDev || inTest
-                 then util </> "scripts-dev.sh"
-                 else util </> "scripts-optimize.sh"
+  let compiler = (util </>) $ if   inDev || inTest
+                              then "scripts-dev.sh"
+                              else "scripts-optimize.sh"
 
   -- Create a pseudo file that contains the environment variables and
   -- prepend the file.
@@ -126,19 +128,19 @@ handleParseError content e = exception
               $ lineNum - errorDisplayRange `div` 2
     showBadLine' = showBadLine linedContent lineNum
     -- Keep the line number in the possible domain.
-    keepInRange = (max 0) . (min lineCount)
+    keepInRange = max 0 . min lineCount
     badLines = fmap (showBadLine' . keepInRange) lineRange
     -- Make sure we de-duplicate the lines.
-    dedupe = nubBy $ \x y -> fst x == fst y
+    dedupe = nubBy ((==) `on` fst)
     -- Extract just the lines for display.
     badLinesDeduped = map snd $ dedupe badLines
     -- Construct the exception.
-    exception = throw $
+    exception = throw
       ShakeException { shakeExceptionTarget = ""
                      , shakeExceptionStack  = []
                      , shakeExceptionInner  = SomeException
                                             $ ParseException
-                                            $ badLinesDeduped
+                                              badLinesDeduped
                      }
 
 -- | Given a file's lines, its line number, and the "target" line number

@@ -1,10 +1,10 @@
-{-# LANGUAGE TemplateHaskell, TupleSections #-}
+{-# LANGUAGE TupleSections #-}
 
 module Development.Duplo.Component where
 
 import Control.Applicative ((<$>), (<*>))
 import Control.Exception (throw)
-import Control.Monad (when)
+import Control.Monad (when, liftM)
 import Control.Monad.Trans.Class (lift)
 import Data.Aeson (encode, decode)
 import Data.Aeson.Encode.Pretty (encodePretty)
@@ -12,18 +12,16 @@ import Data.ByteString.Lazy.Char8 (ByteString)
 import Data.HashMap.Lazy (empty, keys, lookup)
 import Data.List (isPrefixOf)
 import Data.Map (fromList)
-import Data.Maybe (fromJust)
+import Data.Maybe (fromJust, fromMaybe)
 import Data.Text (breakOn)
 import Development.Duplo.Types.AppInfo (AppInfo(..))
 import Development.Shake hiding (doesFileExist, getDirectoryContents, doesDirectoryExist)
 import Development.Shake.FilePath ((</>))
 import Prelude hiding (lookup)
-import System.Directory (doesFileExist, doesDirectoryExist)
-import System.Directory (getDirectoryContents, getCurrentDirectory)
+import System.Directory (doesFileExist, doesDirectoryExist, getDirectoryContents, getCurrentDirectory)
 import System.FilePath.FilePather.RecursePredicate (recursePredicate)
 import System.FilePath.FilePather.FilterPredicate (filterPredicate)
 import System.FilePath.FilePather.Find (findp)
-import System.FilePath.FilePather.RecursePredicate (recursePredicate)
 import System.FilePath.Posix (makeRelative, dropExtension, splitDirectories, equalFilePath, takeFileName, dropTrailingPathSeparator)
 import qualified Data.ByteString.Lazy.Char8 as BS (unpack, pack)
 import qualified Data.Text as T (unpack, pack)
@@ -53,7 +51,7 @@ readManifest' path = do
       Just a  -> return a
 
 writeManifest :: AppInfo -> IO ()
-writeManifest = (writeFile manifestName) . BS.unpack . encodePretty
+writeManifest = writeFile manifestName . BS.unpack . encodePretty
 
 -- | Get the app's Component.IO ID
 appId :: AppInfo -> String
@@ -68,7 +66,7 @@ parseRepoInfo _ = ""
 -- constituents
 parseComponentId :: String -> Either String (String, String)
 parseComponentId cId
-  | repoL > 0 = Right ((T.unpack user), (T.unpack repo))
+  | repoL > 0 = Right (T.unpack user, T.unpack repo)
   | otherwise = Left $ "No component ID found with " ++ cId
   where
     (user, repo) = breakOn (T.pack "-") (T.pack cId)
@@ -80,9 +78,8 @@ extractCompVersions path = do
     -- Get all the relevant paths
     paths <- getAllManifestPaths path
     -- Construct the pipeline
-    let takeVersion path =
-          readFile path >>=
-          return . appInfoToVersion . (decodeManifest path) . BS.pack
+    let toVersion path = appInfoToVersion . decodeManifest path . BS.pack
+    let takeVersion path = liftM (toVersion path) (readFile path)
     -- Go through it
     manifests <- mapM takeVersion paths
     -- Marshalling
@@ -91,13 +88,13 @@ extractCompVersions path = do
 -- | Given a path and the file content that the path points to, return the
 -- manifest in `AppInfo` form.
 decodeManifest :: FilePath -> ByteString -> AppInfo
-decodeManifest path content =
-  case (decode content :: Maybe AppInfo) of
-    Just manifest -> manifest
-    Nothing -> throw $ BD.MalformedManifestException path
+decodeManifest path content = fromMaybe whenNothing decodedContent
+  where
+    whenNothing = throw $ BD.MalformedManifestException path
+    decodedContent = decode content :: Maybe AppInfo
 
 appInfoToVersion :: AppInfo -> Version
-appInfoToVersion appInfo = ((AI.name appInfo), (AI.version appInfo))
+appInfoToVersion appInfo = (AI.name appInfo, AI.version appInfo)
 
 -- | Given a path, find all the `component.json`s
 getAllManifestPaths :: FilePath -> IO [FilePath]
@@ -125,8 +122,8 @@ getDependencies Nothing = do
 
     filterRegular $
       if   depDirExists
-      then (getDirectoryContents depDir)
-      else (return [])
+      then getDirectoryContents depDir
+      else return []
 -- | Only select the named dependencies.
 getDependencies (Just mode) = do
     fullDeps <- fmap AI.dependencies readManifest
@@ -145,4 +142,4 @@ getDependencies' deps (Just modeDeps) = return modeDeps
 
 -- | Regular file != *nix-style hidden file
 isRegularFile :: FilePath -> Bool
-isRegularFile = not . (isPrefixOf ".")
+isRegularFile = not . isPrefixOf "."

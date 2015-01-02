@@ -1,5 +1,6 @@
 module Development.Duplo.Static where
 
+import Control.Applicative ((<$>))
 import Control.Lens hiding (Action)
 import Control.Monad (zipWithM_, filterM)
 import Data.List (transpose, nub)
@@ -14,7 +15,7 @@ import qualified Development.Duplo.Types.Config as TC
 build :: TC.BuildConfig
       -> [FilePath]
       -> Action ()
-build config = \ outs -> do
+build config outs = do
   let targetPath    = config ^. TC.targetPath
   let assetsPath    = config ^. TC.assetsPath
   let depsPath      = config ^. TC.depsPath
@@ -51,9 +52,9 @@ build config = \ outs -> do
   cleanedFiles <- collapseFileLists possibleFiles
 
   -- Path to output index
-  let targetIndex    = targetPath </> "index.html"
+  let targetIndex = targetPath </> "index.html"
   -- Is it index in the target output directory?
-  let isTargetIndex  = \ file -> targetIndex /= file ^. FileList.filePath
+  let isTargetIndex file = targetIndex /= file ^. FileList.filePath
   -- Ignore index as it's handling by the markup action
   let filesLessIndex = filter isTargetIndex cleanedFiles
 
@@ -145,4 +146,4 @@ getDepAssets depsPath = do
                   ]
 
     -- Return the flatten version of all asset files
-    fmap concat $ sequence assets
+    concat <$> sequence assets

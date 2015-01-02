@@ -1,4 +1,4 @@
-{-# LANGUAGE TemplateHaskell, DeriveGeneric #-}
+{-# LANGUAGE DeriveGeneric #-}
 
 module Development.Duplo.Types.AppInfo where
 

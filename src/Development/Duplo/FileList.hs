@@ -52,9 +52,7 @@ collapseFile file = do
     let path = file ^. filePath
     doesExist <- doesFileExist path
 
-    if   doesExist
-    then return $ Just file
-    else return Nothing
+    return $ if doesExist then Just file else Nothing
 
 -- | Given an output path and a list of file objects, convert all files
 -- objects to copy pairs. See `toCopy` for more information.

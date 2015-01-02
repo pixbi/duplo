@@ -20,10 +20,10 @@ serve port = do
     scotty port serve'
 
 serve' :: ScottyM ()
-serve' = do
+serve' =
     -- Always match because we're checking for files, not routes
     notFound $ do
-      path <- fmap ((intercalate "/") . (fmap T.unpack) . pathInfo) request
+      path <- fmap (intercalate "/" . fmap T.unpack . pathInfo) request
       -- Setting root
       let path' = "public/" ++ path
       exists <- liftIO $ doesFileExist path'

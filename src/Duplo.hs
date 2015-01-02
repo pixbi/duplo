@@ -35,11 +35,11 @@ main = do
   args <- getArgs
 
   let (cmdName:cmdArgs) =
-        if   (length args > 0)
+        if   not (null args)
         -- Normal case (with command name)
         then args
         -- Edge cases (with nothing provided)
-        else ("":[])
+        else [""]
 
   -- Deal with options
   let (actions, nonOptions, errors) = getOpt Permute OP.options args
@@ -60,7 +60,7 @@ main = do
   duploPath  <- fmap ((</> "../../../") . takeDirectory) getExecutablePath
 
   -- Base64 decode
-  let duploInDecoded = case (decode $ pack $ duploIn) of
+  let duploInDecoded = case decode $ pack duploIn of
                          Left _      -> ""
                          Right input -> unpack input
 
@@ -81,30 +81,30 @@ main = do
   let duploEnv = case cmdName of
                     -- `build` is a special case. It takes `production` as the
                     -- default.
-                    "build" -> maybe "production" id duploEnvMB
+                    "build" -> fromMaybe "production" duploEnvMB
                     -- By default, `dev` is the default.
-                    _       -> maybe "development" id duploEnvMB
+                    _       -> fromMaybe "development" duploEnvMB
 
   -- Internal command translation
   let (cmdNameTranslated, bumpLevel, buildMode, toWatch) =
         case cmdName of
-          "info"       -> ( "version" , ""      , duploEnv     , False )
-          "ver"        -> ( "version" , ""      , duploEnv     , False )
-          "new"        -> ( "init"    , ""      , duploEnv     , False )
-          "bump"       -> ( "bump"    , "patch" , duploEnv     , False )
-          "release"    -> ( "bump"    , "patch" , duploEnv     , False )
-          "patch"      -> ( "bump"    , "patch" , duploEnv     , False )
-          "minor"      -> ( "bump"    , "minor" , duploEnv     , False )
-          "major"      -> ( "bump"    , "major" , duploEnv     , False )
+          "info"       -> ( "version" , ""      , duploEnv      , False )
+          "ver"        -> ( "version" , ""      , duploEnv      , False )
+          "new"        -> ( "init"    , ""      , duploEnv      , False )
+          "bump"       -> ( "bump"    , "patch" , duploEnv      , False )
+          "release"    -> ( "bump"    , "patch" , duploEnv      , False )
+          "patch"      -> ( "bump"    , "patch" , duploEnv      , False )
+          "minor"      -> ( "bump"    , "minor" , duploEnv      , False )
+          "major"      -> ( "bump"    , "major" , duploEnv      , False )
           "dev"        -> ( "build"   , ""      , "development" , True  )
           "live"       -> ( "build"   , ""      , "production"  , True  )
           "production" -> ( "build"   , ""      , "production"  , True  )
-          "build"      -> ( "build"   , ""      , duploEnv     , False )
+          "build"      -> ( "build"   , ""      , duploEnv      , False )
           "test"       -> ( "build"   , ""      , "test"        , False )
-          _            -> ( cmdName   , ""      , duploEnv     , False )
+          _            -> ( cmdName   , ""      , duploEnv      , False )
 
   -- Certain flags turn into commands.
-  let cmdNameWithFlags = if   (OP.optVersion options)
+  let cmdNameWithFlags = if   OP.optVersion options
                          then "version"
                          else cmdNameTranslated
 
@@ -197,16 +197,14 @@ main = do
   -- target (e.g. `duplo dev` would run `make development` and `duplo build` would
   -- run `make production`).
   makefileExists <- doesFileExist $ cwd </> "Makefile"
-  if   makefileExists
-  then (createProcess $ proc "make" [duploEnv]) >> return ()
-  else return ()
+  when makefileExists $ void $ createProcess $ proc "make" [duploEnv]
 
   -- Construct the Shake command.
   let shake' = shakeMain cmdNameWithFlags cmdArgs buildConfig options
   let shake  = shake' `catch` handleExc
 
   -- Watch or just build.
-  unless toWatch $ shake
+  unless toWatch shake
   when toWatch $ do
     -- Start a local server.
     _ <- forkIO $ serve port

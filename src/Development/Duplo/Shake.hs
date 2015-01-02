@@ -2,8 +2,7 @@ module Development.Duplo.Shake where
 
 import Control.Exception (throw)
 import Control.Lens hiding (Action)
-import Control.Monad (void)
-import Control.Monad (when)
+import Control.Monad (void, when, unless)
 import Control.Monad.Except (runExceptT)
 import Development.Duplo.Git as Git
 import Development.Duplo.Markups as Markups
@@ -26,8 +25,8 @@ shakeOpts = shakeOptions { shakeThreads = 4 }
 
 shakeMain :: String -> [String] -> TC.BuildConfig -> OP.Options -> IO ()
 shakeMain cmdName cmdArgs config options = shake shakeOpts $ do
-    let headerPrinter  = liftIO . (logStatus headerPrintSetter)
-    let successPrinter = liftIO . (logStatus successPrintSetter)
+    let headerPrinter  = liftIO . logStatus headerPrintSetter
+    let successPrinter = liftIO . logStatus successPrintSetter
 
     let port       = config ^. TC.port
     let cwd        = config ^. TC.cwd
@@ -62,7 +61,7 @@ shakeMain cmdName cmdArgs config options = shake shakeOpts $ do
                     ]
 
       -- Default to help
-      let cmdName' = if (cmdName `elem` actions) then cmdName else "help"
+      let cmdName' = if cmdName `elem` actions then cmdName else "help"
       -- Call command
       need [cmdName']
 
@@ -70,7 +69,7 @@ shakeMain cmdName cmdArgs config options = shake shakeOpts $ do
       putNormal ""
 
     -- Handling static assets
-    (Static.qualify config) &?> Static.build config
+    Static.qualify config &?> Static.build config
 
     "static" ~> Static.deps config
 
@@ -85,17 +84,13 @@ shakeMain cmdName cmdArgs config options = shake shakeOpts $ do
     "clean" ~> do
       -- Clean only when the target is there.
       needCleaning <- doesDirectoryExist targetPath
-      if   needCleaning
-      then liftIO $ removeFiles targetPath ["//*"]
-      else return ()
+      when needCleaning $ liftIO $ removeFiles targetPath ["//*"]
 
       successPrinter "Clean completed"
 
     "build" ~> do
       -- Always rebuild if we're building for production.
-      if   TC.isInDev config
-      then return ()
-      else need ["clean"]
+      unless (TC.isInDev config) $ need ["clean"]
 
       -- Make sure all static files and dependencies are there.
       need ["static", "deps"]
@@ -104,9 +99,7 @@ shakeMain cmdName cmdArgs config options = shake shakeOpts $ do
 
       successPrinter "Build completed"
 
-      if   TC.isInTest config
-      then need ["test"]
-      else return ()
+      when (TC.isInTest config) $ need ["test"]
 
     "bump" ~> do
       (oldVersion, newVersion) <- Git.commit config bumpLevel
@@ -121,8 +114,8 @@ shakeMain cmdName cmdArgs config options = shake shakeOpts $ do
       let dest = cwd ++ "/"
 
       -- Check prerequisites
-      when (length user == 0) $ throw BD.MissingGithubUserException
-      when (length repo == 0) $ throw BD.MissingGithubRepoException
+      when (null user) $ throw BD.MissingGithubUserException
+      when (null repo) $ throw BD.MissingGithubRepoException
 
       headerPrinter $ "Creating new duplo project " ++ name
 
@@ -149,4 +142,4 @@ shakeMain cmdName cmdArgs config options = shake shakeOpts $ do
     -- Version should have already been displayed if requested
     "version" ~> return ()
 
-    "help" ~> liftIO ((readFile $ miscPath </> "help.txt") >>= putStr)
+    "help" ~> liftIO (readFile (miscPath </> "help.txt") >>= putStr)

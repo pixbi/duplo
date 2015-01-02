@@ -58,7 +58,7 @@ incrementVersion :: Version
 incrementVersion level version =
     intercalate "." $ incrementSubversion expanded index
   where
-    expanded = fmap unpack $ splitOn (pack ".") (pack version)
+    expanded = unpack <$> splitOn (pack ".") (pack version)
     index    = case level of
                  "major" -> 0
                  "minor" -> 1
@@ -69,12 +69,12 @@ incrementSubversion :: [Subversion] -> Int -> [Subversion]
 incrementSubversion version index =
     resetVer
   where
-    oldPart  = version ^. (element index)
+    oldPart  = version ^. element index
     oldPart' = read oldPart :: Int
     newPart  = oldPart' + 1
     newPart' = show newPart :: String
     -- Increment target subversion
-    incrVer  = version & (element index) .~ newPart'
+    incrVer  = version & element index .~ newPart'
     -- Reset other
     resetVer = resetSubversion incrVer (index + 1) versionLength
 
@@ -83,7 +83,7 @@ incrementSubversion version index =
 resetSubversion :: [Subversion] -> Int -> Int -> [Subversion]
 resetSubversion version index max
   | index <= max = let newVersion = resetSubversion version (index + 1) max
-                   in  newVersion & (element index) .~ "0"
+                   in  newVersion & element index .~ "0"
   | otherwise    = version
 
 updateVersion :: AI.AppInfo -> Version -> AI.AppInfo
@@ -100,11 +100,11 @@ updateFileRegistry config appInfo = do
     let fontPath = assetPath </> "fonts"
 
     -- Helper functions
-    let find = \path pttrn -> command [] (utilPath </> "find.sh") [path, pttrn]
-    let split = (fmap unpack) . (splitOn "\n") . pack
+    let find path pttrn = command [] (utilPath </> "find.sh") [path, pttrn]
+    let split = fmap unpack . splitOn "\n" . pack
     let makeRelative' = makeRelative cwd
     let filterNames = filter ((> 0) . length)
-    let prepareFileList = filterNames . (fmap $ makeRelative cwd) . split
+    let prepareFileList = filterNames . fmap (makeRelative cwd) . split
 
     -- Collect eligible files
     Stdout scripts <- find appPath "*.js"

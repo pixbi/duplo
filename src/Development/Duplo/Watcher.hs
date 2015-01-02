@@ -5,6 +5,7 @@ import Control.Concurrent.Chan (Chan, newChan, readChan, getChanContents)
 import Control.Exception (try)
 import Control.Monad (forever, void, when, unless)
 import Data.IORef (newIORef, readIORef, writeIORef, IORef)
+import Data.Foldable (forM_)
 import Data.Maybe (isJust, fromJust)
 import Data.String (fromString)
 import System.FSNotify (withManagerConf, watchTreeChan, WatchConfig(..), Debounce(..), Action, Event)
@@ -40,7 +41,7 @@ watch onChange paths = do
 
     -- Make sure we handle the event with a channel to avoid race
     -- condition.
-    forkIO $ chanStream >>= (mapM_ $ handleEvent' . Just)
+    forkIO $ chanStream >>= mapM_ (handleEvent' . Just)
 
     -- Start watching
     withManagerConf watchConfig $ \manager -> do
@@ -62,7 +63,7 @@ handleEvent :: IORef (Maybe ThreadId) -> IO ThreadId -> Maybe Event -> IO ()
 handleEvent tidVar handler _ = do
     tid <- readIORef tidVar
     -- Kill existing thread
-    when (isJust tid) $ killThread $ fromJust tid
+    forM_ tid killThread
 
     -- Perform action
     newTid <- handler

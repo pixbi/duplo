@@ -1,14 +1,12 @@
 module Development.Duplo.Utilities where
 
+import Control.Applicative ((<$>))
 import Control.Lens.Operators
-import Control.Monad (filterM)
-import Control.Monad (zipWithM)
-import Control.Monad.Except (ExceptT(..))
-import Control.Monad.Except (runExceptT)
+import Control.Monad (filterM, zipWithM)
+import Control.Monad.Except (ExceptT(..), runExceptT)
 import Control.Monad.IO.Class (MonadIO)
 import Control.Monad.Trans.Class (lift)
-import Data.List (intercalate)
-import Data.List (isSuffixOf)
+import Data.List (intercalate, isSuffixOf)
 import Development.Duplo.Files (readFile, File(..), fileContent)
 import Development.Shake (CmdOption(..))
 import Development.Shake.FilePath ((</>))
@@ -36,7 +34,7 @@ makeValidPattern :: FilePath -> String -> DS.Action [FilePath]
 makeValidPattern base extension = do
     exists <- DS.doesDirectoryExist base
     let ptrn = makePattern base extension
-    return $ if exists then [ptrn] else []
+    return [ ptrn | exists ]
 
 -- | Splice a list of base directories and their corresponding extensions
 -- for a list of file patterns.
@@ -57,7 +55,7 @@ getDirectoryFilesInOrder base extension patterns = do
     -- We need to terminate the infinite list.
     let listSize = length patterns
     -- Make extension a list of itself.
-    let exts = take listSize $ repeat extension
+    let exts = replicate listSize extension
     -- Turn file patterns into absolute patterns.
     let absPatterns = fmap (base </>) patterns
     -- Make sure we get all valid file patterns for dynamic paths.
@@ -100,7 +98,7 @@ compile :: TC.BuildConfig
         -- The compiled content
         -> CompiledContent String
 compile config compiler params paths preprocess postprocess = do
-  mapM (lift . DS.putNormal . ("Including " ++)) paths
+  mapM_ (lift . DS.putNormal . ("Including " ++)) paths
 
   let cwd = config ^. TC.cwd
 
@@ -114,11 +112,11 @@ compile config compiler params paths preprocess postprocess = do
   let contents = fmap (^. fileContent) processed
 
   -- Trailing newline is significant in case of empty Stylus
-  let concatenated = (intercalate "\n" contents) ++ "\n"
+  let concatenated = intercalate "\n" contents ++ "\n"
 
   -- Send string over to post-processor in case of any manipulation before
   -- handing off to the compiler. Add trailing newline for hygiene.
-  postprocessed <- fmap (++ "\n") $ postprocess concatenated
+  postprocessed <- (++ "\n") <$> postprocess concatenated
 
   -- Paths should be available as environment variables
   envOpt <- createStdEnv config
@@ -126,7 +124,7 @@ compile config compiler params paths preprocess postprocess = do
   lift $ DS.putNormal $  "Compiling with: "
                       ++ compiler
                       ++ " "
-                      ++ intercalate " " params
+                      ++ unwords params
   -- Pass it through the compiler
   DS.Stdout compiled <-
     lift $ DS.command [DS.Stdin postprocessed, envOpt] compiler params
@@ -148,8 +146,8 @@ expandPaths cwd extension staticPaths dynamicPaths = do
 -- there.
 createPathDirectories :: [FilePath] -> DS.Action ()
 createPathDirectories paths = do
-  let mkdir = \ dir -> DS.command_ [] "mkdir" ["-p", dir]
-  existing <- filterM ((fmap not) . DS.doesDirectoryExist) paths
+  let mkdir dir = DS.command_ [] "mkdir" ["-p", dir]
+  existing <- filterM (fmap not . DS.doesDirectoryExist) paths
   mapM_ mkdir existing
 
 -- | Create all the directories within a path if they do not exist. Note
@@ -164,7 +162,7 @@ createIntermediaryDirectories path =
 -- | Return a list of dynamic paths given a list of dependency ID and
 -- a function to expand one ID into a list of paths.
 expandDeps :: [String] -> (String -> [FilePath]) -> [FilePath]
-expandDeps deps expander = concat $ (fmap expander deps)
+expandDeps deps expander = concat $ fmap expander deps
 
 -- | Shake hangs when the path given to `getDirectoryFiles` doesn't exist.
 -- This is a safe version of that.
@@ -177,23 +175,19 @@ getDirectoryFiles base patterns = do
 
 -- | Error printer: white text over red background.
 errorPrintSetter :: IO ()
-errorPrintSetter = do
-    setSGR [ SetColor Background Vivid Red
-           , SetColor Foreground Vivid White
-           ]
+errorPrintSetter = setSGR [ SetColor Background Vivid Red
+                          , SetColor Foreground Vivid White
+                          ]
 
 -- | Header printer: blue text
 headerPrintSetter :: IO ()
-headerPrintSetter = do
-    setSGR [ SetColor Foreground Vivid Magenta
-           ]
+headerPrintSetter = setSGR [ SetColor Foreground Vivid Magenta ]
 
 -- | Success printer: white text over green background
 successPrintSetter :: IO ()
-successPrintSetter = do
-    setSGR [ SetColor Background Vivid Green
-           , SetColor Foreground Vivid White
-           ]
+successPrintSetter = setSGR [ SetColor Background Vivid Green
+                            , SetColor Foreground Vivid White
+                            ]
 
 -- | Log a message with a provided print configuration setter.
 logStatus :: IO () -> String -> IO ()

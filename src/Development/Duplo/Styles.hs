@@ -10,7 +10,7 @@ import qualified Development.Duplo.Types.Config as TC
 build :: TC.BuildConfig
       -> FilePath
       -> CompiledContent ()
-build config = \ out -> do
+build config out = do
   liftIO $ logStatus headerPrintSetter "Building styles"
 
   let cwd         = config ^. TC.cwd
@@ -36,14 +36,14 @@ build config = \ out -> do
                     , "app/styl/reset"
                     , "app/styl/main"
                     ]
-                 ++ (expandDeps' expandDepsStatic)
+                 ++ expandDeps' expandDepsStatic
 
   -- These paths need to be expanded by Shake
   let expandDepsDynamic id = [ "components/" ++ id ++ "/app/modules" ]
   let dynamicPaths = [ "app/modules" ]
-                  ++ (expandDeps' expandDepsDynamic)
+                  ++ expandDeps' expandDepsDynamic
                   -- Compile dev files in dev mode as well.
-                  ++ if TC.isInDev config then ["dev/modules"] else []
+                  ++ [ "dev/modules" | TC.isInDev config ]
 
   -- Merge both types of paths
   paths <- lift $ expandPaths cwd ".styl" staticPaths dynamicPaths
@@ -52,7 +52,7 @@ build config = \ out -> do
   let compiler = utilPath </> "styles.sh"
 
   -- Compile it
-  compiled <- compile config compiler [] paths (return . id) (return . id)
+  compiled <- compile config compiler [] paths return return
 
   -- Write it to disk
   lift $ writeFileChanged out compiled
