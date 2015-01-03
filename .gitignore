@@ -1,9 +1,9 @@
-*.log
-node_modules/
-dist/
-cabal.sandbox.config
-.cabal-sandbox/
+.cabal*
 .shake*
+dist/
+node_modules/
+
+*.log
 
 etc/test/vendor/chai*
 etc/test/vendor/mocha*
