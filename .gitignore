@@ -1,9 +1,17 @@
+*.log
+*.sw*
+.AppleDouble
+.DS_Store
+.LSOverride
+.Spotlight-V100
+.Trashes
+._*
+Icon
+
 .cabal*
 .shake*
 dist/
 node_modules/
-
-*.log
 
 etc/test/vendor/chai*
 etc/test/vendor/mocha*

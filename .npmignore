@@ -1,5 +1,14 @@
 !dist/build/
+*.log
+*.sw*
 .*
+.AppleDouble
+.DS_Store
+.LSOverride
+.Spotlight-V100
+.Trashes
+._*
+Icon
 Setup.hs
 dist/
 duplo.cabal
