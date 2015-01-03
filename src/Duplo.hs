@@ -30,6 +30,7 @@ import qualified Development.Duplo.Types.Options as OP
 import qualified Filesystem.Path
 import qualified GHC.IO
 
+main :: IO ()
 main = do
   -- Command-line arguments
   args <- getArgs
@@ -83,7 +84,7 @@ main = do
                     -- default.
                     "build" -> fromMaybe "production" duploEnvMB
                     -- By default, `dev` is the default.
-                    _       -> fromMaybe "development" duploEnvMB
+                    _ -> fromMaybe "development" duploEnvMB
 
   -- Internal command translation
   let (cmdNameTranslated, bumpLevel, buildMode, toWatch) =
@@ -131,9 +132,9 @@ main = do
   let ignoreManifestError io = catch io ignoreManifestError'
 
   -- Gather information about this project
-  appName    <- ignoreManifestError $ fmap AI.name CM.readManifest
+  appName <- ignoreManifestError $ fmap AI.name CM.readManifest
   appVersion <- ignoreManifestError $ fmap AI.version CM.readManifest
-  appId      <- ignoreManifestError $ fmap CM.appId CM.readManifest
+  appId <- ignoreManifestError $ fmap CM.appId CM.readManifest
 
   -- We may need custom builds with mode
   let depManifestPath = cwd </> "component.json"
@@ -168,30 +169,31 @@ main = do
           ++ duploInDecoded ++ "\n"
 
   -- Construct environment
-  let buildConfig = TC.BuildConfig { TC._appName      = appName
-                                   , TC._appVersion   = appVersion
-                                   , TC._appId        = appId
-                                   , TC._cwd          = cwd
-                                   , TC._duploPath    = duploPath
-                                   , TC._env          = duploEnv
-                                   , TC._mode         = duploMode
-                                   , TC._nodejsPath   = nodeModulesPath
-                                   , TC._dist         = distPath
-                                   , TC._input        = duploIn
-                                   , TC._utilPath     = utilPath
-                                   , TC._miscPath     = miscPath
-                                   , TC._defaultsPath = defaultsPath
-                                   , TC._appPath      = appPath
-                                   , TC._devPath      = devPath
-                                   , TC._testPath     = testPath
-                                   , TC._assetsPath   = assetsPath
-                                   , TC._depsPath     = depsPath
-                                   , TC._targetPath   = targetPath
-                                   , TC._bumpLevel    = bumpLevel
-                                   , TC._port         = port
-                                   , TC._dependencies = depIds
-                                   , TC._buildMode    = buildMode
-                                   }
+  let buildConfig = TC.BuildConfig
+                  { TC._appName      = appName
+                  , TC._appVersion   = appVersion
+                  , TC._appId        = appId
+                  , TC._cwd          = cwd
+                  , TC._duploPath    = duploPath
+                  , TC._env          = duploEnv
+                  , TC._mode         = duploMode
+                  , TC._nodejsPath   = nodeModulesPath
+                  , TC._dist         = distPath
+                  , TC._input        = duploIn
+                  , TC._utilPath     = utilPath
+                  , TC._miscPath     = miscPath
+                  , TC._defaultsPath = defaultsPath
+                  , TC._appPath      = appPath
+                  , TC._devPath      = devPath
+                  , TC._testPath     = testPath
+                  , TC._assetsPath   = assetsPath
+                  , TC._depsPath     = depsPath
+                  , TC._targetPath   = targetPath
+                  , TC._bumpLevel    = bumpLevel
+                  , TC._port         = port
+                  , TC._dependencies = depIds
+                  , TC._buildMode    = buildMode
+                  }
 
   -- If there is a Makefile, run that as well, with the environment as the
   -- target (e.g. `duplo dev` would run `make development` and `duplo build` would
