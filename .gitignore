@@ -10,6 +10,7 @@ Icon
 
 .cabal*
 .shake*
+cabal*
 dist/
 node_modules/
 
