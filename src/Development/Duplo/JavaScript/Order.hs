@@ -3,12 +3,13 @@
 module Development.Duplo.JavaScript.Order where
 
 import Control.Exception (throw)
-import Control.Lens
-import Control.Monad (liftM)
+import Control.Lens (makeLenses, ix)
+import Control.Lens.Operators
+import Control.Monad (liftM, when, void)
 import Control.Monad.State.Lazy (get, put, state, execState)
 import Control.Monad.Writer.Lazy (Writer, tell, runWriter)
 import Data.Function (on)
-import Data.List (findIndex, sortBy, intersperse, nubBy, reverse)
+import Data.List (findIndex, sortBy, nubBy)
 import Data.Maybe (isJust, fromJust, fromMaybe)
 import Development.Duplo.Types.JavaScript
 import Language.JavaScript.Parser (JSNode(..), Node(..), TokenPosn(..))
@@ -18,7 +19,7 @@ makeLenses ''Module
 
 -- | Reorder modules within the root node.
 order :: JSNode -> JSNode
-order node =
+order jsNode =
     -- Append the modules, in its rightful order, to all the non-applicable
     -- nodes.
     NN $ JSSourceElementsTop $ naNodes ++ aNodesWithSep
@@ -27,7 +28,7 @@ order node =
     separator = NT (JSLiteral ";") (TokenPn 0 0 0) []
     -- The "normal" output is the filtered non-applicable nodes and the
     -- written-to nodes are of course the extracted ones.
-    (naNodes, aNodes) = runWriter $ extract node
+    (naNodes, aNodes) = runWriter $ extract jsNode
     -- Reorder modules
     orderedANodes = _node <$> reorder aNodes
     -- Insert separators
@@ -36,17 +37,19 @@ order node =
 -- | Extract AMD modules to logger for re-ordering and the rest to output.
 extract :: JSNode -> Writer [Module] [JSNode]
 -- Go through all elements at top-level.
-extract node@(NN (JSSourceElementsTop elements)) = mapM extract' elements
+extract (NN (JSSourceElementsTop jsElements)) = mapM extract' jsElements
+-- Impossible scenario
+extract element = throw $ LanguageJavaScriptException element
 
 extract' :: JSNode -> Writer [Module] JSNode
 -- We are looking for a `define`!
-extract' node@(NN (JSExpression (NT (JSIdentifier "define") _ _:args:_))) = do
+extract' jsNode@(NN (JSExpression (NT (JSIdentifier "define") _ _:args:_))) = do
   -- Save the module for processing.
-  tell [makeModule node args]
+  tell [makeModule jsNode args]
   -- Just return an empty string in place of the module.
   return $ NT (JSIdentifier "") (TokenPn 0 0 0) []
 -- Just pass everything else through.
-extract' node = return node
+extract' jsNode = return jsNode
 
 -- | Turn a node into a module.
            -- The root expression node
@@ -90,9 +93,9 @@ reorder mods = nubbed
     nubbed = reverse $ nubBy ((==) `on` _name) $ reverse sorted
 
 withScore :: Module -> Bool
-withScore mod = case _score mod of
-                  Just _ -> True
-                  Nothing -> False
+withScore aMod = case _score aMod of
+                   Just _ -> True
+                   Nothing -> False
 
 byDepScore :: Module -> Module -> Ordering
 byDepScore a b = compare (_score a) (_score b)
@@ -111,33 +114,30 @@ getDepScore :: [ModuleName] -> ModuleName -> OrderedModules DepScore
 getDepScore history modName = do
     -- We go nuclear when there's circular dependency.
     let history' = modName : history
-             -- If it's in the recorded modules
-    let !_ = if   modName `elem` history
-             -- Display the duplicate module
-             then throw $ CircularDependencyException $ reverse history'
-             -- Boilerplate
-             else history'
+    -- Display the duplicate module if it's in the recorded modules
+    void $ when (modName `elem` history)
+         $ throw $ CircularDependencyException $ reverse history'
     -- Take out the modules.
     mods <- get
     -- Assume module exist, as it should at this point.
     let maybeIndex = findIndex ((modName ==) . _name) mods
     let index = fromMaybe (throw $ ModuleNotFoundException modName) maybeIndex
     -- Get the actual module.
-    let mod = fromJust $ mods ^? ix index
+    let aMod = fromJust $ mods ^? ix index
     -- The dependency list
-    let modDeps = _deps mod
+    let modDeps = _dependencies aMod
     -- If there is a score, use it; otherwise, obviously go get it.
-    depScore <- case _score mod of
+    depScore <- case _score aMod of
                   -- Re-wrap with the score as the result.
-                  Just score -> state $ const (score, mods)
+                  Just modScore -> state $ const (modScore, mods)
                   -- Go through the dependencies' individual scores.
                   Nothing -> getDepScore' history' modDeps
     -- Update the score.
-    let newMod = mod & score .~ Just depScore
+    let newMod = aMod & score .~ Just depScore
     -- TODO: somehow can't get Lens to work. Doing the old fashion way.
     let newMods = take index mods ++ [newMod] ++ drop (index + 1) mods
     put newMods
-    -- Return the score.
+    -- Return the sscore.
     return depScore
 
 -- | Get a module's dependency score given its dependencies.

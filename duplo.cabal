@@ -1,53 +1,83 @@
-name:                  duplo
-version:               1.6.7
-synopsis:              Frontend development build tool
-description:           Intuitive, simple building blocks for building composable, completely self-managed web applications
-license:               MIT
-license-file:          LICENSE
-author:                Kenneth Kan
-maintainer:            ken@pixbi.com
-category:              Web
-build-type:            Simple
-extra-source-files:    README.md
-cabal-version:         >=1.10
+name:               duplo
+version:            1.6.7
+synopsis:           Frontend development build tool
+description:        Intuitive, simple building blocks for building composable, completely self-managed web applications
+license:            MIT
+license-file:       LICENSE
+author:             Kenneth Kan
+maintainer:         ken@pixbi.com
+category:           Web
+build-type:         Simple
+extra-source-files: README.md
+cabal-version:      >=1.10
 
 source-repository head
-  type:                git
-  location:            https://github.com/pixbi/duplo.git
+  type:     git
+  location: https://github.com/pixbi/duplo.git
+
+library
+  ghc-options          : -Wall
+  exposed-modules      : Duplo
+  hs-source-dirs       : src
+  default-language     : Haskell2010
+  default-extensions   : OverloadedStrings
+  build-depends        : base                 == 4.7.*
+                       , executable-path      == 0.0.*
+                       , lens                 == 4.5.*
+                       , mtl                  == 2.2.*
+                       , shake                == 0.14.*
+                       , system-fileio        == 0.3.*
+                       , transformers         == 0.4.*
+                       , utf8-string          == 0.3.*
+                       , wai                  == 3.0.*
+                       , bytestring           == 0.10.*
+                       , ansi-terminal        == 0.5.*
+                       , warp                 == 3.0.*
+                       , unordered-containers == 0.2.*
+                       , text-format          == 0.3.*
+                       , text                 == 1.1.*
+                       , MissingH             == 1.3.*
+                       , filepath             == 1.3.*
+                       , filepather           == 0.3.*
+                       , directory            == 1.2.*
+                       , language-javascript  == 0.5.*
+                       , aeson                == 0.8.*
+                       , aeson-pretty         == 0.7.*
+                       , containers           == 0.5.*
+                       , regex-compat         == 0.95.*
 
 executable duplo
-  main-is            : Duplo.hs
-  build-depends      : base                 == 4.7.*
-                     , MissingH             == 1.3.*
-                     , aeson                == 0.8.*
-                     , aeson-pretty         == 0.7.*
-                     , base64-bytestring    == 1.0.*
-                     , bytestring           == 0.10.*
-                     , containers           == 0.5.*
-                     , directory            == 1.2.*
-                     , executable-path      == 0.0.*
-                     , filepath             == 1.3.*
-                     , filepather           == 0.3.*
-                     , fsnotify             == 0.1.*
-                     , http-types           == 0.8.*
-                     , language-javascript  == 0.5.*
-                     , lens                 == 4.5.*
-                     , mtl                  == 2.2.*
-                     , process              == 1.2.*
-                     , regex-compat         == 0.95.*
-                     , scotty               == 0.9.*
-                     , shake                == 0.14.*
-                     , system-fileio        == 0.3.*
-                     , system-filepath      == 0.4.*
-                     , text                 == 1.1.*
-                     , transformers         == 0.4.*
-                     , unordered-containers == 0.2.*
-                     , utf8-string          == 0.3.*
-                     , wai                  == 3.0.*
-                     , warp                 == 3.0.*
-                     , ansi-terminal        == 0.5.*
-                     , text-format          == 0.3.*
-  hs-source-dirs     : src/
-  default-language   : Haskell2010
-  default-extensions : OverloadedStrings
-  c-options          : -Wall
+  main-is               : Main.hs
+  ghc-options           : -rtsopts -O2
+  hs-source-dirs        : src
+  default-language      : Haskell2010
+  default-extensions    : OverloadedStrings
+  build-depends         : base                 == 4.7.*
+                        , duplo                >= 0.0.0
+                        , transformers         == 0.4.*
+                        , bytestring           == 0.10.*
+                        , process              == 1.2.*
+                        , fsnotify             == 0.1.*
+                        , base64-bytestring    == 1.0.*
+                        , system-filepath      == 0.4.*
+                        , ansi-terminal        == 0.5.*
+                        , warp                 == 3.0.*
+                        , unordered-containers == 0.2.*
+                        , lens                 == 4.5.*
+                        , shake                == 0.14.*
+                        , mtl                  == 2.2.*
+                        , wai                  == 3.0.*
+                        , aeson                == 0.8.*
+                        , scotty               == 0.9.*
+                        , text-format          == 0.3.*
+                        , http-types           == 0.8.*
+                        , text                 == 1.1.*
+                        , MissingH             == 1.3.*
+                        , filepath             == 1.3.*
+                        , filepather           == 0.3.*
+                        , directory            == 1.2.*
+                        , language-javascript  == 0.5.*
+                        , aeson                == 0.8.*
+                        , aeson-pretty         == 0.7.*
+                        , containers           == 0.5.*
+                        , regex-compat         == 0.95.*

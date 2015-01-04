@@ -13,6 +13,9 @@ data JSCompilerException = ModuleNotFoundException ModuleName
                          | ParseException [String]
                          -- When the compiler itself is buggy
                          | InternalParserException String
+                         -- When language-javascript somehow produces
+                         -- a malformed AST
+                         | LanguageJavaScriptException JSNode
   deriving (Typeable)
 
 instance Exception JSCompilerException
@@ -26,16 +29,19 @@ instance Show JSCompilerException where
       "The module \"" ++ name ++ "\" is not found."
     show (InternalParserException e) =
       "Uh oh. The parser itself is misbehaving: " ++ e
+    show (LanguageJavaScriptException element) =
+      "language-javascript is not parsing the file correctly:\n" ++ show element
 
 type LineNumber = Int
 type ModuleName = String
 type DepScore = Int
 -- A module consists of its name, its dependencies by names, and the node
 -- itself.
-data Module = Module { _name :: ModuleName
-                     , _deps :: [ModuleName]
-                     , _node :: JSNode
-                     , _score :: Maybe DepScore
-                     } deriving (Show)
+data Module = Module
+            { _name         :: ModuleName
+            , _dependencies :: [ModuleName]
+            , _node         :: JSNode
+            , _score        :: Maybe DepScore
+            } deriving (Show)
 
 type OrderedModules = State [Module]
