@@ -371,6 +371,20 @@ Putting it all together, an example of a `component.json`:
 Note that tasks are run in parallel so the display log may look scrambled from
 line to line. This is normal.
 
+
+## Developing duplo
+
+Right now duplo is published to both Hackage and NPM. Because of various
+compatibility issues, each time duplo is published all of the following must be
+done:
+
+1. Manually bump version in *both* `duplo.cabal` and `package.json`
+2. `$ git tag <version>`
+3. `$ util/publish.sh`
+4. `$ npm publish`
+5. [Publish to Hackage](http://hackage.haskell.org/upload)
+
+
 ## Copyright and License
 
 Code and documentation copyright 2014 Pixbi. Code released under the MIT

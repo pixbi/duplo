@@ -3,7 +3,6 @@
   "version": "1.6.9",
   "homepage": "https://github.com/pixbi/duplo",
   "scripts": {
-    "prepublish": "util/publish.sh",
     "postinstall": "util/post-install.sh"
   },
   "bin": {
