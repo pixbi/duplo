@@ -135,9 +135,7 @@ build cmdName cmdArgs config options = shake shakeOpts $ do
 
       successPrinter $ "Project created at " ++ dest
 
-    "test" ~> do
-      let duploPath = config ^. TC.duploPath
-      command_ [] (utilPath </> "run-test.sh") [duploPath]
+    "test" ~> command_ [] (utilPath </> "run-test.sh") [duploPath]
 
     -- Version should have already been displayed if requested
     "version" ~> return ()
