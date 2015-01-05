@@ -1,4 +1,4 @@
-module Duplo where
+module Development.Duplo where
 
 import Control.Exception (throw)
 import Control.Lens hiding (Action)

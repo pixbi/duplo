@@ -20,7 +20,7 @@ library
   hs-source-dirs     : src
   default-language   : Haskell2010
   default-extensions : OverloadedStrings
-  exposed-modules    : Duplo
+  exposed-modules    : Development.Duplo
                      , Development.Duplo.Component
                      , Development.Duplo.FileList
                      , Development.Duplo.Files
@@ -99,3 +99,13 @@ executable duplo
                      , unordered-containers == 0.2.*
                      , wai                  == 3.0.*
                      , warp                 == 3.0.*
+
+test-suite tests
+  main-is             : Tests.hs
+  ghc-options         : -Wall
+  hs-source-dirs      : tests
+  default-language    : Haskell2010
+  type                : exitcode-stdio-1.0
+  build-depends       : base
+                      , duplo
+                      , hspec              == 2.1.*
