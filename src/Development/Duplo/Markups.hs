@@ -11,11 +11,11 @@ import Development.Duplo.Files (File(..), filePath, fileDir, fileName, component
 import Development.Duplo.Utilities (logStatus, headerPrintSetter, expandPaths, compile, createIntermediaryDirectories, CompiledContent, expandDeps, replace)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
+import System.Directory (findFile)
 import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)
 import qualified Development.Duplo.FileList as FileList (filePath)
 import qualified Development.Duplo.Types.Builder as BD
 import qualified Development.Duplo.Types.Config as TC
-import System.Directory (findFile)
 
 build :: TC.BuildConfig
       -> FilePath

@@ -9,7 +9,9 @@ import Control.Monad (filterM)
 import Control.Monad.Trans.Class (lift)
 import Data.Function (on)
 import Data.List (intercalate, nubBy)
+import Data.Text.Format (left)
 import Data.Text.Lazy (Text, pack, unpack, replace, splitOn)
+import Data.Text.Lazy.Builder (toLazyText)
 import Development.Duplo.Component (extractCompVersions)
 import Development.Duplo.Files (File(..), pseudoFile)
 import Development.Duplo.JavaScript.Order (order)
@@ -21,8 +23,6 @@ import Language.JavaScript.Parser.SrcLocation (TokenPosn(..))
 import Text.Regex (mkRegex, matchRegex)
 import qualified Development.Duplo.Types.Config as TC
 import qualified Language.JavaScript.Parser as JS
-import Data.Text.Format (left)
-import Data.Text.Lazy.Builder (toLazyText)
 
 -- | How many lines to display around the source of error (both ways).
 errorDisplayRange :: Int

@@ -14,11 +14,11 @@ import Prelude hiding (readFile)
 import System.Console.ANSI (setSGR, SGR(..), ConsoleLayer(..), ColorIntensity(..), Color(..))
 import System.FilePath.Posix (joinPath, splitPath)
 import qualified Control.Lens as CL
+import qualified Data.Text as T
 import qualified Development.Duplo.Component as CM
 import qualified Development.Duplo.Types.AppInfo as AI
 import qualified Development.Duplo.Types.Config as TC
 import qualified Development.Shake as DS
-import qualified Data.Text as T
 
 type CompiledContent = ExceptT String DS.Action
 type FileProcessor = [File] -> CompiledContent [File]

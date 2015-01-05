@@ -2,6 +2,7 @@
 
 module Development.Duplo.JavaScript.Order where
 
+import Control.Applicative ((<$>))
 import Control.Exception (throw)
 import Control.Lens (makeLenses, ix)
 import Control.Lens.Operators
@@ -13,7 +14,6 @@ import Data.List (findIndex, sortBy, nubBy)
 import Data.Maybe (isJust, fromJust, fromMaybe)
 import Development.Duplo.Types.JavaScript
 import Language.JavaScript.Parser (JSNode(..), Node(..), TokenPosn(..))
-import Control.Applicative ((<$>))
 
 makeLenses ''Module
 
