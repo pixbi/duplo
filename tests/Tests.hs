@@ -8,6 +8,6 @@ main :: IO ()
 main = hspec $
   describe "Component support" $
     it "extracts component ID" $ do
-      let appInfo = AppInfo { repo = "pixbi/duplo" }
-      let id      = DC.appId appInfo
-      id `shouldBe` "pixbi-duplo"
+      let appInfo = defaultAppInfo { repo = "pixbi/duplo" }
+      let appId   = DC.appId appInfo
+      appId `shouldBe` "pixbi-duplo"
