@@ -1,8 +1,8 @@
 module Main where
 
-import qualified Development.Duplo.Component as DC
 import Development.Duplo.Types.AppInfo
 import Test.Hspec
+import qualified Development.Duplo.Component as DC
 
 main :: IO ()
 main = hspec $
