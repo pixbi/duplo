@@ -8,7 +8,7 @@ author:             Kenneth Kan
 maintainer:         ken@pixbi.com
 category:           Web
 build-type:         Simple
-extra-source-files: README.md
+extra-source-files: README.md Tests.hs
 cabal-version:      >=1.10
 
 source-repository head
