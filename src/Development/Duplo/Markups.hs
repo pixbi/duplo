@@ -80,25 +80,30 @@ build config out = do
 
   -- Inject compiled code into the index
   let indexWithMarkup = replace "<body>" ("<body>" ++ compiled) compiledIndex
-
+  
   -- Inject CSS/JS references
-  refTagsInTest <- lift $ readFile' $ duploPath </> "etc/test/head.html"
-  let indexWithTestRefs =
-        if   inTest
-        then replace "</head>" (refTagsInTest ++ "</head>") indexWithMarkup
-        else indexWithMarkup
-
   refTags <- lift $ readFile' refTagsPath
-  let indexWithRefs = replace "</head>" (refTags ++ "</head>") indexWithTestRefs
+  let indexWithRefs = replace "</head>" (refTags ++ "</head>") indexWithMarkup
+
+  -- Inject CSS/JS references if in testing
+  refTagsInTest <- lift $ readFile' (duploPath </> "etc/test/head.html")
+  scriptsPaths  <- lift $ expandPaths cwd ".js" [] [ testPath </> "modules"
+                                                   , appPath  </> "modules" ]
+
+  let buildScriptTag = (\path -> "<script defer=\"defer\" src=\"" ++ (makeRelative cwd path) ++ "\"></script>")
+  let scriptsTags = concat $ map buildScriptTag scriptsPaths
+  let indexWithTestRefs = if inTest then replace "</head>" (refTagsInTest ++ scriptsTags ++ "</head>") indexWithRefs
+                                    else indexWithRefs
 
   -- Path to the minifier
   let minifier = utilPath </> "markups-minify.sh"
   -- Minify it
-  let postMinify _ = return indexWithRefs
+  let postMinify _ = return indexWithTestRefs
   minified <- compile config minifier [] paths return postMinify
 
   -- Write it to disk
   lift $ writeFileChanged out minified
+
 
 -- | Rewrite paths to external files (i.e. include statements) because Jade
 -- doesn't accept more than one path to look up includes. It is passed all

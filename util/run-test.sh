@@ -22,7 +22,8 @@ run_cross_browsers () {
 
 gen_coverage () {
   echo "generating coverage page..."
-  $JSCOVERAGE public/index.js public/index.js
+  $JSCOVERAGE public/app/modules public/app/modules
+  $JSCOVERAGE public/test/modules public/test/modules
   $MOCHA_BROWSER public/index.html -R html-cov > public/coverage.html
   echo "successed, public/coverage generated"
 }
