@@ -9,8 +9,7 @@ div#fixtures
 script(type="text/javascript" defer).
 
   document.addEventListener("DOMContentLoaded", function () {
-    if (window.mochaPhantomJS)
-      mochaPhantomJS.run();
-    else
-      mocha.run();
+    setTimeout(function () {
+      (window.mochaPhantomJS || window.mocha).run();
+    }, 100);
   });
