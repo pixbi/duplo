@@ -64,11 +64,8 @@ build config out = do
   let depsToExpand id = [ "components/" ++ id ++ "/app/modules" ]
   -- Compile dev files in dev mode as well, taking precendence.
   let dynamicPaths = case buildMode of
-                       "development" -> [ "dev/modules" ]
-                       "test"        -> [ "test/modules" ]
+                       "development" -> [ "app/modules", "dev/modules" ]
                        _             -> []
-                     -- Then normal scripts
-                     ++ [ "app/modules" ]
                      -- Build list only for dependencies.
                      ++ expandDeps depIds depsToExpand
 
@@ -89,9 +86,10 @@ build config out = do
              ++ "var DUPLO_VERSIONS = " ++ compVers ++ ";\n"
 
   -- Configure the compiler
-  let compiler = (util </>) $ if   inDev || inTest
-                              then "scripts-dev.sh"
-                              else "scripts-optimize.sh"
+  let compiler = (util </>) $ case buildMode of
+                                "development" -> "scripts-dev.sh"
+                                "test"        -> "scripts-test.sh"
+                                _             -> "scripts-optimize.sh"
 
   -- Create a pseudo file that contains the environment variables and
   -- prepend the file.
