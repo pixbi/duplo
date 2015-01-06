@@ -12,7 +12,7 @@ import Data.ByteString.Char8 (pack, unpack)
 import Data.Maybe (fromMaybe)
 import Development.Duplo (build)
 import Development.Duplo.Server (serve)
-import Development.Duplo.Utilities (logStatus, errorPrintSetter, replace)
+import Development.Duplo.Utilities (logStatus, errorPrintSetter)
 import Development.Duplo.Watcher (watch)
 import Development.Shake (cmd, ShakeException(..))
 import Development.Shake.FilePath ((</>))
@@ -30,6 +30,7 @@ import qualified Development.Duplo.Types.Config as TC
 import qualified Development.Duplo.Types.Options as OP
 import qualified Filesystem.Path
 import qualified GHC.IO
+import Data.List.Utils (replace)
 
 main :: IO ()
 main = do

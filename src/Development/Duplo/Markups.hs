@@ -8,7 +8,7 @@ import Data.Maybe (fromMaybe)
 import Development.Duplo.Component (parseComponentId)
 import Development.Duplo.FileList (collapseFileList, makeFile)
 import Development.Duplo.Files (File(..), filePath, fileDir, fileName, componentId, fileContent, isRoot, ComponentId)
-import Development.Duplo.Utilities (logStatus, headerPrintSetter, expandPaths, compile, createIntermediaryDirectories, CompiledContent, expandDeps, replace)
+import Development.Duplo.Utilities (logStatus, headerPrintSetter, expandPaths, compile, createIntermediaryDirectories, CompiledContent, expandDeps)
 import Development.Shake
 import Development.Shake.FilePath ((</>))
 import System.Directory (findFile)
@@ -16,6 +16,7 @@ import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)
 import qualified Development.Duplo.FileList as FileList (filePath)
 import qualified Development.Duplo.Types.Builder as BD
 import qualified Development.Duplo.Types.Config as TC
+import Data.List.Utils (replace)
 
 build :: TC.BuildConfig
       -> FilePath

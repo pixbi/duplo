@@ -14,7 +14,6 @@ import Prelude hiding (readFile)
 import System.Console.ANSI (setSGR, SGR(..), ConsoleLayer(..), ColorIntensity(..), Color(..))
 import System.FilePath.Posix (joinPath, splitPath)
 import qualified Control.Lens as CL
-import qualified Data.Text as T
 import qualified Development.Duplo.Component as CM
 import qualified Development.Duplo.Types.AppInfo as AI
 import qualified Development.Duplo.Types.Config as TC
@@ -211,12 +210,3 @@ createStdEnv config = do
             , ("DUPLO_CWD", cwd)
             , ("DUPLO_MISC", misc)
             ]
-
--- | Like `Data.Text.replace`, but for strings
-replace :: String -> String -> String -> String
-replace needle replacement haystack = replaced
-  where
-    needle'      = T.pack needle
-    replacement' = T.pack replacement
-    haystack'    = T.pack haystack
-    replaced     = T.unpack $ T.replace needle' replacement' haystack'
