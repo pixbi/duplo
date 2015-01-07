@@ -27,6 +27,11 @@ gen_coverage () {
   echo "successed, public/coverage generated"
 }
 
+show_coverage_summary () {
+  $DUPLO_UTIL/cov-summary.js public/coverage.html
+}
+
 # main process
 gen_coverage
 run_headless && run_cross_browsers
+show_coverage_summary
