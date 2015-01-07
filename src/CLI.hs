@@ -139,6 +139,9 @@ main = do
 
   -- We may need custom builds with mode
   let depManifestPath = cwd </> "component.json"
+
+  -- TODO(Yorkie): to be remove if verified by @Kenneth
+  -- because the depIds is unnecessary in config
   dependencies <- CM.getDependencies $ case duploMode of
                                          "" -> Nothing
                                          a  -> Just a
