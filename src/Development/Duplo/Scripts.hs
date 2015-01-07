@@ -21,6 +21,7 @@ import Development.Shake
 import Development.Shake.FilePath ((</>))
 import Language.JavaScript.Parser.SrcLocation (TokenPosn(..))
 import Text.Regex (mkRegex, matchRegex)
+import qualified Development.Duplo.Component as CM
 import qualified Development.Duplo.Types.Config as TC
 import qualified Language.JavaScript.Parser as JS
 
@@ -41,17 +42,23 @@ build config out = do
   let cwd         = config ^. TC.cwd
   let util        = config ^. TC.utilPath
   let env         = config ^. TC.env
+  let mode        = config ^. TC.mode
   let buildMode   = config ^. TC.buildMode
   let input       = config ^. TC.input
   let devPath     = config ^. TC.devPath
   let depsPath    = config ^. TC.depsPath
   let devCodePath = devPath </> "modules/index.js"
-  let depIds      = config ^. TC.dependencies
   let inDev       = TC.isInDev config
   let inTest      = TC.isInTest config
 
   -- Preconditions
   lift $ createIntermediaryDirectories devCodePath
+
+  -- get depIds dynamicly
+  dependencies <- liftIO $ CM.getDependencies $ case mode of
+                                              "" -> Nothing
+                                              a  -> Just a
+  let depIds = map (\dep -> unpack $ replace "/" "-" (pack dep)) dependencies
 
   -- These paths don't need to be expanded.
   let staticPaths = case buildMode of
