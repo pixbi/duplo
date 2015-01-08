@@ -12,10 +12,3 @@ Icon
 .shake*
 cabal*
 node_modules/
-
-etc/test/vendor/chai*
-etc/test/vendor/mocha*
-etc/test/vendor/sinon*
-etc/test/vendor/should*
-
-etc/test/browserstack.json
