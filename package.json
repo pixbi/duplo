@@ -1,6 +1,6 @@
 {
   "name": "duplo",
-  "version": "1.6.14",
+  "version": "1.6.15",
   "homepage": "https://github.com/pixbi/duplo",
   "scripts": {
     "postinstall": "util/post-install.sh"
