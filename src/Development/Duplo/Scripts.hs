@@ -55,6 +55,14 @@ build config out = do
   -- Preconditions
   lift $ createIntermediaryDirectories devCodePath
 
+  -- Get dependencies dynamically to avoid removed dependencies to be
+  -- included again, when reloading during development.
+  dependencies <- liftIO $ CM.getDependencies $ case mode of
+                                              "" -> Nothing
+                                              a  -> Just a
+  let makeDepId = unpack . replace "/" "-" . pack
+  let depIds = map makeDepId dependencies
+
   -- These paths don't need to be expanded.
   let staticPaths = case buildMode of
                       "development" -> [ "dev/index" ]
