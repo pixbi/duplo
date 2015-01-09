@@ -50,31 +50,27 @@ build config out = do
   let devCodePath = devPath </> "modules/index.js"
   let inDev       = TC.isInDev config
   let inTest      = TC.isInTest config
+  let depIds      = config ^. TC.dependencies
 
   -- Preconditions
   lift $ createIntermediaryDirectories devCodePath
-
-  -- get depIds dynamicly
-  dependencies <- liftIO $ CM.getDependencies $ case mode of
-                                              "" -> Nothing
-                                              a  -> Just a
-  let depIds = map (\dep -> unpack $ replace "/" "-" (pack dep)) dependencies
 
   -- These paths don't need to be expanded.
   let staticPaths = case buildMode of
                       "development" -> [ "dev/index" ]
                       "test"        -> [ "test/index" ]
                       _             -> []
-                    ++ [ "app/index" ]
+                 ++ [ "app/index" ]
 
   -- These paths need to be expanded by Shake.
   let depsToExpand id = [ "components/" ++ id ++ "/app/modules" ]
   -- Compile dev files in dev mode as well, taking precendence.
-  let dynamicPaths = case buildMode of
-                       "development" -> [ "app/modules", "dev/modules" ]
+  let dynamicPaths = [ "app/modules" ]
+                  ++ case buildMode of
+                       "development" -> [ "dev/modules" ]
                        _             -> []
-                     -- Build list only for dependencies.
-                     ++ expandDeps depIds depsToExpand
+                  -- Build list only for dependencies.
+                  ++ expandDeps depIds depsToExpand
 
   -- Merge both types of paths
   paths <- lift $ expandPaths cwd ".js" staticPaths dynamicPaths

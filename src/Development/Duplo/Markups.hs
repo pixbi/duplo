@@ -30,7 +30,7 @@ build config out = do
 
   let cwd           = config ^. TC.cwd
   let env           = config ^. TC.env
-  let buildMode   = config ^. TC.buildMode
+  let buildMode     = config ^. TC.buildMode
   let utilPath      = config ^. TC.utilPath
   let devPath       = config ^. TC.devPath
   let appPath       = config ^. TC.appPath
@@ -80,7 +80,7 @@ build config out = do
 
   -- Inject compiled code into the index
   let indexWithMarkup = replace "<body>" ("<body>" ++ compiled) compiledIndex
-  
+
   -- Inject CSS/JS references
   refTags <- lift $ readFile' refTagsPath
   let indexWithRefs = replace "</head>" (refTags ++ "</head>") indexWithMarkup
@@ -88,12 +88,14 @@ build config out = do
   -- Inject CSS/JS references if in testing
   refTagsInTest <- lift $ readFile' (duploPath </> "etc/test/head.html")
   scriptsPaths  <- lift $ expandPaths cwd ".js" [] [ testPath </> "modules"
-                                                   , appPath  </> "modules" ]
+                                                   , appPath  </> "modules"
+                                                   ]
 
-  let buildScriptTag = (\path -> "<script defer=\"defer\" src=\"" ++ (makeRelative cwd path) ++ "\"></script>")
-  let scriptsTags = concat $ map buildScriptTag scriptsPaths
-  let indexWithTestRefs = if inTest then replace "</head>" (refTagsInTest ++ scriptsTags ++ "</head>") indexWithRefs
-                                    else indexWithRefs
+  let buildScriptTag path = "<script defer=\"defer\" src=\"" ++ makeRelative cwd path ++ "\"></script>"
+  let scriptsTags         = concat $ map buildScriptTag scriptsPaths
+  let indexWithTestRefs   = if   inTest
+                            then replace "</head>" (refTagsInTest ++ scriptsTags ++ "</head>") indexWithRefs
+                            else indexWithRefs
 
   -- Path to the minifier
   let minifier = utilPath </> "markups-minify.sh"
