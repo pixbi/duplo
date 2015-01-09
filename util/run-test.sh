@@ -22,11 +22,16 @@ run_cross_browsers () {
 
 gen_coverage () {
   echo "generating coverage page..."
-  $JSCOVERAGE public/index.js public/index.js
+  $JSCOVERAGE public/app/modules public/app/modules --exclude *.DS_Store
   $MOCHA_BROWSER public/index.html -R html-cov > public/coverage.html
   echo "successed, public/coverage generated"
+}
+
+show_coverage_summary () {
+  $DUPLO_UTIL/cov-summary.js public/coverage.html
 }
 
 # main process
 gen_coverage
 run_headless && run_cross_browsers
+show_coverage_summary

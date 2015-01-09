@@ -135,7 +135,9 @@ build cmdName cmdArgs config options = shake shakeOpts $ do
 
       successPrinter $ "Project created at " ++ dest
 
-    "test" ~> command_ [] (utilPath </> "run-test.sh") [duploPath]
+    "test" ~> do
+      envOpt <- createStdEnv config
+      command_ [envOpt] (utilPath </> "run-test.sh") [duploPath]
 
     -- Version should have already been displayed if requested
     "version" ~> return ()

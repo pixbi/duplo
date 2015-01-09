@@ -204,9 +204,11 @@ createStdEnv config = do
   let util   = config ^. TC.utilPath
   let nodejs = config ^. TC.nodejsPath
   let misc   = config ^. TC.miscPath
+  let target = config ^. TC.targetPath
 
   DS.addEnv [ ("DUPLO_UTIL", util)
             , ("DUPLO_NODEJS", nodejs)
             , ("DUPLO_CWD", cwd)
             , ("DUPLO_MISC", misc)
+            , ("DUPLO_TARGET", target)
             ]
