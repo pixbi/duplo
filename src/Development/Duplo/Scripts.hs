@@ -21,6 +21,7 @@ import Development.Shake
 import Development.Shake.FilePath ((</>))
 import Language.JavaScript.Parser.SrcLocation (TokenPosn(..))
 import Text.Regex (mkRegex, matchRegex)
+import qualified Development.Duplo.Component as CM
 import qualified Development.Duplo.Types.Config as TC
 import qualified Language.JavaScript.Parser as JS
 
@@ -41,14 +42,15 @@ build config out = do
   let cwd         = config ^. TC.cwd
   let util        = config ^. TC.utilPath
   let env         = config ^. TC.env
+  let mode        = config ^. TC.mode
   let buildMode   = config ^. TC.buildMode
   let input       = config ^. TC.input
   let devPath     = config ^. TC.devPath
   let depsPath    = config ^. TC.depsPath
   let devCodePath = devPath </> "modules/index.js"
-  let depIds      = config ^. TC.dependencies
   let inDev       = TC.isInDev config
   let inTest      = TC.isInTest config
+  let depIds      = config ^. TC.dependencies
 
   -- Preconditions
   lift $ createIntermediaryDirectories devCodePath
@@ -58,19 +60,17 @@ build config out = do
                       "development" -> [ "dev/index" ]
                       "test"        -> [ "test/index" ]
                       _             -> []
-                    ++ [ "app/index" ]
+                 ++ [ "app/index" ]
 
   -- These paths need to be expanded by Shake.
   let depsToExpand id = [ "components/" ++ id ++ "/app/modules" ]
   -- Compile dev files in dev mode as well, taking precendence.
-  let dynamicPaths = case buildMode of
+  let dynamicPaths = [ "app/modules" ]
+                  ++ case buildMode of
                        "development" -> [ "dev/modules" ]
-                       "test"        -> [ "test/modules" ]
                        _             -> []
-                     -- Then normal scripts
-                     ++ [ "app/modules" ]
-                     -- Build list only for dependencies.
-                     ++ expandDeps depIds depsToExpand
+                  -- Build list only for dependencies.
+                  ++ expandDeps depIds depsToExpand
 
   -- Merge both types of paths
   paths <- lift $ expandPaths cwd ".js" staticPaths dynamicPaths
@@ -89,9 +89,10 @@ build config out = do
              ++ "var DUPLO_VERSIONS = " ++ compVers ++ ";\n"
 
   -- Configure the compiler
-  let compiler = (util </>) $ if   inDev || inTest
-                              then "scripts-dev.sh"
-                              else "scripts-optimize.sh"
+  let compiler = (util </>) $ case buildMode of
+                                "development" -> "scripts-dev.sh"
+                                "test"        -> "scripts-test.sh"
+                                _             -> "scripts-optimize.sh"
 
   -- Create a pseudo file that contains the environment variables and
   -- prepend the file.
