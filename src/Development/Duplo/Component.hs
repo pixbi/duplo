@@ -2,20 +2,17 @@
 
 module Development.Duplo.Component where
 
-import           Control.Applicative             ((<$>), (<*>))
 import           Control.Exception               (throw)
-import qualified Control.Lens                    as LS
 import           Control.Lens.Operators
-import           Control.Monad                   (liftM, when)
-import           Control.Monad.Trans.Class       (lift)
+import           Control.Monad                   (liftM)
 import           Data.Aeson                      (decode, encode)
 import           Data.Aeson.Encode.Pretty        (encodePretty)
 import           Data.ByteString.Lazy.Char8      (ByteString)
 import qualified Data.ByteString.Lazy.Char8      as BS (pack, unpack)
-import           Data.HashMap.Lazy               (empty, keys, lookup)
+import           Data.HashMap.Lazy               (lookup)
 import           Data.List                       (isPrefixOf)
 import           Data.Map                        (fromList)
-import           Data.Maybe                      (fromJust, fromMaybe)
+import           Data.Maybe                      (fromMaybe)
 import           Data.Text                       (breakOn)
 import qualified Data.Text                       as T (pack, unpack)
 import           Development.Duplo.Types.AppInfo (AppInfo (..))
@@ -31,15 +28,12 @@ import           System.Directory                (doesDirectoryExist,
                                                   doesFileExist,
                                                   getCurrentDirectory,
                                                   getDirectoryContents)
-import           System.FilePath.Posix           (dropExtension,
-                                                  dropTrailingPathSeparator,
-                                                  equalFilePath, makeRelative,
-                                                  splitDirectories,
-                                                  takeFileName)
+import           System.FilePath.Posix           (splitDirectories)
 
 type Version = (String, String)
 
 -- | Each application must have a `component.json`
+manifestName :: FilePath
 manifestName = "component.json"
 
 readManifest :: IO AppInfo
@@ -75,11 +69,11 @@ parseRepoInfo _ = ""
 -- constituents
 parseComponentId :: String -> Either String (String, String)
 parseComponentId cId
-  | repoL > 0 = Right (T.unpack user, T.unpack repo)
+  | repoL > 0 = Right (T.unpack user, T.unpack userRepo)
   | otherwise = Left $ "No component ID found with " ++ cId
   where
-    (user, repo) = breakOn (T.pack "-") (T.pack cId)
-    repoL = length $ T.unpack repo
+    (user, userRepo) = breakOn (T.pack "-") (T.pack cId)
+    repoL = length $ T.unpack userRepo
 
 -- | Given a path, find all the `component.json` and return a JSON string
 extractCompVersions :: TC.BuildConfig -> Action String
@@ -89,8 +83,8 @@ extractCompVersions config = do
     -- Get all the relevant paths
     paths <- getAllManifestPaths utilPath path
     -- Construct the pipeline
-    let toVersion path = appInfoToVersion . decodeManifest path . BS.pack
-    let takeVersion path = liftM (toVersion path) (readFile path)
+    let toVersion path'   = appInfoToVersion . decodeManifest path' . BS.pack
+    let takeVersion path' = liftM (toVersion path') (readFile path')
     -- Go through it
     manifests <- mapM (liftIO . takeVersion) paths
     -- Marshalling
@@ -138,9 +132,9 @@ getDependencies (Just mode) = do
 -- dependency list, all modes, and the target mode to select the list by.
 getDependencies' :: AI.Dependencies -> Maybe [String] -> IO [FilePath]
 -- If somehow there isn't a mode defined, switch over to `Nothing`.
-getDependencies' deps Nothing = getDependencies Nothing
+getDependencies' _ Nothing = getDependencies Nothing
 -- If there is something, fetch only those dependencies.
-getDependencies' deps (Just modeDeps) = return modeDeps
+getDependencies' _ (Just modeDeps) = return modeDeps
 
 -- | Regular file != *nix-style hidden file
 isRegularFile :: FilePath -> Bool

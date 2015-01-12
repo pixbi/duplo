@@ -2,20 +2,14 @@
 
 module Development.Duplo.Files where
 
-import           Control.Exception               (throw)
-import           Control.Lens                    hiding (Action)
-import           Control.Lens.TH                 (makeLenses)
-import           Control.Monad.Trans.Class       (lift)
-import           Control.Monad.Trans.Maybe       (MaybeT (..))
-import           Data.List                       (intercalate)
-import           Data.Text                       (pack, split, unpack)
-import           Development.Duplo.Component     (appId)
-import qualified Development.Duplo.Component     as CM
-import qualified Development.Duplo.Types.Builder as BD
-import           Development.Shake               hiding (readFile)
-import           Prelude                         hiding (readFile)
-import           System.FilePath.Posix           (joinPath, makeRelative,
-                                                  splitDirectories)
+import           Control.Lens                hiding (Action)
+import           Control.Monad.Trans.Class   (lift)
+import           Control.Monad.Trans.Maybe   (MaybeT (..))
+import           Development.Duplo.Component (appId)
+import qualified Development.Duplo.Component as CM
+import           Development.Shake           (Action, liftIO, readFile')
+import           System.FilePath.Posix       (joinPath, makeRelative,
+                                              splitDirectories)
 
 type FileName    = String
 type FileContent = String
@@ -29,6 +23,7 @@ data File        = File { _filePath    :: FilePath
                         , _isRoot      :: Bool
                         } deriving (Show)
 
+pseudoFile :: File
 pseudoFile = File { _filePath    = ""
                   , _fileDir     = ""
                   , _fileName    = ""
@@ -41,22 +36,22 @@ makeLenses ''File
 
 readFile :: FilePath -> FilePath -> MaybeT Action File
 readFile cwd path = do
-  let (fileDir, fileName) = parseFilePath path
-  fileContent <- lift $ readFile' path
-  appInfo <- liftIO CM.readManifest
-  let appId' = appId appInfo
-  let componentId = parseComponentId cwd appId' fileDir
-  let isRoot = componentId == appId'
-  return $ File path fileDir fileName componentId fileContent isRoot
+  let (fDir, fName) = parseFilePath path
+  fContent <- lift $ readFile' path
+  appInfo  <- liftIO CM.readManifest
+  let appId'  = appId appInfo
+  let cId     = parseComponentId cwd appId' fDir
+  let isRoot' = cId == appId'
+  return $ File path fDir fName cId fContent isRoot'
 
 parseFilePath :: FilePath -> (FilePath, FileName)
-parseFilePath path = (fileDir, fileName)
+parseFilePath path = (fDir, fName)
   where
     segments  = splitDirectories path
     segLength = length segments
     dirLength = segLength - 1
-    fileDir   = joinPath $ take dirLength segments
-    fileName  = segments !! dirLength
+    fDir      = joinPath $ take dirLength segments
+    fName     = segments !! dirLength
 
 -- | Given a default component ID (usually the ID of the project on which
 -- duplo is run) and the file path, deduce the component ID of a particular
@@ -68,5 +63,5 @@ parseComponentId cwd defaultId path =
     segments = splitDirectories relPath
   in
     case segments of
-      ("components" : appId : xs) -> appId
-      _                           -> defaultId
+      ("components" : aId : _) -> aId
+      _                        -> defaultId
