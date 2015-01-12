@@ -1,23 +1,27 @@
 module Development.Duplo.Utilities where
 
-import Control.Applicative ((<$>))
-import Control.Lens.Operators
-import Control.Monad (filterM, zipWithM)
-import Control.Monad.Except (ExceptT(..), runExceptT)
-import Control.Monad.IO.Class (MonadIO)
-import Control.Monad.Trans.Class (lift)
-import Data.List (intercalate, isSuffixOf)
-import Development.Duplo.Files (readFile, File(..), fileContent)
-import Development.Shake (CmdOption(..))
-import Development.Shake.FilePath ((</>))
-import Prelude hiding (readFile)
-import System.Console.ANSI (setSGR, SGR(..), ConsoleLayer(..), ColorIntensity(..), Color(..))
-import System.FilePath.Posix (joinPath, splitPath)
-import qualified Control.Lens as CL
-import qualified Development.Duplo.Component as CM
+import           Control.Applicative             ((<$>))
+import qualified Control.Lens                    as CL
+import           Control.Lens.Operators
+import           Control.Monad                   (filterM, zipWithM)
+import           Control.Monad.Except            (ExceptT (..), runExceptT)
+import           Control.Monad.IO.Class          (MonadIO)
+import           Control.Monad.Trans.Class       (lift)
+import           Data.List                       (intercalate, isSuffixOf)
+import qualified Development.Duplo.Component     as CM
+import           Development.Duplo.Files         (File (..), fileContent,
+                                                  readFile)
 import qualified Development.Duplo.Types.AppInfo as AI
-import qualified Development.Duplo.Types.Config as TC
-import qualified Development.Shake as DS
+import qualified Development.Duplo.Types.Config  as TC
+import           Development.Shake               (CmdOption (..))
+import qualified Development.Shake               as DS
+import           Development.Shake.FilePath      ((</>))
+import           Prelude                         hiding (readFile)
+import           System.Console.ANSI             (Color (..),
+                                                  ColorIntensity (..),
+                                                  ConsoleLayer (..), SGR (..),
+                                                  setSGR)
+import           System.FilePath.Posix           (joinPath, splitPath)
 
 type CompiledContent = ExceptT String DS.Action
 type FileProcessor = [File] -> CompiledContent [File]

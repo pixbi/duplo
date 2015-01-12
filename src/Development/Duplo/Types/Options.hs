@@ -1,6 +1,6 @@
 module Development.Duplo.Types.Options where
 
-import System.Console.GetOpt (OptDescr(..), ArgDescr(..))
+import           System.Console.GetOpt (ArgDescr (..), OptDescr (..))
 
 data Options = Options { optVerbose :: Bool
                        , optVersion :: Bool

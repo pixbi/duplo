@@ -1,16 +1,16 @@
 module Development.Duplo.Git where
 
-import Control.Applicative ((<$>))
-import Control.Lens hiding (Action, Level)
-import Control.Monad.Except (runExceptT)
-import Data.List (intercalate, filter)
-import Data.Text (unpack, pack, splitOn)
-import Development.Shake
-import Development.Shake.FilePath ((</>))
-import System.FilePath.Posix (makeRelative)
-import qualified Development.Duplo.Component as CM
+import           Control.Applicative             ((<$>))
+import           Control.Lens                    hiding (Action, Level)
+import           Control.Monad.Except            (runExceptT)
+import           Data.List                       (filter, intercalate)
+import           Data.Text                       (pack, splitOn, unpack)
+import qualified Development.Duplo.Component     as CM
 import qualified Development.Duplo.Types.AppInfo as AI
-import qualified Development.Duplo.Types.Config as TC
+import qualified Development.Duplo.Types.Config  as TC
+import           Development.Shake
+import           Development.Shake.FilePath      ((</>))
+import           System.FilePath.Posix           (makeRelative)
 
 type Level         = String
 type Version       = String

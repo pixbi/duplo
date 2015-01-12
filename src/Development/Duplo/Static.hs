@@ -1,16 +1,21 @@
 module Development.Duplo.Static where
 
-import Control.Applicative ((<$>))
-import Control.Lens hiding (Action)
-import Control.Monad (zipWithM_, filterM)
-import Data.List (transpose, nub)
-import Development.Duplo.FileList (makeFile, makeFiles, toCopies, collapseFileLists, Copy)
-import Development.Duplo.Utilities (logStatus, headerPrintSetter, createIntermediaryDirectories, createPathDirectories, getDirectoryFiles)
-import Development.Shake hiding (getDirectoryFiles)
-import Development.Shake.FilePath ((</>))
-import System.FilePath.Posix (splitExtension, splitDirectories, makeRelative)
-import qualified Development.Duplo.FileList as FileList (filePath)
+import           Control.Applicative            ((<$>))
+import           Control.Lens                   hiding (Action)
+import           Control.Monad                  (filterM, zipWithM_)
+import           Data.List                      (nub, transpose)
+import           Development.Duplo.FileList     (Copy, collapseFileLists,
+                                                 makeFile, makeFiles, toCopies)
+import qualified Development.Duplo.FileList     as FileList (filePath)
 import qualified Development.Duplo.Types.Config as TC
+import           Development.Duplo.Utilities    (createIntermediaryDirectories,
+                                                 createPathDirectories,
+                                                 getDirectoryFiles,
+                                                 headerPrintSetter, logStatus)
+import           Development.Shake              hiding (getDirectoryFiles)
+import           Development.Shake.FilePath     ((</>))
+import           System.FilePath.Posix          (makeRelative, splitDirectories,
+                                                 splitExtension)
 
 build :: TC.BuildConfig
       -> [FilePath]

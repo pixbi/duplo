@@ -2,35 +2,41 @@
 
 module Main where
 
-import Control.Applicative ((<$>))
-import Control.Exception (catch, handle, throw, Exception)
-import Control.Lens.Operators
-import Control.Monad (void, when, unless)
-import Control.Monad.Trans.Maybe (MaybeT(..), runMaybeT)
-import Data.ByteString.Base64 (decode)
-import Data.ByteString.Char8 (pack, unpack)
-import Data.Maybe (fromMaybe)
-import Development.Duplo (build)
-import Development.Duplo.Server (serve)
-import Development.Duplo.Utilities (logStatus, errorPrintSetter)
-import Development.Duplo.Watcher (watch)
-import Development.Shake (cmd, ShakeException(..))
-import Development.Shake.FilePath ((</>))
-import GHC.Conc (forkIO)
-import System.Console.GetOpt (getOpt, OptDescr(..), ArgDescr(..), ArgOrder(..))
-import System.Directory (getCurrentDirectory, createDirectoryIfMissing, doesFileExist)
-import System.Environment (lookupEnv, getArgs, getExecutablePath)
-import System.FilePath.Posix (takeDirectory)
-import System.Process (proc, createProcess, waitForProcess)
+import           Control.Applicative             ((<$>))
+import           Control.Exception               (Exception, catch, handle,
+                                                  throw)
 import qualified Control.Lens
-import qualified Development.Duplo.Component as CM
+import           Control.Lens.Operators
+import           Control.Monad                   (unless, void, when)
+import           Control.Monad.Trans.Maybe       (MaybeT (..), runMaybeT)
+import           Data.ByteString.Base64          (decode)
+import           Data.ByteString.Char8           (pack, unpack)
+import           Data.List.Utils                 (replace)
+import           Data.Maybe                      (fromMaybe)
+import           Development.Duplo               (build)
+import qualified Development.Duplo.Component     as CM
+import           Development.Duplo.Server        (serve)
 import qualified Development.Duplo.Types.AppInfo as AI
 import qualified Development.Duplo.Types.Builder as TB
-import qualified Development.Duplo.Types.Config as TC
+import qualified Development.Duplo.Types.Config  as TC
 import qualified Development.Duplo.Types.Options as OP
+import           Development.Duplo.Utilities     (errorPrintSetter, logStatus)
+import           Development.Duplo.Watcher       (watch)
+import           Development.Shake               (ShakeException (..), cmd)
+import           Development.Shake.FilePath      ((</>))
 import qualified Filesystem.Path
+import           GHC.Conc                        (forkIO)
 import qualified GHC.IO
-import Data.List.Utils (replace)
+import           System.Console.GetOpt           (ArgDescr (..), ArgOrder (..),
+                                                  OptDescr (..), getOpt)
+import           System.Directory                (createDirectoryIfMissing,
+                                                  doesFileExist,
+                                                  getCurrentDirectory)
+import           System.Environment              (getArgs, getExecutablePath,
+                                                  lookupEnv)
+import           System.FilePath.Posix           (takeDirectory)
+import           System.Process                  (createProcess, proc,
+                                                  waitForProcess)
 
 main :: IO ()
 main = do

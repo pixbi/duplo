@@ -2,19 +2,20 @@
 
 module Development.Duplo.Files where
 
-import Control.Exception (throw)
-import Control.Lens hiding (Action)
-import Control.Lens.TH (makeLenses)
-import Control.Monad.Except (ExceptT(..), runExceptT)
-import Control.Monad.Trans.Class (lift)
-import Data.List (intercalate)
-import Data.Text (split, pack, unpack)
-import Development.Duplo.Component (appId)
-import Development.Shake hiding (readFile)
-import Prelude hiding (readFile)
-import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)
-import qualified Development.Duplo.Component as CM
+import           Control.Exception               (throw)
+import           Control.Lens                    hiding (Action)
+import           Control.Lens.TH                 (makeLenses)
+import           Control.Monad.Except            (ExceptT (..), runExceptT)
+import           Control.Monad.Trans.Class       (lift)
+import           Data.List                       (intercalate)
+import           Data.Text                       (pack, split, unpack)
+import           Development.Duplo.Component     (appId)
+import qualified Development.Duplo.Component     as CM
 import qualified Development.Duplo.Types.Builder as BD
+import           Development.Shake               hiding (readFile)
+import           Prelude                         hiding (readFile)
+import           System.FilePath.Posix           (joinPath, makeRelative,
+                                                  splitDirectories)
 
 type FileName    = String
 type FileContent = String

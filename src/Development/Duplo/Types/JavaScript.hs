@@ -2,11 +2,11 @@
 
 module Development.Duplo.Types.JavaScript where
 
-import Control.Exception (Exception)
-import Control.Monad.State.Lazy (State)
-import Data.List (intercalate)
-import Data.Typeable (Typeable)
-import Language.JavaScript.Parser (JSNode(..))
+import           Control.Exception          (Exception)
+import           Control.Monad.State.Lazy   (State)
+import           Data.List                  (intercalate)
+import           Data.Typeable              (Typeable)
+import           Language.JavaScript.Parser (JSNode (..))
 
 data JSCompilerException = ModuleNotFoundException ModuleName
                          | CircularDependencyException [ModuleName]

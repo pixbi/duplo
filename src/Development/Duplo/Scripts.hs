@@ -2,28 +2,35 @@
 
 module Development.Duplo.Scripts where
 
-import Control.Applicative ((<*>), (<$>))
-import Control.Exception (throw, SomeException(..))
-import Control.Lens hiding (Action)
-import Control.Monad (filterM)
-import Control.Monad.Trans.Class (lift)
-import Data.Function (on)
-import Data.List (intercalate, nubBy)
-import Data.Text.Format (left)
-import Data.Text.Lazy (Text, pack, unpack, replace, splitOn)
-import Data.Text.Lazy.Builder (toLazyText)
-import Development.Duplo.Component (extractCompVersions)
-import Development.Duplo.Files (File(..), pseudoFile)
-import Development.Duplo.JavaScript.Order (order)
-import Development.Duplo.Types.JavaScript
-import Development.Duplo.Utilities (logStatus, headerPrintSetter, expandPaths, compile, createIntermediaryDirectories, CompiledContent, expandDeps)
-import Development.Shake
-import Development.Shake.FilePath ((</>))
-import Language.JavaScript.Parser.SrcLocation (TokenPosn(..))
-import Text.Regex (mkRegex, matchRegex)
-import qualified Development.Duplo.Component as CM
-import qualified Development.Duplo.Types.Config as TC
-import qualified Language.JavaScript.Parser as JS
+import           Control.Applicative                    ((<$>), (<*>))
+import           Control.Exception                      (SomeException (..),
+                                                         throw)
+import           Control.Lens                           hiding (Action)
+import           Control.Monad                          (filterM)
+import           Control.Monad.Trans.Class              (lift)
+import           Data.Function                          (on)
+import           Data.List                              (intercalate, nubBy)
+import           Data.Text.Format                       (left)
+import           Data.Text.Lazy                         (Text, pack, replace,
+                                                         splitOn, unpack)
+import           Data.Text.Lazy.Builder                 (toLazyText)
+import           Development.Duplo.Component            (extractCompVersions)
+import qualified Development.Duplo.Component            as CM
+import           Development.Duplo.Files                (File (..), pseudoFile)
+import           Development.Duplo.JavaScript.Order     (order)
+import qualified Development.Duplo.Types.Config         as TC
+import           Development.Duplo.Types.JavaScript
+import           Development.Duplo.Utilities            (CompiledContent,
+                                                         compile, createIntermediaryDirectories,
+                                                         expandDeps,
+                                                         expandPaths,
+                                                         headerPrintSetter,
+                                                         logStatus)
+import           Development.Shake
+import           Development.Shake.FilePath             ((</>))
+import qualified Language.JavaScript.Parser             as JS
+import           Language.JavaScript.Parser.SrcLocation (TokenPosn (..))
+import           Text.Regex                             (matchRegex, mkRegex)
 
 -- | How many lines to display around the source of error (both ways).
 errorDisplayRange :: Int

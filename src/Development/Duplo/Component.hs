@@ -2,31 +2,40 @@
 
 module Development.Duplo.Component where
 
-import Control.Applicative ((<$>), (<*>))
-import Control.Exception (throw)
-import Control.Monad (when, liftM)
-import Control.Monad.Trans.Class (lift)
-import Data.Aeson (encode, decode)
-import Data.Aeson.Encode.Pretty (encodePretty)
-import Data.ByteString.Lazy.Char8 (ByteString)
-import Data.HashMap.Lazy (empty, keys, lookup)
-import Data.List (isPrefixOf)
-import Data.Map (fromList)
-import Data.Maybe (fromJust, fromMaybe)
-import Data.Text (breakOn)
-import Development.Duplo.Types.AppInfo (AppInfo(..))
-import Development.Shake hiding (doesFileExist, getDirectoryContents, doesDirectoryExist)
-import Development.Shake.FilePath ((</>))
-import Prelude hiding (lookup)
-import System.Directory (doesFileExist, doesDirectoryExist, getDirectoryContents, getCurrentDirectory)
-import System.FilePath.FilePather.FilterPredicate (filterPredicate)
-import System.FilePath.FilePather.Find (findp)
-import System.FilePath.FilePather.RecursePredicate (recursePredicate)
-import System.FilePath.Posix (makeRelative, dropExtension, splitDirectories, equalFilePath, takeFileName, dropTrailingPathSeparator)
-import qualified Data.ByteString.Lazy.Char8 as BS (unpack, pack)
-import qualified Data.Text as T (unpack, pack)
-import qualified Development.Duplo.Types.AppInfo as AI
-import qualified Development.Duplo.Types.Builder as BD
+import           Control.Applicative                         ((<$>), (<*>))
+import           Control.Exception                           (throw)
+import           Control.Monad                               (liftM, when)
+import           Control.Monad.Trans.Class                   (lift)
+import           Data.Aeson                                  (decode, encode)
+import           Data.Aeson.Encode.Pretty                    (encodePretty)
+import           Data.ByteString.Lazy.Char8                  (ByteString)
+import qualified Data.ByteString.Lazy.Char8                  as BS (pack,
+                                                                    unpack)
+import           Data.HashMap.Lazy                           (empty, keys,
+                                                              lookup)
+import           Data.List                                   (isPrefixOf)
+import           Data.Map                                    (fromList)
+import           Data.Maybe                                  (fromJust,
+                                                              fromMaybe)
+import           Data.Text                                   (breakOn)
+import qualified Data.Text                                   as T (pack, unpack)
+import           Development.Duplo.Types.AppInfo             (AppInfo (..))
+import qualified Development.Duplo.Types.AppInfo             as AI
+import qualified Development.Duplo.Types.Builder             as BD
+import           Development.Shake                           hiding (doesDirectoryExist,
+                                                              doesFileExist, getDirectoryContents)
+import           Development.Shake.FilePath                  ((</>))
+import           Prelude                                     hiding (lookup)
+import           System.Directory                            (doesDirectoryExist,
+                                                              doesFileExist, getCurrentDirectory, getDirectoryContents)
+import           System.FilePath.FilePather.FilterPredicate  (filterPredicate)
+import           System.FilePath.FilePather.Find             (findp)
+import           System.FilePath.FilePather.RecursePredicate (recursePredicate)
+import           System.FilePath.Posix                       (dropExtension, dropTrailingPathSeparator,
+                                                              equalFilePath,
+                                                              makeRelative,
+                                                              splitDirectories,
+                                                              takeFileName)
 
 type Version = (String, String)
 

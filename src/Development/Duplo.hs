@@ -1,25 +1,27 @@
 module Development.Duplo where
 
-import Control.Exception (throw)
-import Control.Lens hiding (Action)
-import Control.Monad (void, when, unless)
-import Control.Monad.Except (runExceptT)
-import Development.Duplo.Git as Git
-import Development.Duplo.Markups as Markups
-import Development.Duplo.Scripts as Scripts
-import Development.Duplo.Static as Static
-import Development.Duplo.Styles as Styles
-import Development.Duplo.Utilities (logStatus, headerPrintSetter, successPrintSetter, createStdEnv)
-import Development.Shake
-import Development.Shake.FilePath ((</>))
-import System.Console.GetOpt (OptDescr(..), ArgDescr(..))
-import System.IO (readFile)
-import qualified Development.Duplo.Component as CM
+import           Control.Exception               (throw)
+import           Control.Lens                    hiding (Action)
+import           Control.Monad                   (unless, void, when)
+import           Control.Monad.Except            (runExceptT)
+import qualified Development.Duplo.Component     as CM
+import           Development.Duplo.Git           as Git
+import           Development.Duplo.Markups       as Markups
+import           Development.Duplo.Scripts       as Scripts
+import           Development.Duplo.Static        as Static
+import           Development.Duplo.Styles        as Styles
 import qualified Development.Duplo.Types.AppInfo as AI
 import qualified Development.Duplo.Types.Builder as BD
-import qualified Development.Duplo.Types.Config as TC
+import qualified Development.Duplo.Types.Config  as TC
 import qualified Development.Duplo.Types.Options as OP
-import qualified Development.Shake as DS
+import           Development.Duplo.Utilities     (createStdEnv,
+                                                  headerPrintSetter, logStatus,
+                                                  successPrintSetter)
+import           Development.Shake
+import qualified Development.Shake               as DS
+import           Development.Shake.FilePath      ((</>))
+import           System.Console.GetOpt           (ArgDescr (..), OptDescr (..))
+import           System.IO                       (readFile)
 
 shakeOpts = shakeOptions { shakeThreads = 4 }
 

@@ -1,15 +1,20 @@
 module Development.Duplo.Watcher where
 
-import Control.Concurrent (threadDelay, forkIO, forkFinally, ThreadId(..), killThread)
-import Control.Concurrent.Chan (Chan, newChan, readChan, getChanContents)
-import Control.Exception (try)
-import Control.Monad (forever, void, when, unless)
-import Data.Foldable (forM_)
-import Data.IORef (newIORef, readIORef, writeIORef, IORef)
-import Data.Maybe (isJust, fromJust)
-import Data.String (fromString)
-import System.FSNotify (withManagerConf, watchTreeChan, WatchConfig(..), Debounce(..), Action, Event)
-import System.FilePath.Posix (FilePath)
+import           Control.Concurrent      (ThreadId (..), forkFinally, forkIO,
+                                          killThread, threadDelay)
+import           Control.Concurrent.Chan (Chan, getChanContents, newChan,
+                                          readChan)
+import           Control.Exception       (try)
+import           Control.Monad           (forever, unless, void, when)
+import           Data.Foldable           (forM_)
+import           Data.IORef              (IORef, newIORef, readIORef,
+                                          writeIORef)
+import           Data.Maybe              (fromJust, isJust)
+import           Data.String             (fromString)
+import           System.FilePath.Posix   (FilePath)
+import           System.FSNotify         (Action, Debounce (..), Event,
+                                          WatchConfig (..), watchTreeChan,
+                                          withManagerConf)
 
 -- | Given some paths to watch and something to do, watch every 100ms
 -- without debouncing but would interrupt the action when there is a new

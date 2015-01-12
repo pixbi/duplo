@@ -2,10 +2,10 @@
 
 module Development.Duplo.Types.Config where
 
-import Control.Lens hiding (Action)
-import Control.Lens.TH (makeLenses)
-import Development.Shake
-import Network.Wai.Handler.Warp (Port)
+import           Control.Lens             hiding (Action)
+import           Control.Lens.TH          (makeLenses)
+import           Development.Shake
+import           Network.Wai.Handler.Warp (Port)
 
 data BuildConfig = BuildConfig { _appName      :: String
                                , _appVersion   :: String

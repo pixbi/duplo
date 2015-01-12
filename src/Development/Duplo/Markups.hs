@@ -1,22 +1,29 @@
 module Development.Duplo.Markups where
 
-import Control.Applicative ((<$>))
-import Control.Exception (throw)
-import Control.Lens hiding (Action)
-import Control.Monad.Trans.Class (lift)
-import Data.Maybe (fromMaybe)
-import Development.Duplo.Component (parseComponentId)
-import Development.Duplo.FileList (collapseFileList, makeFile)
-import Development.Duplo.Files (File(..), filePath, fileDir, fileName, componentId, fileContent, isRoot, ComponentId)
-import Development.Duplo.Utilities (logStatus, headerPrintSetter, expandPaths, compile, createIntermediaryDirectories, CompiledContent, expandDeps)
-import Development.Shake
-import Development.Shake.FilePath ((</>))
-import System.Directory (findFile)
-import System.FilePath.Posix (makeRelative, splitDirectories, joinPath)
-import qualified Development.Duplo.FileList as FileList (filePath)
+import           Control.Applicative             ((<$>))
+import           Control.Exception               (throw)
+import           Control.Lens                    hiding (Action)
+import           Control.Monad.Trans.Class       (lift)
+import           Data.List.Utils                 (replace)
+import           Data.Maybe                      (fromMaybe)
+import           Development.Duplo.Component     (parseComponentId)
+import           Development.Duplo.FileList      (collapseFileList, makeFile)
+import qualified Development.Duplo.FileList      as FileList (filePath)
+import           Development.Duplo.Files         (ComponentId, File (..),
+                                                  componentId, fileContent,
+                                                  fileDir, fileName, filePath,
+                                                  isRoot)
 import qualified Development.Duplo.Types.Builder as BD
-import qualified Development.Duplo.Types.Config as TC
-import Data.List.Utils (replace)
+import qualified Development.Duplo.Types.Config  as TC
+import           Development.Duplo.Utilities     (CompiledContent, compile,
+                                                  createIntermediaryDirectories,
+                                                  expandDeps, expandPaths,
+                                                  headerPrintSetter, logStatus)
+import           Development.Shake
+import           Development.Shake.FilePath      ((</>))
+import           System.Directory                (findFile)
+import           System.FilePath.Posix           (joinPath, makeRelative,
+                                                  splitDirectories)
 
 build :: TC.BuildConfig
       -> FilePath
@@ -93,7 +100,7 @@ build config out = do
                                                    ]
 
   let buildScriptTag path = "<script defer=\"defer\" src=\"" ++ makeRelative cwd path ++ "\"></script>"
-  let scriptsTags         = concat $ map buildScriptTag scriptsPaths
+  let scriptsTags         = concatMap buildScriptTag scriptsPaths
   let indexWithTestRefs   = if   inTest
                             then replace "</head>" (refTagsInTest ++ scriptsTags ++ "</head>") indexWithRefs
                             else indexWithRefs

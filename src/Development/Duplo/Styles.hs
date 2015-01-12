@@ -1,11 +1,14 @@
 module Development.Duplo.Styles where
 
-import Control.Lens hiding (Action)
-import Control.Monad.Trans.Class (lift)
-import Development.Duplo.Utilities (logStatus, headerPrintSetter, expandPaths, compile, createIntermediaryDirectories, CompiledContent, expandDeps)
-import Development.Shake
-import Development.Shake.FilePath ((</>))
+import           Control.Lens                   hiding (Action)
+import           Control.Monad.Trans.Class      (lift)
 import qualified Development.Duplo.Types.Config as TC
+import           Development.Duplo.Utilities    (CompiledContent, compile,
+                                                 createIntermediaryDirectories,
+                                                 expandDeps, expandPaths,
+                                                 headerPrintSetter, logStatus)
+import           Development.Shake
+import           Development.Shake.FilePath     ((</>))
 
 build :: TC.BuildConfig
       -> FilePath

@@ -2,9 +2,9 @@
 
 module Development.Duplo.Types.AppInfo where
 
-import Data.Aeson (FromJSON, ToJSON)
-import Data.HashMap.Strict (HashMap, empty)
-import GHC.Generics (Generic)
+import           Data.Aeson          (FromJSON, ToJSON)
+import           Data.HashMap.Strict (HashMap, empty)
+import           GHC.Generics        (Generic)
 
 type Dependencies = HashMap String String
 type Modes = HashMap String [String]

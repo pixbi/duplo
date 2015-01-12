@@ -1,18 +1,18 @@
 module Development.Duplo.Server where
 
-import Control.Monad.Trans (liftIO)
-import Data.List (intercalate)
-import Data.Text (Text)
-import Data.Text.Lazy (Text)
-import Network.HTTP.Types (status200)
-import Network.Wai (pathInfo)
-import Network.Wai.Handler.Warp (Port)
-import System.Directory (doesFileExist)
-import System.Environment (getArgs)
-import System.FilePath.Posix (takeExtension)
-import Web.Scotty
-import qualified Data.Text as T
-import qualified Data.Text.Lazy as LT
+import           Control.Monad.Trans      (liftIO)
+import           Data.List                (intercalate)
+import           Data.Text                (Text)
+import qualified Data.Text                as T
+import           Data.Text.Lazy           (Text)
+import qualified Data.Text.Lazy           as LT
+import           Network.HTTP.Types       (status200)
+import           Network.Wai              (pathInfo)
+import           Network.Wai.Handler.Warp (Port)
+import           System.Directory         (doesFileExist)
+import           System.Environment       (getArgs)
+import           System.FilePath.Posix    (takeExtension)
+import           Web.Scotty
 
 serve :: Port -> IO ()
 serve port = do

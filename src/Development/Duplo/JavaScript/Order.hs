@@ -2,18 +2,20 @@
 
 module Development.Duplo.JavaScript.Order where
 
-import Control.Applicative ((<$>))
-import Control.Exception (throw)
-import Control.Lens (makeLenses, ix)
-import Control.Lens.Operators
-import Control.Monad (liftM, when, void)
-import Control.Monad.State.Lazy (get, put, state, execState)
-import Control.Monad.Writer.Lazy (Writer, tell, runWriter)
-import Data.Function (on)
-import Data.List (findIndex, sortBy, nubBy)
-import Data.Maybe (isJust, fromJust, fromMaybe)
-import Development.Duplo.Types.JavaScript
-import Language.JavaScript.Parser (JSNode(..), Node(..), TokenPosn(..))
+import           Control.Applicative                ((<$>))
+import           Control.Exception                  (throw)
+import           Control.Lens                       (ix, makeLenses)
+import           Control.Lens.Operators
+import           Control.Monad                      (liftM, void, when)
+import           Control.Monad.State.Lazy           (execState, get, put, state)
+import           Control.Monad.Writer.Lazy          (Writer, runWriter, tell)
+import           Data.Function                      (on)
+import           Data.List                          (findIndex, nubBy, sortBy)
+import           Data.Maybe                         (fromJust, fromMaybe,
+                                                     isJust)
+import           Development.Duplo.Types.JavaScript
+import           Language.JavaScript.Parser         (JSNode (..), Node (..),
+                                                     TokenPosn (..))
 
 makeLenses ''Module
 
