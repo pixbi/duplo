@@ -100,6 +100,9 @@ Anything under `dev/modules/` would be treated just like those under
 `app/modules/`, that they would be concatenated/compiled into the respective
 output files (i.e. `index.html`, `index.css`, or `index.js`).
 
+This repo is checked with [git-vogue](https://github.com/anchor/git-vogue).
+It's highly recommended that you use it for duplo development as well.
+
 
 ## Testing
 
