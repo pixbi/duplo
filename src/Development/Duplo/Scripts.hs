@@ -8,6 +8,7 @@ import           Control.Exception                      (SomeException (..),
 import           Control.Lens                           hiding (Action)
 import           Control.Monad                          (filterM)
 import           Control.Monad.Trans.Class              (lift)
+import           Control.Monad.Trans.Maybe              (MaybeT (..))
 import           Data.Function                          (on)
 import           Data.List                              (intercalate, nubBy)
 import           Data.Text.Format                       (left)
@@ -94,7 +95,7 @@ build config out = do
   let duploIn = if not (null input) then input else ""
 
   -- Figure out each component's version
-  compVers <- liftIO $ extractCompVersions cwd
+  compVers <- lift $ extractCompVersions config
 
   -- Inject global/environment variables
   let envVars = "var DUPLO_ENV = '" ++ env ++ "';\n"

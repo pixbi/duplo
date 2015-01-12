@@ -2,40 +2,40 @@
 
 module Development.Duplo.Component where
 
-import           Control.Applicative                         ((<$>), (<*>))
-import           Control.Exception                           (throw)
-import           Control.Monad                               (liftM, when)
-import           Control.Monad.Trans.Class                   (lift)
-import           Data.Aeson                                  (decode, encode)
-import           Data.Aeson.Encode.Pretty                    (encodePretty)
-import           Data.ByteString.Lazy.Char8                  (ByteString)
-import qualified Data.ByteString.Lazy.Char8                  as BS (pack,
-                                                                    unpack)
-import           Data.HashMap.Lazy                           (empty, keys,
-                                                              lookup)
-import           Data.List                                   (isPrefixOf)
-import           Data.Map                                    (fromList)
-import           Data.Maybe                                  (fromJust,
-                                                              fromMaybe)
-import           Data.Text                                   (breakOn)
-import qualified Data.Text                                   as T (pack, unpack)
-import           Development.Duplo.Types.AppInfo             (AppInfo (..))
-import qualified Development.Duplo.Types.AppInfo             as AI
-import qualified Development.Duplo.Types.Builder             as BD
-import           Development.Shake                           hiding (doesDirectoryExist,
-                                                              doesFileExist, getDirectoryContents)
-import           Development.Shake.FilePath                  ((</>))
-import           Prelude                                     hiding (lookup)
-import           System.Directory                            (doesDirectoryExist,
-                                                              doesFileExist, getCurrentDirectory, getDirectoryContents)
-import           System.FilePath.FilePather.FilterPredicate  (filterPredicate)
-import           System.FilePath.FilePather.Find             (findp)
-import           System.FilePath.FilePather.RecursePredicate (recursePredicate)
-import           System.FilePath.Posix                       (dropExtension, dropTrailingPathSeparator,
-                                                              equalFilePath,
-                                                              makeRelative,
-                                                              splitDirectories,
-                                                              takeFileName)
+import           Control.Applicative             ((<$>), (<*>))
+import           Control.Exception               (throw)
+import qualified Control.Lens                    as LS
+import           Control.Lens.Operators
+import           Control.Monad                   (liftM, when)
+import           Control.Monad.Trans.Class       (lift)
+import           Data.Aeson                      (decode, encode)
+import           Data.Aeson.Encode.Pretty        (encodePretty)
+import           Data.ByteString.Lazy.Char8      (ByteString)
+import qualified Data.ByteString.Lazy.Char8      as BS (pack, unpack)
+import           Data.HashMap.Lazy               (empty, keys, lookup)
+import           Data.List                       (isPrefixOf)
+import           Data.Map                        (fromList)
+import           Data.Maybe                      (fromJust, fromMaybe)
+import           Data.Text                       (breakOn)
+import qualified Data.Text                       as T (pack, unpack)
+import           Development.Duplo.Types.AppInfo (AppInfo (..))
+import qualified Development.Duplo.Types.AppInfo as AI
+import qualified Development.Duplo.Types.Builder as BD
+import qualified Development.Duplo.Types.Config  as TC
+import           Development.Shake               hiding (doesDirectoryExist,
+                                                  doesFileExist,
+                                                  getDirectoryContents)
+import           Development.Shake.FilePath      ((</>))
+import           Prelude                         hiding (lookup)
+import           System.Directory                (doesDirectoryExist,
+                                                  doesFileExist,
+                                                  getCurrentDirectory,
+                                                  getDirectoryContents)
+import           System.FilePath.Posix           (dropExtension,
+                                                  dropTrailingPathSeparator,
+                                                  equalFilePath, makeRelative,
+                                                  splitDirectories,
+                                                  takeFileName)
 
 type Version = (String, String)
 
@@ -82,15 +82,17 @@ parseComponentId cId
     repoL = length $ T.unpack repo
 
 -- | Given a path, find all the `component.json` and return a JSON string
-extractCompVersions :: FilePath -> IO String
-extractCompVersions path = do
+extractCompVersions :: TC.BuildConfig -> Action String
+extractCompVersions config = do
+    let path     = config ^. TC.cwd
+    let utilPath = config ^. TC.utilPath
     -- Get all the relevant paths
-    paths <- getAllManifestPaths path
+    paths <- getAllManifestPaths utilPath path
     -- Construct the pipeline
     let toVersion path = appInfoToVersion . decodeManifest path . BS.pack
     let takeVersion path = liftM (toVersion path) (readFile path)
     -- Go through it
-    manifests <- mapM takeVersion paths
+    manifests <- mapM (liftIO . takeVersion) paths
     -- Marshalling
     return $ BS.unpack $ encode $ fromList manifests
 
@@ -106,19 +108,10 @@ appInfoToVersion :: AppInfo -> Version
 appInfoToVersion appInfo = (AI.name appInfo, AI.version appInfo)
 
 -- | Given a path, find all the `component.json`s
-getAllManifestPaths :: FilePath -> IO [FilePath]
-getAllManifestPaths root = allPaths
-  where
-    -- Filter for `component.json`.
-    matchName path t = takeFileName path == takeFileName manifestName
-    filterP          = filterPredicate matchName
-    -- We only care about the root directory and the `components/` directory.
-    componentsPath   = dropTrailingPathSeparator $ root </> "components/"
-    proceed absPath  = equalFilePath root absPath
-                    || componentsPath `isPrefixOf` absPath
-    recurseP         = recursePredicate proceed
-    -- Collect the paths here.
-    allPaths         = findp filterP recurseP root
+getAllManifestPaths :: FilePath -> FilePath -> Action [FilePath]
+getAllManifestPaths utilPath root = do
+    Stdout out <- command [] (utilPath </> "find.sh") [root, manifestName]
+    return $ lines out
 
 -- | Get the component dependency list by providing a mode, or not.
 getDependencies :: Maybe String -> IO [FilePath]

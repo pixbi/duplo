@@ -2,7 +2,6 @@ module Development.Duplo.Git where
 
 import           Control.Applicative             ((<$>))
 import           Control.Lens                    hiding (Action, Level)
-import           Control.Monad.Except            (runExceptT)
 import           Data.List                       (filter, intercalate)
 import           Data.Text                       (pack, splitOn, unpack)
 import qualified Development.Duplo.Component     as CM

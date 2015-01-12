@@ -5,8 +5,8 @@ module Development.Duplo.Files where
 import           Control.Exception               (throw)
 import           Control.Lens                    hiding (Action)
 import           Control.Lens.TH                 (makeLenses)
-import           Control.Monad.Except            (ExceptT (..), runExceptT)
 import           Control.Monad.Trans.Class       (lift)
+import           Control.Monad.Trans.Maybe       (MaybeT (..))
 import           Data.List                       (intercalate)
 import           Data.Text                       (pack, split, unpack)
 import           Development.Duplo.Component     (appId)
@@ -39,7 +39,7 @@ pseudoFile = File { _filePath    = ""
 
 makeLenses ''File
 
-readFile :: FilePath -> FilePath -> ExceptT String Action File
+readFile :: FilePath -> FilePath -> MaybeT Action File
 readFile cwd path = do
   let (fileDir, fileName) = parseFilePath path
   fileContent <- lift $ readFile' path

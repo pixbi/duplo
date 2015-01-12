@@ -4,9 +4,9 @@ import           Control.Applicative             ((<$>))
 import qualified Control.Lens                    as CL
 import           Control.Lens.Operators
 import           Control.Monad                   (filterM, zipWithM)
-import           Control.Monad.Except            (ExceptT (..), runExceptT)
 import           Control.Monad.IO.Class          (MonadIO)
 import           Control.Monad.Trans.Class       (lift)
+import           Control.Monad.Trans.Maybe       (MaybeT (..))
 import           Data.List                       (intercalate, isSuffixOf)
 import qualified Development.Duplo.Component     as CM
 import           Development.Duplo.Files         (File (..), fileContent,
@@ -23,7 +23,7 @@ import           System.Console.ANSI             (Color (..),
                                                   setSGR)
 import           System.FilePath.Posix           (joinPath, splitPath)
 
-type CompiledContent = ExceptT String DS.Action
+type CompiledContent = MaybeT DS.Action
 type FileProcessor = [File] -> CompiledContent [File]
 type StringProcessor = String -> CompiledContent String
 

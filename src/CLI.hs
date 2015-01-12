@@ -5,10 +5,9 @@ module Main where
 import           Control.Applicative             ((<$>))
 import           Control.Exception               (Exception, catch, handle,
                                                   throw)
-import qualified Control.Lens
+import qualified Control.Lens                    as LS
 import           Control.Lens.Operators
 import           Control.Monad                   (unless, void, when)
-import           Control.Monad.Trans.Maybe       (MaybeT (..), runMaybeT)
 import           Data.ByteString.Base64          (decode)
 import           Data.ByteString.Char8           (pack, unpack)
 import           Data.List.Utils                 (replace)

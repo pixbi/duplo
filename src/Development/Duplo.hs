@@ -3,7 +3,7 @@ module Development.Duplo where
 import           Control.Exception               (throw)
 import           Control.Lens                    hiding (Action)
 import           Control.Monad                   (unless, void, when)
-import           Control.Monad.Except            (runExceptT)
+import           Control.Monad.Trans.Maybe       (runMaybeT)
 import qualified Development.Duplo.Component     as CM
 import           Development.Duplo.Git           as Git
 import           Development.Duplo.Markups       as Markups
@@ -45,9 +45,9 @@ build cmdName cmdArgs config options = shake shakeOpts $ do
     let targetScript = targetPath </> "index.js"
     let targetStyle  = targetPath </> "index.css"
     let targetMarkup = targetPath </> "index.html"
-    targetScript *> (void . runExceptT . Scripts.build config)
-    targetStyle  *> (void . runExceptT . Styles.build config)
-    targetMarkup *> (void . runExceptT . Markups.build config)
+    targetScript *> (void . runMaybeT . Scripts.build config)
+    targetStyle  *> (void . runMaybeT . Styles.build config)
+    targetMarkup *> (void . runMaybeT . Markups.build config)
 
     -- Manually bootstrap Shake
     action $ do
