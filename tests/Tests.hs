@@ -1,29 +1,42 @@
-{-# LANGUAGE TemplateHaskell #-}
+{-# OPTIONS_GHC -fno-warn-orphans #-}
 
 module Main where
 
-import           Data.Functor                    (fmap)
 import qualified Development.Duplo.Component     as DC
 import           Development.Duplo.Types.AppInfo
-import           Test.Hspec
-import           Test.QuickCheck
+import           Test.HUnit                      ()
+import           Test.QuickCheck                 ()
 
-runTests = $verboseCheckAll
+import           Test.Tasty
+import           Test.Tasty.HUnit
+import           Test.Tasty.QuickCheck           as QC
 
 main :: IO ()
-main = do
-  -- First QuickCheck
-  verboseCheck prop_slashToDash
+main = defaultMain tests
 
-  -- Then HSpec
-  hspec $
-    describe "Component support" $
-      it "extracts component ID" $ do
-        let appInfo = defaultAppInfo { repo = "pixbi/duplo" }
-        let appId   = DC.appId appInfo
-        appId `shouldBe` "pixbi-duplo"
+tests :: TestTree
+tests = testGroup "Tests"
+  [ testGroup "Component support"
+    [ QC.testProperty "slash is transformed into dash" $ \appInfo ->
+        let
+          value        = DC.appId appInfo
+          repo'        = repo appInfo
+          onlyOneSlash = (== 1) . length . filter (== '/')
+        in
+          not (null repo')    ==>
+          (head repo' /= '/') ==>
+          (last repo' /= '/') ==>
+          onlyOneSlash repo'  ==>
+            value == replaceFirst '/' '-' repo'
 
-  return ()
+    , testCase "extracts component ID" $ do
+      let appInfo = defaultAppInfo { repo = "pixbi/duplo" }
+      let appId   = DC.appId appInfo
+      appId @?= "pixbi-duplo"
+
+    ]
+  ]
+
 
 newtype NameString = NameString
                      { unwrapNameString :: String
@@ -39,17 +52,6 @@ instance Arbitrary AppInfo where
       nameString  <- arbitrary :: Gen NameString
       let string = unwrapNameString nameString
       return defaultAppInfo { repo = string }
-
-prop_slashToDash appInfo =
-    not (null repo')    ==>
-    (head repo' /= '/') ==>
-    (last repo' /= '/') ==>
-    onlyOneSlash repo'  ==>
-      value == replaceFirst '/' '-' repo'
-  where
-    value        = DC.appId appInfo
-    repo'        = repo appInfo
-    onlyOneSlash = (== 1) . length . filter (== '/')
 
 -- | Replace the first occurence of a character in a string.
 replaceFirst :: Char -> Char -> String -> String
