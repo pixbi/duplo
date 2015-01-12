@@ -8,15 +8,10 @@
 ._*
 Icon
 
+cabal.sandbox.config
 .cabal*
 .shake*
-cabal*
 dist/
 node_modules/
 
-etc/test/vendor/chai*
-etc/test/vendor/mocha*
-etc/test/vendor/sinon*
-etc/test/vendor/should*
-
-etc/test/browserstack.json
+etc/test/vendor/*
