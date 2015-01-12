@@ -17,6 +17,9 @@ import           Development.Duplo.Types.JavaScript
 import           Language.JavaScript.Parser         (JSNode (..), Node (..),
                                                      TokenPosn (..))
 
+import           Debug.Trace
+trace' a = trace (show a) a
+
 makeLenses ''Module
 
 -- | Reorder modules within the root node.
@@ -70,11 +73,15 @@ makeModule rootNode argNode =
     (nameNT:_:depsNT:_) = argNTs
     -- Extract the name, always first argument.
     (NT (JSStringLiteral _ moduleName) _ _) = nameNT
-    -- Extract the module dependencies, always the third argument (second
-    -- being the comma separator).
-    (NN (JSArrayLiteral _ depsNodes _)) = depsNT
+    -- Extract the module dependencies. The dependency list is always the
+    -- third argument; otherwise, there's an issue.
+    (NN (JSArrayLiteral _ depsNodes _)) = matchDependencies moduleName depsNT
     -- Only take the strings.
     deps = map fromJust $ filter isJust $ map stringLiteralNT depsNodes
+
+matchDependencies :: String -> JSNode -> JSNode
+matchDependencies _ node@(NN (JSArrayLiteral _ depsNodes _)) = node
+matchDependencies moduleName _ = throw $ MissingDependencies moduleName
 
 -- | Given a JSNode, return just the string literal, or nothing
 stringLiteralNT :: JSNode -> Maybe String

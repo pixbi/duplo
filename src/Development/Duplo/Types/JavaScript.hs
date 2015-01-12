@@ -11,6 +11,7 @@ import           Language.JavaScript.Parser (JSNode (..))
 data JSCompilerException = ModuleNotFoundException ModuleName
                          | CircularDependencyException [ModuleName]
                          | ParseException [String]
+                         | MissingDependencies String
                          -- When the compiler itself is buggy
                          | InternalParserException String
                          -- When language-javascript somehow produces
@@ -31,6 +32,8 @@ instance Show JSCompilerException where
       "Uh oh. The parser itself is misbehaving: " ++ e
     show (LanguageJavaScriptException element) =
       "language-javascript is not parsing the file correctly:\n" ++ show element
+    show (MissingDependencies name) =
+      "Module `" ++ name ++ "` is missing a dependency array in its `define()`."
 
 type LineNumber = Int
 type ModuleName = String
