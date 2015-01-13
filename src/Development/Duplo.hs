@@ -93,9 +93,6 @@ build cmdName cmdArgs config options = shake shakeOpts $ do
       successPrinter "Clean completed"
 
     "build" ~> do
-      -- Always rebuild if we're building for production.
-      unless (TC.isInDev config) $ need ["clean"]
-
       -- Make sure all static files and dependencies are there.
       need ["static", "deps"]
       -- Then compile, in parallel.
@@ -104,8 +101,6 @@ build cmdName cmdArgs config options = shake shakeOpts $ do
       successPrinter "Build completed"
 
     "test" ~> do
-      -- We don't want residue from the last build.
-      need ["clean"]
       -- Do a semi-full build
       need ["static", "deps"]
       need [targetScript, targetStyle]

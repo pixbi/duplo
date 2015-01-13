@@ -215,6 +215,10 @@ main = do
   let shake' = build cmdNameWithFlags cmdArgs buildConfig options
   let shake  = shake' `catch` handleExc
 
+  -- We should start with a clean slate.
+  let noCleanActions = [ "clean", "bump", "init", "version" ]
+  unless (cmdNameWithFlags `elem` noCleanActions) $ build "clean" [] buildConfig options
+
   -- Watch or just build.
   unless toWatch shake
   when toWatch $ do
