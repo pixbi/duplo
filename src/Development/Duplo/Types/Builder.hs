@@ -9,6 +9,7 @@ data BuilderException = MissingGithubUserException
                       | MissingGithubRepoException
                       | MalformedManifestException String
                       | MissingManifestException String
+                      | MissingTestDirectory
   deriving (Typeable)
 
 instance Exception BuilderException
@@ -22,3 +23,5 @@ instance Show BuilderException where
       "The manifest file `" ++ path ++ "` is not a valid duplo JSON."
     show (MissingManifestException path) =
       "`" ++ path ++ "` is expected at the current location."
+    show MissingTestDirectory =
+      "There must be a `tests/` directory in order to run tests."

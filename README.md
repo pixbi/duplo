@@ -86,7 +86,7 @@ markup.
                         replace those with the same name under `app/assets/`.
     dev/modules/    --> Works just like `app/modules/`.
     public/         --> Built files when developing. Not committed to source
-    test/           --> Test files go here
+    tests/          --> Test files go here
 
 
 ## Development
@@ -121,21 +121,26 @@ The test suite contains:
 
 ```
 root
-|-- app/modules
+|-- app/modules/
     |-- a.js
     |-- b.js
-|-- test/modules
+    |-- c/
+        |- d.js
+|-- tests/
     |-- test-a.js
     |-- test-b.js
+    |-- c/
+        |-- d.js
 ```
 
-When testing your codebase, structure your project like the above. And then, we
-take a look at how to write a test file in directory `test/modules`:
+When testing your codebase, structure your project like the above. Note that
+the path relative to `tests/` should correspond to the path relative to
+`app/modules/`. And then, we take a look at how to write a test file in
+directory `tests/modules`:
 
 ```js
-define('name this to whatever but do not conflict with your module (e.g. test-a)',
-['moduleA'],
-function (a) {
+define('name this to whatever but do not conflict with your module (e.g. `test-a`)',
+['moduleA'], function (a) {
 
   describe('some text', function () {
     it('should ...', function () {
@@ -148,14 +153,12 @@ function (a) {
 });
 ```
 
-Duplo's test suite includes [mocha](http://mochajs.org/) and
-[chai.js](http://chaijs.com/).
-
-By the way, it supports another powerful testing tool,
+Duplo's test suite uses [mocha](http://mochajs.org/) and
+[chai.js](http://chaijs.com/). It also supports another powerful testing tool,
 [SinonJS](http://sinonjs.org/), so you may fake/mock any functions, ajax
-requests and timers yourself.
+requests, and timers yourself.
 
-As so far, Duplo's test environment includes these 3 modules:
+You may therefore use these functions:
 
 - mocha: `describe`, `it` and etc.
 - chai.js: `expect` and `assert`.

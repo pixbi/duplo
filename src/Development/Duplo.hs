@@ -101,10 +101,6 @@ build cmdName cmdArgs config options = shake shakeOpts $ do
       successPrinter "Build completed"
 
     "test" ~> do
-      -- Do a semi-full build
-      need ["static", "deps"]
-      need [targetScript, targetStyle]
-
       envOpt              <- createStdEnv config
       let appPath         =  config ^. TC.appPath
       let targetPath      =  config ^. TC.targetPath </> "tests"
@@ -112,6 +108,14 @@ build cmdName cmdArgs config options = shake shakeOpts $ do
       let testPath        =  config ^. TC.testPath
       let testCompiler    =  utilPath </> "scripts-test.sh"
       let find path pttrn =  command [Cwd path] (utilPath </> "find.sh") [".", pttrn]
+
+      -- There must be a test directory.
+      testsExist <- doesDirectoryExist testPath
+      unless testsExist $ throw BD.MissingTestDirectory
+
+      -- Do a semi-full build
+      need ["static", "deps"]
+      need [targetScript, targetStyle]
 
       let prepareFile path =
             do
