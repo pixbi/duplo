@@ -56,8 +56,6 @@ build config out = do
   let devPath     = config ^. TC.devPath
   let depsPath    = config ^. TC.depsPath
   let devCodePath = devPath </> "modules/index.js"
-  let inDev       = TC.isInDev config
-  let inTest      = TC.isInTest config
   let depIds      = config ^. TC.dependencies
 
   -- Preconditions

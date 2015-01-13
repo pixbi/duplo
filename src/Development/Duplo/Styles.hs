@@ -22,6 +22,7 @@ build config out = do
   let devCodePath = devPath </> "modules/index.styl"
   let depIds      = config ^. TC.dependencies
   let expandDeps' = expandDeps depIds
+  let buildMode   = config ^. TC.buildMode
 
   -- Preconditions
   lift $ createIntermediaryDirectories devCodePath
@@ -46,7 +47,7 @@ build config out = do
   let dynamicPaths = [ "app/modules" ]
                   ++ expandDeps' expandDepsDynamic
                   -- Compile dev files in dev mode as well.
-                  ++ [ "dev/modules" | TC.isInDev config ]
+                  ++ [ "dev/modules" | buildMode == "development" ]
 
   -- Merge both types of paths
   paths <- lift $ expandPaths cwd ".styl" staticPaths dynamicPaths

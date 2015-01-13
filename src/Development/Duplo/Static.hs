@@ -87,12 +87,13 @@ deps :: TC.BuildConfig
 deps config = do
   liftIO $ logStatus headerPrintSetter "Copying static files"
 
-  let assetsPath = config ^. TC.assetsPath
-  let depsPath   = config ^. TC.depsPath
-  let targetPath = config ^. TC.targetPath
-  let devPath    = config ^. TC.devPath
-  let devAssetsPath = devPath </> "assets/"
+  let assetsPath     = config ^. TC.assetsPath
+  let depsPath       = config ^. TC.depsPath
+  let targetPath     = config ^. TC.targetPath
+  let devPath        = config ^. TC.devPath
+  let devAssetsPath  = devPath </> "assets/"
   let testAssetsPath = config ^. TC.duploPath </> "etc/test"
+  let buildMode      = config ^. TC.buildMode
 
   -- Make sure all these directories exist
   createPathDirectories [assetsPath, depsPath, targetPath, devAssetsPath]
@@ -103,10 +104,10 @@ deps config = do
   depAssetFiles <- getDepAssets depsPath
   -- Add dev files to the mix, if we're in dev mode
   devFiles'     <- getDirectoryFiles devAssetsPath ["//*"]
-  let devFiles   = if TC.isInDev config then devFiles' else []
+  let devFiles   = if buildMode == "development" then devFiles' else []
   -- Add test files to the mix, if we're in test mode
   testFiles'    <- getDirectoryFiles testAssetsPath ["vendor//*"]
-  let testFiles  = if TC.isInTest config then testFiles' else []
+  let testFiles  = if buildMode == "test" then testFiles' else []
   -- Mix them together
   let allFiles   = nub $ concat [depAssetFiles, assetFiles, devFiles, testFiles]
   -- We do NOT want index

@@ -38,9 +38,3 @@ data BuildConfig = BuildConfig { _appName      :: String
                                } deriving (Show)
 
 makeLenses ''BuildConfig
-
-isInDev :: BuildConfig -> Bool
-isInDev config = config ^. buildMode == "development"
-
-isInTest :: BuildConfig -> Bool
-isInTest config = config ^. buildMode == "test"

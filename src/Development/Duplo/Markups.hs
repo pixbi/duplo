@@ -51,7 +51,6 @@ build config out = do
   let devAssetsPath = devPath </> "assets"
   let devCodePath   = devPath </> "modules/index"
   let depIds        = config ^. TC.dependencies
-  let inTest        = TC.isInTest config
 
   -- Preconditions
   lift $ createIntermediaryDirectories devCodePath
@@ -99,7 +98,7 @@ build config out = do
   let scriptsTags         = concatMap buildScriptTag scriptsPaths
 
   -- Add to `<head>`
-  let refTags       = refTagsNormal ++ if inTest then refTagsInTest ++ scriptsTags else []
+  let refTags       = refTagsNormal ++ if buildMode == "test" then refTagsInTest ++ scriptsTags else []
   let indexWithTags = replace "</head>" (refTags ++ "</head>") indexWithMarkup
 
   -- Path to the minifier
