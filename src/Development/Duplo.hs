@@ -14,7 +14,8 @@ import qualified Development.Duplo.Types.AppInfo as AI
 import qualified Development.Duplo.Types.Builder as BD
 import qualified Development.Duplo.Types.Config  as TC
 import qualified Development.Duplo.Types.Options as OP
-import           Development.Duplo.Utilities     (createStdEnv,
+import           Development.Duplo.Utilities     (createIntermediaryDirectories,
+                                                  createStdEnv,
                                                   headerPrintSetter, logStatus,
                                                   successPrintSetter)
 import           Development.Shake
@@ -57,6 +58,7 @@ build cmdName cmdArgs config options = shake shakeOpts $ do
       let actions = [ "static"
                     , "clean"
                     , "build"
+                    , "test"
                     , "bump"
                     , "init"
                     , "version"
@@ -101,7 +103,45 @@ build cmdName cmdArgs config options = shake shakeOpts $ do
 
       successPrinter "Build completed"
 
-      when (TC.isInTest config) $ need ["test"]
+    "test" ~> do
+      -- We don't want residue from the last build.
+      need ["clean"]
+      -- Do a semi-full build
+      need ["static", "deps"]
+      need [targetScript, targetStyle]
+
+      envOpt              <- createStdEnv config
+      let appPath         =  config ^. TC.appPath
+      let targetPath      =  config ^. TC.targetPath </> "tests"
+      let utilPath        =  config ^. TC.utilPath
+      let testPath        =  config ^. TC.testPath
+      let testCompiler    =  utilPath </> "scripts-test.sh"
+      let find path pttrn =  command [Cwd path] (utilPath </> "find.sh") [".", pttrn]
+
+      let prepareFile path =
+            do
+              let absPath = targetPath </> path
+              -- Create intermediary directories
+              createIntermediaryDirectories absPath
+              -- Inject into each app file dependencies, AMD, etc in
+              -- preparation for testing.
+              Stdout compiled <- command [envOpt] testCompiler [path]
+              -- Then write to the respective path in the output directory.
+              writeFileChanged absPath compiled
+
+      -- Each path is relative to the application root (most likely
+      -- `app/`).
+      Stdout codePaths' <- find testPath "*.js"
+      mapM_ prepareFile $ lines codePaths'
+
+      -- Build the markup once we have the script files in target.
+      need [targetMarkup]
+
+      -- Run the test suite
+      command_ [envOpt] (utilPath </> "run-test.sh") []
+
+      -- Copy over
+      successPrinter "Tests completed"
 
     "bump" ~> do
       (oldVersion, newVersion) <- Git.commit config bumpLevel
@@ -112,7 +152,7 @@ build cmdName cmdArgs config options = shake shakeOpts $ do
       let user = cmdArgs ^. element 0
       let repo = cmdArgs ^. element 1
       let name = user ++ "/" ++ repo
-      let src = miscPath </> "boilerplate/"
+      let src  = miscPath </> "boilerplate/"
       let dest = cwd ++ "/"
 
       -- Check prerequisites
@@ -136,10 +176,6 @@ build cmdName cmdArgs config options = shake shakeOpts $ do
       command_ [] (utilPath </> "init-git.sh") [name]
 
       successPrinter $ "Project created at " ++ dest
-
-    "test" ~> do
-      envOpt <- createStdEnv config
-      command_ [envOpt] (utilPath </> "run-test.sh") [duploPath]
 
     -- Version should have already been displayed if requested
     "version" ~> return ()

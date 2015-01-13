@@ -17,9 +17,6 @@ import           Development.Duplo.Types.JavaScript
 import           Language.JavaScript.Parser         (JSNode (..), Node (..),
                                                      TokenPosn (..))
 
-import           Debug.Trace
-trace' a = trace (show a) a
-
 makeLenses ''Module
 
 -- | Reorder modules within the root node.

@@ -91,26 +91,26 @@ updateVersion manifest version = manifest { AI.version = version }
 -- | Read from the given directory and update the app manifest object.
 updateFileRegistry :: TC.BuildConfig -> AI.AppInfo -> Action AI.AppInfo
 updateFileRegistry config appInfo = do
-    let cwd = config ^. TC.cwd
-    let utilPath = config ^. TC.utilPath
-    let appPath = cwd </> "app"
+    let cwd       = config ^. TC.cwd
+    let utilPath  = config ^. TC.utilPath
+    let appPath   = cwd </> "app"
     let assetPath = appPath </> "assets"
     let imagePath = assetPath </> "images"
-    let fontPath = assetPath </> "fonts"
+    let fontPath  = assetPath </> "fonts"
 
     -- Helper functions
     let find path pttrn = command [] (utilPath </> "find.sh") [path, pttrn]
-    let split = fmap unpack . splitOn "\n" . pack
-    let makeRelative' = makeRelative cwd
-    let filterNames = filter ((> 0) . length)
+    let split           = fmap unpack . splitOn "\n" . pack
+    let makeRelative'   = makeRelative cwd
+    let filterNames     = filter ((> 0) . length)
     let prepareFileList = filterNames . fmap (makeRelative cwd) . split
 
     -- Collect eligible files
     Stdout scripts <- find appPath "*.js"
-    Stdout styles <- find appPath "*.styl"
+    Stdout styles  <- find appPath "*.styl"
     Stdout markups <- find appPath "*.jade"
-    Stdout images <- find imagePath "*"
-    Stdout fonts <- find fontPath "*"
+    Stdout images  <- find imagePath "*"
+    Stdout fonts   <- find fontPath "*"
 
     -- Convert to arrays and make relative to cwd
     let scripts' = prepareFileList scripts

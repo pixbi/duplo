@@ -74,7 +74,7 @@ build config out = do
   -- These paths don't need to be expanded.
   let staticPaths = case buildMode of
                       "development" -> [ "dev/index" ]
-                      "test"        -> [ "test/index" ]
+                      "test"        -> [ "dev/index" ]
                       _             -> []
                  ++ [ "app/index" ]
 
@@ -107,7 +107,7 @@ build config out = do
   -- Configure the compiler
   let compiler = (util </>) $ case buildMode of
                                 "development" -> "scripts-dev.sh"
-                                "test"        -> "scripts-test.sh"
+                                "test"        -> "scripts-dev.sh"
                                 _             -> "scripts-optimize.sh"
 
   -- Create a pseudo file that contains the environment variables and

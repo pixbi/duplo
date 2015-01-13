@@ -89,26 +89,23 @@ build config out = do
   -- Inject compiled code into the index
   let indexWithMarkup = replace "<body>" ("<body>" ++ compiled) compiledIndex
 
-  -- Inject CSS/JS references
-  refTags <- lift $ readFile' refTagsPath
-  let indexWithRefs = replace "</head>" (refTags ++ "</head>") indexWithMarkup
+  -- Inject CSS/JS references, if we're NOT in testing
+  refTagsNormal <- lift $ readFile' refTagsPath
 
   -- Inject CSS/JS references if in testing
-  refTagsInTest <- lift $ readFile' (duploPath </> "etc/test/head.html")
-  scriptsPaths  <- lift $ expandPaths cwd ".js" [] [ testPath </> "modules"
-                                                   , appPath  </> "modules"
-                                                   ]
-
-  let buildScriptTag path = "<script defer=\"defer\" src=\"" ++ makeRelative cwd path ++ "\"></script>"
+  refTagsInTest <- lift $ readFile' $ duploPath </> "etc/test/head.html"
+  scriptsPaths  <- lift $ expandPaths cwd ".js" [] [targetPath </> "tests"]
+  let buildScriptTag path = "<script defer=\"defer\" src=\"" ++ makeRelative targetPath path ++ "\"></script>"
   let scriptsTags         = concatMap buildScriptTag scriptsPaths
-  let indexWithTestRefs   = if   inTest
-                            then replace "</head>" (refTagsInTest ++ scriptsTags ++ "</head>") indexWithRefs
-                            else indexWithRefs
+
+  -- Add to `<head>`
+  let refTags       = refTagsNormal ++ if inTest then refTagsInTest ++ scriptsTags else []
+  let indexWithTags = replace "</head>" (refTags ++ "</head>") indexWithMarkup
 
   -- Path to the minifier
   let minifier = utilPath </> "markups-minify.sh"
   -- Minify it
-  let postMinify _ = return indexWithTestRefs
+  let postMinify _ = return indexWithTags
   minified <- compile config minifier [] paths return postMinify
 
   -- Write it to disk

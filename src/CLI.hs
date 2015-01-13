@@ -90,7 +90,7 @@ main = do
                     -- `build` is a special case. It takes `production` as the
                     -- default.
                     "build" -> fromMaybe "production" duploEnvMB
-                    -- By default, `dev` is the default.
+                    -- `dev` is the default.
                     _ -> fromMaybe "development" duploEnvMB
 
   -- Internal command translation
@@ -108,7 +108,7 @@ main = do
           "live"       -> ( "build"   , ""      , "production"  , True  )
           "production" -> ( "build"   , ""      , "production"  , True  )
           "build"      -> ( "build"   , ""      , duploEnv      , False )
-          "test"       -> ( "build"   , ""      , "test"        , False )
+          "test"       -> ( "test"    , ""      , "test"        , False )
           _            -> ( cmdName   , ""      , duploEnv      , False )
 
   -- Certain flags turn into commands.
@@ -212,7 +212,7 @@ main = do
   when makefileExists $ void $ createProcess $ proc "make" [duploEnv]
 
   -- Construct the Shake command.
-  let shake' = build  cmdNameWithFlags cmdArgs buildConfig options
+  let shake' = build cmdNameWithFlags cmdArgs buildConfig options
   let shake  = shake' `catch` handleExc
 
   -- Watch or just build.

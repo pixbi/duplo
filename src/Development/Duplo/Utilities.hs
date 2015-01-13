@@ -18,7 +18,8 @@ import           System.Console.ANSI            (Color (..),
                                                  ColorIntensity (..),
                                                  ConsoleLayer (..), SGR (..),
                                                  setSGR)
-import           System.FilePath.Posix          (joinPath, splitPath)
+import           System.FilePath.Posix          (dropTrailingPathSeparator,
+                                                 joinPath, splitPath)
 
 type CompiledContent = MaybeT DS.Action
 type FileProcessor = [File] -> CompiledContent [File]
@@ -53,20 +54,22 @@ makeFilePatterns bases exts = do
 -- paths, in order.
 getDirectoryFilesInOrder :: FilePath -> String -> [DS.FilePattern] -> DS.Action [FilePath]
 getDirectoryFilesInOrder base extension patterns = do
+    -- Make sure we have a clean base.
+    let base' = dropTrailingPathSeparator base
     -- We need to terminate the infinite list.
     let listSize = length patterns
     -- Make extension a list of itself.
     let exts = replicate listSize extension
     -- Turn file patterns into absolute patterns.
-    let absPatterns = fmap (base </>) patterns
+    let absPatterns = fmap (base' </>) patterns
     -- Make sure we get all valid file patterns for dynamic paths.
     validPatterns <- makeFilePatterns absPatterns exts
     -- Remove the prefix that was needed for file pattern construction.
-    let relPatterns = fmap (drop (length base + 1)) validPatterns
+    let relPatterns = fmap (drop (length base' + 1)) validPatterns
     -- We need to turn all elements into lists for each to be run independently.
     let patternLists = fmap (replicate 1) relPatterns
     -- Curry the function that gets the files given a list of paths.
-    let getFiles = getDirectoryFiles base
+    let getFiles = getDirectoryFiles base'
     -- Map over the list monadically to get the paths in order.
     allFiles <- mapM getFiles patternLists
     -- Re-package the contents into the list of paths that we've wanted.
@@ -206,10 +209,20 @@ createStdEnv config = do
   let nodejs = config ^. TC.nodejsPath
   let misc   = config ^. TC.miscPath
   let target = config ^. TC.targetPath
+  let duplo  = config ^. TC.duploPath
+  let test   = config ^. TC.testPath
+  let app    = config ^. TC.appPath
+  let deps   = config ^. TC.depsPath
+  let dev    = config ^. TC.devPath
 
   DS.addEnv [ ("DUPLO_UTIL", util)
             , ("DUPLO_NODEJS", nodejs)
             , ("DUPLO_CWD", cwd)
             , ("DUPLO_MISC", misc)
             , ("DUPLO_TARGET", target)
+            , ("DUPLO_PATH", duplo)
+            , ("DUPLO_TEST", test)
+            , ("DUPLO_APP", app)
+            , ("DUPLO_DEPS", deps)
+            , ("DUPLO_DEV", dev)
             ]
