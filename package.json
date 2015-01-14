@@ -11,7 +11,7 @@
   "dependencies": {
     "amdclean": "^2.3.0",
     "autoprefixer": "^4.0.0",
-    "browserstack-runner": "^0.2.1",
+    "browserstack-runner": "0.2.1",
     "chai": "^1.10.0",
     "cheerio": "^0.18.0",
     "clean-css": "^2.2.17",
