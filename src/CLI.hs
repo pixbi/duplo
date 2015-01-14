@@ -143,11 +143,7 @@ main = do
   appVersion <- ignoreManifestError $ fmap AI.version CM.readManifest
   appId <- ignoreManifestError $ fmap CM.appId CM.readManifest
 
-  -- We may need custom builds with mode
-  let depManifestPath = cwd </> "component.json"
-
-  -- TODO(Yorkie): to be remove if verified by @Kenneth
-  -- because the depIds is unnecessary in config
+  -- Get all dependencies' names in dash-ified form
   dependencies <- CM.getDependencies $ case duploMode of
                                          "" -> Nothing
                                          a  -> Just a

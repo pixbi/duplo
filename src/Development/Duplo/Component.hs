@@ -110,12 +110,8 @@ getAllManifestPaths config root = do
     Stdout out <- command [] (utilPath </> "find.sh") [depsPath, manifestName]
     -- Get the current repo's manifest
     let currentRepoManifest = cwd </> "component.json"
-    currentRepoExist <- liftIO $ doesFileExist currentRepoManifest
-    unless (not currentRepoExist)
-           (throw $ BD.MissingManifestException currentRepoManifest)
-    let out' = lines out ++ [currentRepoManifest]
     -- These should be all `component.json`s
-    return out'
+    return $ lines out ++ [currentRepoManifest]
 
 -- | Get the component dependency list by providing a mode, or not.
 getDependencies :: Maybe String -> IO [FilePath]
