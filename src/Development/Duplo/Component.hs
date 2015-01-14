@@ -104,7 +104,7 @@ appInfoToVersion appInfo = (AI.name appInfo, AI.version appInfo)
 -- | Given a path, find all the `component.json`s
 getAllManifestPaths :: FilePath -> FilePath -> Action [FilePath]
 getAllManifestPaths utilPath root = do
-    Stdout out <- command [] (utilPath </> "find.sh") [root, manifestName]
+    Stdout out <- command [] (utilPath </> "find.sh") [root </> "components", manifestName]
     return $ lines out
 
 -- | Get the component dependency list by providing a mode, or not.
