@@ -4,7 +4,7 @@ module Development.Duplo.Component where
 
 import           Control.Exception               (throw)
 import           Control.Lens.Operators
-import           Control.Monad                   (liftM)
+import           Control.Monad                   (liftM, unless)
 import           Data.Aeson                      (decode, encode)
 import           Data.Aeson.Encode.Pretty        (encodePretty)
 import           Data.ByteString.Lazy.Char8      (ByteString)
@@ -78,10 +78,9 @@ parseComponentId cId
 -- | Given a path, find all the `component.json` and return a JSON string
 extractCompVersions :: TC.BuildConfig -> Action String
 extractCompVersions config = do
-    let path     = config ^. TC.cwd
-    let utilPath = config ^. TC.utilPath
+    let path = config ^. TC.cwd
     -- Get all the relevant paths
-    paths <- getAllManifestPaths utilPath path
+    paths <- getAllManifestPaths config path
     -- Construct the pipeline
     let toVersion path'   = appInfoToVersion . decodeManifest path' . BS.pack
     let takeVersion path' = liftM (toVersion path') (readFile path')
@@ -102,10 +101,21 @@ appInfoToVersion :: AppInfo -> Version
 appInfoToVersion appInfo = (AI.name appInfo, AI.version appInfo)
 
 -- | Given a path, find all the `component.json`s
-getAllManifestPaths :: FilePath -> FilePath -> Action [FilePath]
-getAllManifestPaths utilPath root = do
-    Stdout out <- command [] (utilPath </> "find.sh") [root </> "components", manifestName]
-    return $ lines out
+getAllManifestPaths :: TC.BuildConfig -> FilePath -> Action [FilePath]
+getAllManifestPaths config root = do
+    let cwd      = config ^. TC.cwd
+    let utilPath = config ^. TC.utilPath
+    let depsPath = config ^. TC.depsPath
+    -- Find all dependencies' manifests
+    Stdout out <- command [] (utilPath </> "find.sh") [depsPath, manifestName]
+    -- Get the current repo's manifest
+    let currentRepoManifest = cwd </> "component.json"
+    currentRepoExist <- liftIO $ doesFileExist currentRepoManifest
+    unless (not currentRepoExist)
+           (throw $ BD.MissingManifestException currentRepoManifest)
+    let out' = lines out ++ [currentRepoManifest]
+    -- These should be all `component.json`s
+    return out'
 
 -- | Get the component dependency list by providing a mode, or not.
 getDependencies :: Maybe String -> IO [FilePath]
