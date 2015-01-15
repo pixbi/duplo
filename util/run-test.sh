@@ -43,7 +43,7 @@ cat $DUPLO_PATH"/etc/test/vendor/mocha.js" >> $DUPLO_CWD"/public/index.js"
 echo ";" >> $DUPLO_CWD"/public/index.js"
 cat $DUPLO_PATH"/etc/test/vendor/runner.js" >> $DUPLO_CWD"/public/index.js"
 echo ";" >> $DUPLO_CWD"/public/index.js"
-find /Users/kenhkan/Desktop/Codebase/pixbi/embed/public/tests/ -name "*.js" | xargs cat >> /Users/kenhkan/Desktop/Codebase/pixbi/embed/public/index.js
+find $DUPLO_CWD"/public/tests/" -name "*.js" | xargs cat >> $DUPLO_CWD"/public/index.js"
 echo "}).call(window);" >> $DUPLO_CWD"/public/index.js"
 
 # Main processes
