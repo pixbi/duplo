@@ -91,15 +91,8 @@ build config out = do
   -- Inject CSS/JS references, if we're NOT in testing
   refTagsNormal <- lift $ readFile' refTagsPath
 
-  -- Inject CSS/JS references if in testing
-  refTagsInTest <- lift $ readFile' $ duploPath </> "etc/test/head.html"
-  scriptsPaths  <- lift $ expandPaths cwd ".js" [] [targetPath </> "tests"]
-  let buildScriptTag path = "<script defer=\"defer\" src=\"" ++ makeRelative targetPath path ++ "\"></script>"
-  let scriptsTags         = concatMap buildScriptTag scriptsPaths
-
-  -- Add to `<head>`
-  let refTags       = refTagsNormal ++ if buildMode == "test" then refTagsInTest ++ scriptsTags else []
-  let indexWithTags = replace "</head>" (refTags ++ "</head>") indexWithMarkup
+  -- Inject CSS/JS references
+  let indexWithTags = replace "</head>" (refTagsNormal ++ "</head>") indexWithMarkup
 
   -- Path to the minifier
   let minifier = utilPath </> "markups-minify.sh"

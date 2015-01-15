@@ -135,8 +135,9 @@ root
 
 When testing your codebase, structure your project like the above. Note that
 the path relative to `tests/` should correspond to the path relative to
-`app/modules/`. And then, we take a look at how to write a test file in
-directory `tests/modules`:
+`app/modules/`.
+
+An example of a test suite:
 
 ```js
 define('name this to whatever but do not conflict with your module (e.g. `test-a`)',
