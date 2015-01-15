@@ -43,12 +43,14 @@ cat $DUPLO_PATH"/etc/test/vendor/mocha.js" >> $DUPLO_CWD"/public/index.js"
 echo ";" >> $DUPLO_CWD"/public/index.js"
 cat $DUPLO_PATH"/etc/test/vendor/runner.js" >> $DUPLO_CWD"/public/index.js"
 echo ";" >> $DUPLO_CWD"/public/index.js"
-find $DUPLO_CWD"/public/tests/" -name "*.js" | xargs cat >> $DUPLO_CWD"/public/index.js"
+for i in $(find $DUPLO_CWD"/public/tests/" -name "*.js"); do
+  echo ";" >> $DUPLO_CWD"/public/index.js"
+  cat $i >> $DUPLO_CWD"/public/index.js"
+done
 echo "}).call(window);" >> $DUPLO_CWD"/public/index.js"
 
 # Main processes
 
-# TODO: generate coverage when proven to work
-#gen_coverage
+gen_coverage
 run_headless && run_cross_browsers
-#show_coverage_summary
+show_coverage_summary
