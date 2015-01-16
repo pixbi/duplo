@@ -85,7 +85,7 @@ extractCompVersions config = do
     let toVersion path'   = appInfoToVersion . decodeManifest path' . BS.pack
     let takeVersion path' = liftM (toVersion path') (readFile path')
     -- Go through it
-    manifests <- mapM (liftIO . takeVersion) paths
+    manifests <- mapM (liftIO . takeVersion) (paths ++ ["./component.json"])
     -- Marshalling
     return $ BS.unpack $ encode $ fromList manifests
 
