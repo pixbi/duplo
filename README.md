@@ -391,6 +391,10 @@ done:
 4. `$ npm publish`
 5. [Publish to Hackage](http://hackage.haskell.org/upload)
 
+Note: *ALWAYS* always use [Stackage](http://www.stackage.org/) while do not
+specify versions in the Cabal file. Just specify the dependencies by name and
+let Stackage manage the versions.
+
 
 ## Copyright and License
 
