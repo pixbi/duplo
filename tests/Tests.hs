@@ -14,8 +14,11 @@ import           Test.Tasty.QuickCheck           as QC
 main :: IO ()
 main = defaultMain tests
 
+setMaxSuccess :: TestTree -> TestTree
+setMaxSuccess = localOption $ QuickCheckTests 5000
+
 tests :: TestTree
-tests = testGroup "Tests"
+tests = setMaxSuccess $ testGroup "Tests"
   [ testGroup "Component support"
     [ QC.testProperty "slash is transformed into dash" $ \appInfo ->
         let
