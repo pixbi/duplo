@@ -41,8 +41,9 @@ cat $DUPLO_PATH"/etc/test/vendor/sinon.js" >> $DUPLO_CWD"/public/index.js"
 echo ";" >> $DUPLO_CWD"/public/index.js"
 cat $DUPLO_PATH"/etc/test/vendor/mocha.js" >> $DUPLO_CWD"/public/index.js"
 echo ";" >> $DUPLO_CWD"/public/index.js"
-cat $DUPLO_PATH"/etc/test/vendor/runner.js" >> $DUPLO_CWD"/public/index.js"
-echo ";" >> $DUPLO_CWD"/public/index.js"
+# TODO(Yorkie): remove this line absolutely
+# cat $DUPLO_PATH"/etc/test/vendor/runner.js" >> $DUPLO_CWD"/public/index.js"
+# echo ";" >> $DUPLO_CWD"/public/index.js"
 for i in $(find $DUPLO_CWD"/public/tests/" -name "*.js"); do
   echo ";" >> $DUPLO_CWD"/public/index.js"
   cat $i >> $DUPLO_CWD"/public/index.js"
