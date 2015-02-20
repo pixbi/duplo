@@ -77,7 +77,10 @@ build config out = do
 
   -- Pull index page from either dev, assets, or default otherwise, in that
   -- order.
-  let possibleSources = [ devPath, appPath, defaultsPath ]
+  let possibleSources = case buildMode of
+                          "test"         -> [ testPath ]
+                          _              -> [ devPath ]
+                        ++ [ appPath, defaultsPath ]
   -- We know at least one would satisfy because there's always one in
   -- the default path
   Just indexFile <- liftIO $ findFile possibleSources "index.jade"
