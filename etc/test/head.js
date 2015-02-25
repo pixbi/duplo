@@ -67,7 +67,7 @@ function triggerEvent (node, eventName) {
 //
 // set global variables
 //
-var isHeadless = !!window.mochaPhantomJS;
-var expect = chai.expect;
-var assert = chai.assert;
+window.isHeadless = !!window.mochaPhantomJS;
+window.expect = chai.expect;
+window.assert = chai.assert;
 mocha.setup('bdd');
