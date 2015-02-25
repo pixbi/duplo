@@ -78,7 +78,7 @@ build_tests
 ### run
 for i in "$@"; do
   case $i in
-    --no-runner) exit ;;
+    --no-runner|--dps) exit ;;
     *) exit ;;
   esac
 done
