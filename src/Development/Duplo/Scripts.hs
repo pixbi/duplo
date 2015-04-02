@@ -96,11 +96,11 @@ build config out = do
   compVers <- lift $ extractCompVersions config
 
   -- Inject global/environment variables
-  let envVars = "var DUPLO_ENV = '" ++ env ++ "';\n"
+  let envVars = "window.DUPLO_ENV = '" ++ env ++ "';\n"
              -- Decode and parse in runtime to avoid having to deal with
              -- escaping.
-             ++ "var DUPLO_IN = JSON.parse(window.atob('" ++ duploIn ++ "') || '{}' );\n"
-             ++ "var DUPLO_VERSIONS = " ++ compVers ++ ";\n"
+             ++ "window.DUPLO_IN = JSON.parse(window.atob('" ++ duploIn ++ "') || '{}' );\n"
+             ++ "window.DUPLO_VERSIONS = " ++ compVers ++ ";\n"
 
   -- Configure the compiler
   let compiler = (util </>) $ case buildMode of
