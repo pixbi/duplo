@@ -25,6 +25,7 @@ run_cross_browsers () {
 gen_coverage () {
   echo "Generating coverage page..."
   $JSCOVERAGE $DUPLO_TARGET/tests $DUPLO_TARGET/tests --exclude ".*"
+  echo "jscoverage done"
   $MOCHA_BROWSER $DUPLO_TARGET/index.html -R html-cov > $DUPLO_TARGET/coverage.html
   echo "Succeeded. 'public/coverage.html' generated"
 }
@@ -34,22 +35,53 @@ show_coverage_summary () {
 }
 
 # TODO: refactor and move this to `Scripts.hs` when proven to work
-echo "(function () {" >> $DUPLO_CWD"/public/index.js"
-cat $DUPLO_PATH"/etc/test/vendor/chai.js" >> $DUPLO_CWD"/public/index.js"
-echo ";" >> $DUPLO_CWD"/public/index.js"
-cat $DUPLO_PATH"/etc/test/vendor/sinon.js" >> $DUPLO_CWD"/public/index.js"
-echo ";" >> $DUPLO_CWD"/public/index.js"
-cat $DUPLO_PATH"/etc/test/vendor/mocha.js" >> $DUPLO_CWD"/public/index.js"
-echo ";" >> $DUPLO_CWD"/public/index.js"
-cat $DUPLO_PATH"/etc/test/vendor/runner.js" >> $DUPLO_CWD"/public/index.js"
-echo ";" >> $DUPLO_CWD"/public/index.js"
-for i in $(find $DUPLO_CWD"/public/tests/" -name "*.js"); do
+TAR_PATH=$DUPLO_CWD/public/index.js
+
+build_deps () {
+  local dep=$DUPLO_CWD/public/index.dep.js
+  local tar=$DUPLO_CWD/public/index.js
+  local tmp=$DUPLO_CWD/public/index.tmp
+
+  echo "(function () {" >> $dep
+  echo "var __module__ = module, module = undefined;" >> $dep
+  cat $DUPLO_PATH"/etc/test/vendor/sinon.js" >> $dep
   echo ";" >> $DUPLO_CWD"/public/index.js"
-  cat $i >> $DUPLO_CWD"/public/index.js"
-done
-echo "}).call(window);" >> $DUPLO_CWD"/public/index.js"
+  echo "module = __module__;" >> $dep
+  cat $DUPLO_PATH"/etc/test/vendor/chai.js" >> $dep
+  echo ";" >> $DUPLO_CWD"/public/index.js"
+  cat $DUPLO_PATH"/etc/test/vendor/mocha.js" >> $dep
+  echo ";" >> $DUPLO_CWD"/public/index.js"
+  cat $DUPLO_PATH"/etc/test/head.js" >> $dep
+  echo ";" >> $DUPLO_CWD"/public/index.js"
+  echo "}).call(window);" >> $dep
+
+  cat $dep > $tmp
+  cat $TAR_PATH >> $tmp
+  mv $tmp $TAR_PATH
+  rm -f $dep
+}
+
+build_tests () {
+  echo "(function () {" >> $TAR_PATH
+  for i in $(find $DUPLO_CWD"/public/tests/" -name "*.js"); do
+    echo ";" >> $TAR_PATH
+    cat $i >> $TAR_PATH
+  done
+  echo "}).call(window);" >> $TAR_PATH
+}
 
 # Main processes
+### build
+build_deps
+build_tests
+
+### run
+for i in "$@"; do
+  case $i in
+    --no-runner|--dps) exit ;;
+    *) exit ;;
+  esac
+done
 
 gen_coverage
 run_headless && run_cross_browsers

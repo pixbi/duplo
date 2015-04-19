@@ -137,7 +137,7 @@ build cmdName cmdArgs config options = shake shakeOpts $ do
       need [targetMarkup]
 
       -- Run the test suite
-      command_ [envOpt] (utilPath </> "run-test.sh") []
+      command_ [envOpt] (utilPath </> "run-test.sh") cmdArgs
 
       -- Copy over
       successPrinter "Tests completed"
